@@ -1,0 +1,16 @@
+[user]
+	name = Sergi Romeu
+	email = romeuhd@gmail.com
+[core]
+	editor = code --wait
+[fetch]
+	prune = true
+[pull]
+	rebase = false
+[credential]
+	helper = cache
+[push]
+	autoSetupRemote = true
+	autoSetupRemote = true
+[init]
+	defaultBranch = main
