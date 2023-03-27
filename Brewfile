@@ -50,6 +50,7 @@ cask "slack"
 cask "spotify"
 # Keyboard and mouse configuration tool
 cask "steelseries-exactmouse-tool"
+cask "steelseries-gg"
 # Open-source code editor
 cask "visual-studio-code"
 # Multimedia player
