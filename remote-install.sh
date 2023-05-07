@@ -9,6 +9,8 @@ brew install git
 ## clone repo
 git clone https://github.com/rmyz/dotfiles.git .dotfiles
 
+cd .dotfiles/
+
 # Give permissions to all files
 for file in $(find . -type f)
 do

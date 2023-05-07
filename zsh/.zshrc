@@ -105,48 +105,6 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-# Colvin start
-alias c="Documents/colvin"
-alias cn="Documents/colvin-next"
-alias s="make up"
-alias ms="make local"
-alias gp="git pull"
-alias gcm="git checkout master"
-alias gc-="git checkout -"
-alias grm="git rebase master"
-alias grc="git rebase --continue"
-alias gra="git rebase --abort"
-alias gpf="git push --force"
-alias l="docker compose exec web bash"
-alias k-colvin='kubectl config use-context gke_thecolvin_europe-west1_colvin'
-alias k-stage='kubectl config use-context gke_thecolvin_europe-west1_stage'
-alias k9s-colvin='k9s --cluster gke_thecolvin_europe-west1_colvin'
-alias k9s-stage='k9s --cluster gke_thecolvin_europe-west1-d_stage'
-alias k='kubectl'
-alias kpo='kubectl get po -o wide'
-alias krs='kubectl get rs -o wide'
-alias ksvc='kubectl get svc -o wide'
-alias kdep='kubectl get deploy -o wide'
-alias king='kubectl get ing'
-alias kno='kubectl get no -o wide'
-alias kep='kubectl get endpoints'
-alias khpa='kubectl get hpa'
-alias kcj='kubectl get cronjobs -o wide'
-alias kj='kubectl get jobs -o wide'
-alias ksf='kubectl get statefulsets -o wide'
-alias kpv='kubectl get pv -o wide'
-alias kpvc='kubectl get pvc -o wide'
-
-USE_GKE_GCLOUD_AUTH_PLUGIN=True
-GIT_CRYPT_KEY_PATH=/Users/rmyz/Documents/git-crypt-key.txt
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/rmyz/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/rmyz/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/rmyz/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/rmyz/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
-
-# Colvin end
-
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
 export PATH="$PNPM_HOME:$PATH"
