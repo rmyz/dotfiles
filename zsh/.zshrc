@@ -17,6 +17,14 @@ source $ZSH/oh-my-zsh.sh
 
 source "/opt/homebrew/opt/spaceship/spaceship.zsh"
 
+## Plazah aliases
+alias pe="cd Code/plazah-expert"
+
+alias p="cd Code/plazah"
+alias dcu="docker compose up -d"
+alias runp="cd docker && dcu"
+
+alias pw="cd Code/plazah-pull-widget"
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"
