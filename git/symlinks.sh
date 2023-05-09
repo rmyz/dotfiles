@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-ln -s .gitconfig $HOME/.gitconfig
+ln -s $PWD/.gitconfig $HOME/.gitconfig
