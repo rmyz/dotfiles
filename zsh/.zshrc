@@ -17,14 +17,20 @@ source $ZSH/oh-my-zsh.sh
 
 source "/opt/homebrew/opt/spaceship/spaceship.zsh"
 
-## Plazah aliases
-alias pe="cd Code/plazah-expert"
+## Aliases
+alias grm="git rebase main"
+alias grc="git rebase --continue"
+alias gpf="git push -f"
 
+## Plazah
+alias pe="cd Code/plazah-expert"
 alias p="cd Code/plazah"
 alias dcu="docker compose up -d"
 alias runp="cd docker && dcu"
-
 alias pw="cd Code/plazah-pull-widget"
+
+export FIXTURES_DEV_EMAIL="sergi@plazah.com"
+## end Plazah
 
 # pnpm
 export PNPM_HOME="$HOME/Library/pnpm"

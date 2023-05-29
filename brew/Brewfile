@@ -14,7 +14,7 @@ brew "nvm"
 # 📦🚀 Fast, disk space efficient package manager
 brew "pnpm"
 # Cross-shell prompt for astronauts
-brew "starship"
+brew "spaceship"
 # JavaScript package manager
 brew "yarn"
 # UNIX shell (command interpreter)
