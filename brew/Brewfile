@@ -1,6 +1,5 @@
 tap "homebrew/bundle"
 tap "homebrew/cask"
-tap "homebrew/cask-drivers"
 tap "homebrew/cask-fonts"
 tap "homebrew/core"
 tap "homebrew/services"
@@ -21,8 +20,6 @@ brew "yarn"
 brew "zsh"
 # Enable Windows-like alt-tab
 cask "alt-tab"
-# Universal database tool and SQL client
-cask "dbeaver-community"
 # Voice and text chat software
 cask "discord"
 # App to build and share containerized applications and microservices
@@ -38,8 +35,6 @@ cask "font-inconsolata-for-powerline"
 cask "google-chrome"
 # Terminal emulator as alternative to Apple's Terminal app
 cask "iterm2"
-# Screen and video recording software
-cask "loom"
 # App to write, plan, collaborate, and get organized
 cask "notion"
 # Collaboration platform for API development
@@ -53,7 +48,6 @@ cask "slack"
 # Music streaming service
 cask "spotify"
 # Keyboard and mouse configuration tool
-cask "steelseries-exactmouse-tool"
 cask "steelseries-gg"
 # Open-source code editor
 cask "visual-studio-code"
