@@ -30,6 +30,7 @@ cask "fig"
 cask "figma"
 # Free monospaced font with programming ligatures
 cask "font-fira-code"
+cask "font-geist-mono"
 cask "font-inconsolata-for-powerline"
 # Web browser
 cask "google-chrome"
