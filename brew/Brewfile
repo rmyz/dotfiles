@@ -24,6 +24,8 @@ cask "alt-tab"
 cask "another-redis-desktop-manager"
 # Web browser focusing on privacy
 cask "brave-browser"
+# Universal database tool and SQL client
+cask "dbeaver-community"
 # Voice and text chat software
 cask "discord"
 # App to build and share containerised applications and microservices
