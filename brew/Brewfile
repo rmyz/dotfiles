@@ -1,18 +1,18 @@
 tap "homebrew/bundle"
-tap "homebrew/cask"
 tap "homebrew/cask-fonts"
-tap "homebrew/core"
 tap "homebrew/services"
 
+# Official Amazon AWS command-line interface
+brew "awscli"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
 brew "git"
 # Manage multiple Node.js versions
 brew "nvm"
-# 📦🚀 Fast, disk space efficient package manager
-brew "pnpm"
-# Cross-shell prompt for astronauts
+# Python version management
+brew "pyenv"
+# Zsh prompt for Astronauts
 brew "spaceship"
 # JavaScript package manager
 brew "yarn"
@@ -20,23 +20,22 @@ brew "yarn"
 brew "zsh"
 # Enable Windows-like alt-tab
 cask "alt-tab"
+# Redis desktop manager
+cask "another-redis-desktop-manager"
+# Web browser focusing on privacy
+cask "brave-browser"
 # Voice and text chat software
 cask "discord"
-# App to build and share containerized applications and microservices
+# App to build and share containerised applications and microservices
 cask "docker"
-# Reimagine your terminal
-cask "fig"
 # Collaborative team software
 cask "figma"
 # Free monospaced font with programming ligatures
 cask "font-fira-code"
+# Monospaced typeface designed to be used where code is represented
 cask "font-geist-mono"
 cask "font-inconsolata-for-powerline"
-# Web browser
-cask "google-chrome"
-# Terminal emulator as alternative to Apple's Terminal app
-cask "iterm2"
-# App to write, plan, collaborate, and get organized
+# App to write, plan, collaborate, and get organised
 cask "notion"
 # Collaboration platform for API development
 cask "postman"
@@ -48,11 +47,13 @@ cask "rectangle"
 cask "slack"
 # Music streaming service
 cask "spotify"
-# Keyboard and mouse configuration tool
+# Settings for SteelSeries peripherals and accessories
 cask "steelseries-gg"
 # Open-source code editor
 cask "visual-studio-code"
 # Multimedia player
 cask "vlc"
-# Desktop client for WhatsApp
+# Rust-based terminal
+cask "warp"
+# Native desktop client for WhatsApp
 cask "whatsapp"

@@ -1,5 +1,3 @@
-# Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -33,6 +31,14 @@ else
   [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 fi
 
+## Warp terminal config
+if [[ $TERM_PROGRAM == "WarpTerminal"  ]]; then
+  SPACESHIP_PROMPT_ASYNC=FALSE
+  SPACESHIP_PROMPT_SEPARATE_LINE=FALSE
+  
+  spaceship remove char
+fi
+
 ## NVM deeper shell integration
 autoload -U add-zsh-hook
 
@@ -64,6 +70,9 @@ alias grc="git rebase --continue"
 alias gpf="git push -f"
 alias myip="curl ipinfo.io"
 
+export DISABLE_OPENCOLLECTIVE=1
+export ADBLOCK=1
+
 ## Start TKWW
 export AWS_PROFILE=admin
 ## End TKWW
@@ -72,6 +81,3 @@ export AWS_PROFILE=admin
 export PNPM_HOME="$HOME/Library/pnpm"
 export PATH="$PNPM_HOME:$PATH"
 # pnpm end
-
-# Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
