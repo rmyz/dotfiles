@@ -39,6 +39,8 @@ cask "font-fira-code"
 # Monospaced typeface designed to be used where code is represented
 cask "font-geist-mono"
 cask "font-inconsolata-for-powerline"
+# Discover, download, and run local LLMs
+cask "lm-studio"
 # App to write, plan, collaborate, and get organised
 cask "notion"
 # Collaboration platform for API development
