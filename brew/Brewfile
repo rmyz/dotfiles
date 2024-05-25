@@ -4,6 +4,8 @@ tap "homebrew/services"
 
 # Official Amazon AWS command-line interface
 brew "awscli"
+# Fast and simple Node.js version manager
+brew "fnm"
 # GitHub command-line tool
 brew "gh"
 # Distributed revision control system
@@ -43,8 +45,6 @@ cask "notion"
 cask "postman"
 # Control your tools with a few keystrokes
 cask "raycast"
-# Move and resize windows using keyboard shortcuts or snap areas
-cask "rectangle"
 # Team communication and collaboration software
 cask "slack"
 # Music streaming service
