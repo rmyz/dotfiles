@@ -34,8 +34,8 @@ fi
 ## Warp terminal config
 if [[ $TERM_PROGRAM == "WarpTerminal"  ]]; then
   SPACESHIP_PROMPT_ASYNC=FALSE
-  SPACESHIP_PROMPT_SEPARATE_LINE=FALSE
-  
+  ## SPACESHIP_PROMPT_SEPARATE_LINE=FALSE
+
   spaceship remove char
 fi
 
