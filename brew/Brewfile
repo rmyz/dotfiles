@@ -40,6 +40,8 @@ cask "font-geist-mono"
 cask "font-inconsolata-for-powerline"
 # Discover, download, and run local LLMs
 cask "lm-studio"
+# Customize your mouse
+cask "linearmouse"
 # App to write, plan, collaborate, and get organised
 cask "notion"
 # Collaboration platform for API development

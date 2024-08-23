@@ -18,17 +18,9 @@ arch=$(machine)
 if [ "$arch" = "x86_64h" ]; then
 # Intel CPU specific settings
     source "/usr/local/opt/spaceship/spaceship.zsh"
-
-  #    export NVM_DIR="$HOME/.nvm"
-  # [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
-  # [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 else
 # Mx CPU specific settings
     source "/opt/homebrew/opt/spaceship/spaceship.zsh"
-
-  # export NVM_DIR="$HOME/.nvm"
-  # [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
-  # [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
 fi
 
 ## Warp terminal config
@@ -39,42 +31,7 @@ if [[ $TERM_PROGRAM == "WarpTerminal"  ]]; then
   spaceship remove char
 fi
 
-## #region NVM deeper shell integration
-# autoload -U add-zsh-hook
-
-# load-nvmrc() {
-#   local nvmrc_path
-#   nvmrc_path="$(nvm_find_nvmrc)"
-
-#   if [ -n "$nvmrc_path" ]; then
-#     local nvmrc_node_version
-#     nvmrc_node_version=$(nvm version "$(cat "${nvmrc_path}")")
-
-#     if [ "$nvmrc_node_version" = "N/A" ]; then
-#       nvm install
-#     elif [ "$nvmrc_node_version" != "$(nvm version)" ]; then
-#       nvm use
-#     fi
-#   elif [ -n "$(PWD=$OLDPWD nvm_find_nvmrc)" ] && [ "$(nvm version)" != "$(nvm version default)" ]; then
-#     echo "Reverting to nvm default version"
-#     nvm use default
-#   fi
-# }
-
-# add-zsh-hook chpwd load-nvmrc
-# load-nvmrc
-## #endregion NVM deeper shell integration
-
 ## #region FNM integration
-export PATH="/Users/sromeu/Library/Caches/fnm_multishells/11593_1714389129640/bin":$PATH
-export FNM_LOGLEVEL="info"
-export FNM_MULTISHELL_PATH="/Users/sromeu/Library/Caches/fnm_multishells/11593_1714389129640"
-export FNM_COREPACK_ENABLED="false"
-export FNM_RESOLVE_ENGINES="false"
-export FNM_VERSION_FILE_STRATEGY="local"
-export FNM_NODE_DIST_MIRROR="https://nodejs.org/dist"
-export FNM_DIR="/Users/sromeu/Library/Application Support/fnm"
-export FNM_ARCH="arm64"
 autoload -U add-zsh-hook
 _fnm_autoload_hook () {
     if [[ -f .node-version || -f .nvmrc ]]; then
@@ -87,6 +44,13 @@ add-zsh-hook chpwd _fnm_autoload_hook \
     && _fnm_autoload_hook
 
 rehash
+eval "$(fnm env --use-on-cd --shell zsh)"
+
+FNM_PATH="$HOME/Library/Application Support/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$HOME/Library/Application Support/fnm:$PATH"
+  eval "`fnm env`"
+fi
 ## #endregion FNM integration
 
 ## Aliases
