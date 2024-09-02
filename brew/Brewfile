@@ -9,8 +9,6 @@ brew "fnm"
 brew "gh"
 # Distributed revision control system
 brew "git"
-# Manage multiple Node.js versions
-brew "nvm"
 # Python version management
 brew "pyenv"
 # Zsh prompt for Astronauts
@@ -52,8 +50,6 @@ cask "raycast"
 cask "slack"
 # Music streaming service
 cask "spotify"
-# Settings for SteelSeries peripherals and accessories
-cask "steelseries-gg"
 # Open-source code editor
 cask "visual-studio-code"
 # Multimedia player
