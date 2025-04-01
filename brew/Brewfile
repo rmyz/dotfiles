@@ -7,6 +7,8 @@ brew "fnm"
 brew "gh"
 # Distributed revision control system
 brew "git"
+# Git on steroids
+brew "git-town"
 # Python version management
 brew "pyenv"
 # Zsh prompt for Astronauts
