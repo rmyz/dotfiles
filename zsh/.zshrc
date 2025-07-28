@@ -50,6 +50,6 @@ export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="$HOME/.pyenv/shims:$PATH"
 export PATH="/Users/sromeu/.codeium/windsurf/bin:$PATH"
 
-source ./zshrc.work.sh
+source $HOME/.zshrc.work.sh
 
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh

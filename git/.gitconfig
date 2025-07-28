@@ -1,6 +1,6 @@
 [user]
 	name = Sergi Romeu
-	email = romeuhd@gmail.com
+	email = sergi.romeu@elastic.co
 [core]
 	editor = code --wait
 [fetch]
@@ -15,3 +15,7 @@
 	defaultBranch = main
 [alias]
   nah = "!f(){ git reset --hard; git clean -df; if [ -d ".git/rebase-apply" ] || [ -d ".git/rebase-merge" ]; then git rebase --abort; fi; }; f"
+	hack = town hack
+	sync = town sync
+[merge]
+	tool = vscode
