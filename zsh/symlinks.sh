@@ -4,4 +4,4 @@
 rm $HOME/.zshrc
 
 ln -s $PWD/.zshrc $HOME/.zshrc
-ln -s $PWD/.zshrc.work $HOME/.zshrc.work
+ln -s $PWD/.zshrc.work.sh $HOME/.zshrc.work.sh
