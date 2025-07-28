@@ -47,3 +47,5 @@ cask "visual-studio-code"
 cask "warp"
 # Native desktop client for WhatsApp
 cask "whatsapp"
+# Zsh Syntax Highlighting
+brew "zsh-syntax-highlighting"
