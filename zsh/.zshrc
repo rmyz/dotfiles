@@ -48,7 +48,6 @@ export GOBIN=$HOME/bin/go
 export PATH=$PATH:$GOPATH/bin:$GOBIN:$GOBIN/elastic-package
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="$HOME/.pyenv/shims:$PATH"
-export PATH="/Users/sromeu/.codeium/windsurf/bin:$PATH"
 
 source $HOME/.zshrc.work.sh
 
