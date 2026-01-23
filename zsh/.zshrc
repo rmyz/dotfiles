@@ -16,6 +16,9 @@ if [[ $TERM_PROGRAM == "WarpTerminal"  ]]; then
   spaceship remove char
 fi
 
+## Enable automatic directory change
+setopt autocd
+
 ## FNM integration
 eval "$(fnm env --use-on-cd --shell zsh)"
 autoload -U add-zsh-hook
@@ -48,6 +51,8 @@ export GOBIN=$HOME/bin/go
 export PATH=$PATH:$GOPATH/bin:$GOBIN:$GOBIN/elastic-package
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="$HOME/.pyenv/shims:$PATH"
+export GPG_TTY=$(tty)
+export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 
 source $HOME/.zshrc.work.sh
 

@@ -1,3 +1,5 @@
+tap "derailed/k9s"
+tap "tw93/tap"
 # Fast and simple Node.js version manager
 brew "fnm"
 # GitHub command-line tool
@@ -6,18 +8,52 @@ brew "gh"
 brew "git"
 # Git on steroids
 brew "git-town"
+# GNU Privacy Guard (OpenPGP)
+brew "gnupg"
+# Open source programming language to build simple/reliable/efficient software
+brew "go"
+# Kubernetes package manager
+brew "helm"
+# Lightweight and flexible command-line JSON processor
+brew "jq"
+# Make/rake-like build tool using Go
+brew "mage"
+# Run a Kubernetes cluster locally
+brew "minikube"
+# Development kit for the Java programming language
+brew "openjdk"
+# Pinentry for GPG on Mac
+brew "pinentry-mac"
+# Package compiler and linker metadata toolkit
+brew "pkgconf"
+# Fast, disk space efficient package manager
+brew "pnpm"
 # Python version management
 brew "pyenv"
 # Zsh prompt for Astronauts
 brew "spaceship"
+# Extremely fast Python package installer and resolver, written in Rust
+brew "uv"
+# JavaScript package manager
+brew "yarn"
 # UNIX shell (command interpreter)
 brew "zsh"
+# Fish shell like syntax highlighting for zsh
+brew "zsh-syntax-highlighting"
+# Kubernetes CLI To Manage Your Clusters In Style!
+brew "derailed/k9s/k9s"
+# Comprehensive macOS cleanup and application uninstall tool
+brew "tw93/tap/mole"
 # Enable Windows-like alt-tab
 cask "alt-tab"
 # Redis desktop manager
 cask "another-redis-desktop-manager"
 # Web browser focusing on privacy
 cask "brave-browser"
+# Write, edit, and chat about your code with AI
+cask "cursor"
+# Universal database tool and SQL client
+cask "dbeaver-community"
 # Voice and text chat software
 cask "discord"
 # App to build and share containerised applications and microservices
@@ -27,8 +63,10 @@ cask "figma"
 # Monospaced typeface designed to be used where code is represented
 cask "font-geist-mono"
 cask "font-geist-mono-nerd-font"
-# Powerful menu bar management tool
-brew "jordanbaird-ice"
+# Grammarly for desktop
+cask "grammarly-desktop"
+# Menu bar manager
+cask "jordanbaird-ice@beta"
 # Screen recorder built with web technology
 cask "kap"
 # Customize your mouse
@@ -43,9 +81,9 @@ cask "slack"
 cask "spotify"
 # Open-source code editor
 cask "visual-studio-code"
+# Multimedia player
+cask "vlc"
 # Rust-based terminal
 cask "warp"
 # Native desktop client for WhatsApp
 cask "whatsapp"
-# Zsh Syntax Highlighting
-brew "zsh-syntax-highlighting"
