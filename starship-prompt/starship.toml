@@ -1,0 +1,7 @@
+# Starship prompt configuration
+# https://starship.rs/config/
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+[gcloud]
+disabled = true

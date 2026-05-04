@@ -1,49 +1,30 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Install xcode-select
-if test ! $(which xcode-select); then
-    echo "Installing xcode-select..."
-    xcode-select install
+# Install xcode-select if missing
+if ! xcode-select -p >/dev/null 2>&1; then
+  echo "Installing xcode-select..."
+  xcode-select --install
 fi
 
-# Execute all installer and symlinks scripts
-for folder in */
-do
-  # Change to folder directory
-  cd "$folder"
+# Run installers and symlinks in a fixed order.
+# brew runs first because everything else may depend on its packages.
+folders=(brew mac git zsh starship-prompt agent-skills raycast)
 
-  # Check if installer.sh exists
-  if [ -e "installer.sh" ]
-  then
-    # Check if installer.sh can be executed
-    if [ -x "installer.sh" ]
-    then
-      # Run installer.sh
-      echo "Executing $folder's installer..."
-      ./installer.sh
-    else
-      # If it is not executable, show error message
-      echo "Can't execute $folder's installer.sh"
-    fi
+for folder in "${folders[@]}"; do
+  if [ ! -d "$folder" ]; then
+    continue
   fi
 
-  # Check if symlinks.sh exists
-  if [ -e "symlinks.sh" ]
-  then
-    # Check if symlinks.sh can be executed
-    if [ -x "symlinks.sh" ]
-    then
-      # Run symlinks.sh
-      echo "Executing $folder's symlinks..."
-      ./symlinks.sh
-    else
-      # If it is not executable, show error message
-      echo "Can't execute $folder's symlinks.sh"
-    fi
+  if [ -x "$folder/installer.sh" ]; then
+    echo "Executing $folder's installer..."
+    ( cd "$folder" && ./installer.sh )
   fi
 
-  # Go back to root
-  cd ..
+  if [ -x "$folder/symlinks.sh" ]; then
+    echo "Executing $folder's symlinks..."
+    ( cd "$folder" && ./symlinks.sh )
+  fi
 done
 
 echo "rmyz dotfiles loaded successfully"

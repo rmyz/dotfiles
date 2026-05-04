@@ -1,37 +1,15 @@
-## Machine specific settings
-arch=$(machine)
-
-if [ "$arch" = "x86_64h" ]; then
-# Intel CPU specific settings
-    source "/usr/local/opt/spaceship/spaceship.zsh"
-else
-# Mx CPU specific settings
-    source "/opt/homebrew/opt/spaceship/spaceship.zsh"
-fi
-
-## Warp terminal config
-if [[ $TERM_PROGRAM == "WarpTerminal"  ]]; then
-  SPACESHIP_PROMPT_ASYNC=FALSE
-
-  spaceship remove char
-fi
-
 ## Enable automatic directory change
 setopt autocd
 
+## Enable shell completions (gh, git-town, k9s, minikube, etc.)
+autoload -U compinit && compinit
+
 ## FNM integration
 eval "$(fnm env --use-on-cd --shell zsh)"
-autoload -U add-zsh-hook
-_fnm_autoload_hook () {
-    if [[ -f .node-version || -f .nvmrc ]]; then
-    fnm use --silent-if-unchanged
-fi
-}
-add-zsh-hook chpwd _fnm_autoload_hook \
-    && _fnm_autoload_hook
 
 ## Aliases
-alias c="open $1 -a \"Visual Studio Code\""
+alias vscode="open $1 -a \"Visual Studio Code\""
+alias c="open $1 -a Cursor"
 alias grm="git rebase main"
 alias grc="git rebase --continue"
 alias gtc="git town continue"
@@ -42,8 +20,8 @@ alias myip="curl ipinfo.io"
 ## Generic settings
 export DISABLE_OPENCOLLECTIVE=1
 export ADBLOCK=1
-export SPACESHIP_TIME_SHOW=true
-export HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)
+export HOMEBREW_GITHUB_API_TOKEN="$(command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/null)"
+export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 
 ## PATHs
 export GOPATH=$HOME/go
@@ -53,7 +31,13 @@ export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 export PATH="$HOME/.pyenv/shims:$PATH"
 export GPG_TTY=$(tty)
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
+export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
 
-source $HOME/.zshrc.work.sh
+## Zsh plugins
+source $(brew --prefix)/share/zsh-fast-syntax-highlighting/F-Sy-H.plugin.zsh
 
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+## Work-specific settings (local-only, optional)
+[ -f "$HOME/.zshrc.work.sh" ] && source "$HOME/.zshrc.work.sh"
+
+## Starship prompt
+eval "$(starship init zsh)"

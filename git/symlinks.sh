@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Removes existing .gitconfig
-rm $HOME/.gitconfig
-
-ln -s $PWD/.gitconfig $HOME/.gitconfig
+ln -sfn "$PWD/.gitconfig" "$HOME/.gitconfig"

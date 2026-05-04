@@ -8,9 +8,11 @@ defaults write ~/Library/Preferences/ByHost/com.apple.controlcenter.plist Batter
 defaults write com.apple.dock show-recents -bool false
 # Remove hot corners
 defaults write com.apple.dock wvous-br-corner -int 1
-# Removes Spotlight hotkey Command+Space
-/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist -c \
-  "Add :AppleSymbolicHotKeys:64:enabled bool false"
+# Removes Spotlight hotkey Command+Space (idempotent: Set if exists, otherwise Add)
+/usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist \
+  -c "Set :AppleSymbolicHotKeys:64:enabled false" 2>/dev/null \
+  || /usr/libexec/PlistBuddy ~/Library/Preferences/com.apple.symbolichotkeys.plist \
+       -c "Add :AppleSymbolicHotKeys:64:enabled bool false"
 # Disable startup sound
 sudo nvram StartupMute=%01
 

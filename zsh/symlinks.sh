@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-# Removes existing .zshrc
-rm $HOME/.zshrc
+ln -sfn "$PWD/.zshrc" "$HOME/.zshrc"
 
-ln -s $PWD/.zshrc $HOME/.zshrc
-ln -s $PWD/.zshrc.work.sh $HOME/.zshrc.work.sh
+# .zshrc.work.sh is gitignored and local-only; symlink only if it exists.
+if [ -f "$PWD/.zshrc.work.sh" ]; then
+  ln -sfn "$PWD/.zshrc.work.sh" "$HOME/.zshrc.work.sh"
+fi
