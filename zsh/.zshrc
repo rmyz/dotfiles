@@ -34,7 +34,7 @@ export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
 
 ## Zsh plugins
-source $(brew --prefix)/share/zsh-fast-syntax-highlighting/F-Sy-H.plugin.zsh
+source $(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
 
 ## Work-specific settings (local-only, optional)
 [ -f "$HOME/.zshrc.work.sh" ] && source "$HOME/.zshrc.work.sh"
