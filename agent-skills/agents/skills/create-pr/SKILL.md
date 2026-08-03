@@ -26,12 +26,15 @@ Check:
 - Are we on the right branch, or do we need to create one?
 - Are there uncommitted changes?
 
-**Auto-detect fork**: From `git remote -v`, identify the remote that is NOT `origin` and points to `github.com/<user>/kibana`. Extract:
+**Remote layout**: `origin` **is** the fork; `upstream` is `elastic/kibana`.
 
-- **Fork remote name** (e.g., `shaharfork`, `myfork`)
-- **Fork owner** (e.g., `shahargl`) from the URL `github.com/<owner>/kibana`
+```bash
+# Fork owner, read from origin (e.g. "rmyz").
+git remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+$#\1#'
+```
 
-If multiple non-origin remotes exist, ask the user which one is their fork.
+Do **not** infer the fork from "the remote that is not `origin`" — this clone
+carries ~25 other contributors' remotes, and that rule picks one at random.
 
 ### Step 2: Branch (if needed)
 
@@ -90,16 +93,16 @@ Or type "none" if there's no related issue.
 
 ### Step 5: Push to Fork
 
-Push the branch to the user's fork (use the auto-detected fork remote name):
+Push the branch to the fork, which is `origin`:
 
 ```bash
-git push -u <FORK_REMOTE> HEAD
+git push -u origin HEAD
 ```
 
 If the branch already exists on the remote and needs updating:
 
 ```bash
-git push <FORK_REMOTE> HEAD --force-with-lease
+git push origin HEAD --force-with-lease
 ```
 
 ### Step 6: Create the PR
@@ -108,14 +111,14 @@ Read labels and repos from workspace rules (team config). Create the PR:
 
 ```bash
 gh pr create \
-  --repo <PR_TARGET_REPO> \
+  --repo elastic/kibana \
   --head <FORK_OWNER>:<branch-name> \
-  --base <PR_BASE_BRANCH> \
+  --base main \
+  --draft \
   --title "<type>: <description>" \
   --label "<TEAM_LABEL>" \
   --label "<RELEASE_NOTE_LABEL>" \
   --label "<BACKPORT_LABEL>" \
-  --label "<VERSION_LABELS...>" \
   --body "$(cat <<'EOF'
 ## Summary
 
@@ -127,51 +130,27 @@ EOF
 )"
 ```
 
-**Values from team config** (workspace rules):
+**Values from team config**, which lives in the workspace rules (`AGENTS.md`) --
+read them from there, not from a skill: `TEAM_LABEL`, `RELEASE_NOTE_LABEL`,
+`BACKPORT_LABEL`, `ISSUE_REPO`.
 
-- `TEAM_LABEL` -- e.g., `Team:One Workflow`
-- `PR_TARGET_REPO` -- e.g., `elastic/kibana`
-- `PR_BASE_BRANCH` -- e.g., `main`
-- `RELEASE_NOTE_LABEL` -- e.g., `release_note:skip`
-- `BACKPORT_LABEL` -- e.g., `backport:version`
-- `VERSION_LABELS` -- e.g., `v9.3.0`, `v9.4.0`
-- `ISSUE_REPO` -- e.g., `elastic/security-team`
+Never pass a version label -- those are added manually.
 
-**If team config is missing**: Ask the user for each value you need before proceeding:
+**If the workspace rules carry no team config**: ask the user for each value you
+need before proceeding:
 
 - "What is your team's label? (e.g., Team:One Workflow)"
 - "Which repo should I target for the PR? (e.g., elastic/kibana)"
 - "Which repo should I use for issues? (e.g., elastic/security-team)"
-- "What version labels should I add? (e.g., v9.3.0, v9.4.0)"
 
 **Values auto-detected**:
 
-- `FORK_REMOTE` -- from `git remote -v` (non-origin remote). If no non-origin remote found, ask: "What is your fork remote name?"
-- `FORK_OWNER` -- extracted from fork remote URL. If unclear, ask: "What is your GitHub username?"
+- `FORK_OWNER` -- extracted from the `origin` URL (see Step 1). Currently `rmyz`.
 
-**Notes on `--head`**: Must be `<FORK_OWNER>:<branch-name>` (the GitHub username, not the remote name).
+**Notes on `--head`**: Must be `<FORK_OWNER>:<branch-name>` (the GitHub username, not the remote name) -- e.g. `rmyz:fix/my-branch`.
 
-### Step 7: Generate Architecture Diagram (optional)
-
-**Requires Excalidraw MCP server.** If not available, skip this step entirely.
-
-To check: try calling the Excalidraw `read_me` tool. If it returns "Tool not found", skip to Step 8.
-
-If Excalidraw MCP is available, generate a before/after architecture diagram using the `pr-architecture-diagram` skill:
-
-1. Call Excalidraw `read_me` (once per conversation)
-2. Create a before/after diagram with `create_view` showing what changed
-3. Export to Excalidraw for an interactive link (`export_to_excalidraw`)
-4. Generate a static image (`GenerateImage`), compress it, upload to the fork repo branch
-5. Update the PR description to embed both the image and the interactive link:
-
-```markdown
-### Architecture
-
-![Architecture Diagram](github_raw_image_url)
-
-[View interactive diagram on Excalidraw](excalidraw_url)
-```
+**Notes on `--draft`**: PRs open as drafts. Mark ready with `gh pr ready <number>`
+once codeowner reviews are actually wanted.
 
 ### Step 8: Report Back
 
@@ -184,5 +163,5 @@ Share the PR URL with the user.
 - **Never commit secrets** (.env, credentials, keys)
 - **Always use `--force-with-lease`** instead of `--force` if force push is needed
 - **Always include `Closes` reference** when an issue exists
-- Fork remote and owner are **auto-detected** from `git remote -v`
+- **`origin` is the fork; `upstream` is `elastic/kibana`** -- never treat a non-origin remote as the fork
 - All team-specific values (labels, repos) come from **workspace rules** (team config)

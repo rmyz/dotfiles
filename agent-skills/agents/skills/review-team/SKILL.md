@@ -14,14 +14,14 @@ then consolidate findings into a single prioritized report.
 
 ## Reviewers
 
-| # | Name                  | Persona source                                            |
-|---|-----------------------|-----------------------------------------------------------|
-| 1 | Code Quality          | `~/.cursor/skills/branch-refactor-planner/SKILL.md`      |
-| 2 | Adversarial           | `~/.cursor/skills/review-team/reviewers/adversarial.md`   |
-| 3 | Architecture          | `~/.cursor/skills/review-team/reviewers/architecture.md`  |
-| 4 | Fresh Eyes            | `~/.cursor/skills/review-team/reviewers/fresh-eyes.md`    |
-| 5 | Product Flow          | `~/.cursor/skills/review-team/reviewers/product-flow.md`  |
-| 6 | Observability Expert  | `~/.cursor/skills/review-team/reviewers/observability-expert.md` |
+| #   | Name                 | Persona source                                                   |
+| --- | -------------------- | ---------------------------------------------------------------- |
+| 1   | Code Quality         | `~/.agents/skills/branch-refactor-planner/SKILL.md`              |
+| 2   | Adversarial          | `~/.agents/skills/review-team/reviewers/adversarial.md`          |
+| 3   | Architecture         | `~/.agents/skills/review-team/reviewers/architecture.md`         |
+| 4   | Fresh Eyes           | `~/.agents/skills/review-team/reviewers/fresh-eyes.md`           |
+| 5   | Product Flow         | `~/.agents/skills/review-team/reviewers/product-flow.md`         |
+| 6   | Observability Expert | `~/.agents/skills/review-team/reviewers/observability-expert.md` |
 
 ## Mode detection
 
@@ -34,7 +34,8 @@ then consolidate findings into a single prioritized report.
 
 **Code review mode:**
 
-1. `git merge-base HEAD main` (fall back to `master` if needed)
+1. `git fetch upstream main`, then `git merge-base HEAD upstream/main` for the base.
+   Never use `origin/main` -- `origin` is the fork and its `main` is not kept in sync.
 2. `git diff --name-only <base>...HEAD` for the file list
 3. `git diff <base>...HEAD` for the full diff
 4. Read every changed file in full -- not just diff hunks
@@ -67,12 +68,13 @@ For every reviewer, construct the Task prompt by combining:
 Task parameters (same for all 6):
 
 ```
-subagent_type: "generalPurpose"
-readonly: true
+subagent_type: "general"
 ```
 
 Do **not** set the `model` parameter -- let every reviewer inherit the
-current session's model.
+current session's model. Do **not** pass `readonly`; it is not a valid
+parameter. Reviewers are read-only by instruction: end every prompt with
+"Report findings only. Do not edit, create, or delete any file."
 
 #### Output format to include in every Task prompt
 
@@ -117,20 +119,25 @@ Present the final report as:
 # Review Team Report
 
 ## Critical
+
 - `file:line` [Reviewer1, Reviewer2] -- merged finding
 
 ## Important
+
 - `file:line` [Reviewer1] -- finding
 
 ## Minor
+
 - `file:line` [Reviewer1] -- finding
 
 ## Reviewer-Specific Notes
 
 ### Observability Expert
+
 - domain-specific observations
 
 ### Architecture
+
 - system-level observations
 ```
 
@@ -142,7 +149,7 @@ For all findings marked as **Critical** or **Important** in the consolidated rep
 2. Reference the file and line(s) to fix, and summarize the core issue.
 3. For merged findings, indicate all relevant reviewers.
 4. Order first by severity (**Critical** before **Important**), then by file path, then by line number.
-5. If there are no **Critical** or **Important** findings, state:  
+5. If there are no **Critical** or **Important** findings, state:
    `No blocking findings. Minor feedback may be addressed at your discretion.`
 
 Example:
