@@ -7,26 +7,23 @@
       "enabled": true
     },
     "Semantic code search MCP": {
-      "command": "bash",
-      "args": ["/Users/sromeu/semantic-code-search-mcp.sh"],
+      "type": "local",
+      "command": ["bash", "/Users/sromeu/semantic-code-search-mcp.sh"],
       "enabled": false
     },
     "Chrome DevTools MCP": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "type": "local",
+      "command": ["npx", "-y", "chrome-devtools-mcp@latest"],
       "enabled": false
     },
     "Playwright MCP": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+      "type": "local",
+      "command": ["npx", "@playwright/mcp@latest"],
       "enabled": false
     }
   },
-  "tui": {
-    "show_thinking": false,
-    "tool_details_visibility": false
-  },
   "lsp": true,
+  "formatter": true,
   "plugin": [
     "oh-my-openagent@latest",
     "opencode-claude-auth@latest",
