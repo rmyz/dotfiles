@@ -102,7 +102,8 @@ than redundant.
 
 ## Step 7 — review-team
 
-Load the `review-team` skill: six reviewers in parallel, then one consolidated report.
+Load the `review-team` skill in **branch review mode**: six reviewers in parallel,
+then one consolidated report. Reviewers report only on lines this branch changed.
 
 This runs *after* Step 5 by design. Six agents reading a diff that does not typecheck
 spends the most expensive step in this workflow on the cheapest class of bug.
