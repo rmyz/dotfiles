@@ -9,7 +9,7 @@ fi
 
 # Run installers and symlinks in a fixed order.
 # brew runs first because everything else may depend on its packages.
-folders=(brew mac git zsh starship-prompt agent-skills raycast)
+folders=(brew mac git zsh starship-prompt skills opencode raycast)
 
 for folder in "${folders[@]}"; do
   if [ ! -d "$folder" ]; then

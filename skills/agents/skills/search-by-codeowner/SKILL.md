@@ -19,7 +19,7 @@ The script lives with the skill (outside the Kibana repo). Because Node resolves
 cd ~/Code/kibana && \
   NODE_PATH=~/Code/kibana/node_modules \
   node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.dotfiles/agent-skills/agents/skills/search-by-codeowner/search_by_codeowner.ts \
+  ~/.agents/skills/search-by-codeowner/search_by_codeowner.ts \
   --team <team> --search <term>
 ```
 
@@ -35,7 +35,7 @@ Output: JSON with `team`, `searchTerm`, `totalScannedFiles`, `totalMatchingFiles
 cd ~/Code/kibana && \
   NODE_PATH=~/Code/kibana/node_modules \
   node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.dotfiles/agent-skills/agents/skills/search-by-codeowner/search_by_codeowner.ts \
+  ~/.agents/skills/search-by-codeowner/search_by_codeowner.ts \
   --team @elastic/kibana-core --search "useEffect"
 ```
 

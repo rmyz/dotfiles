@@ -34,7 +34,8 @@ cd zsh  && ./symlinks.sh    # set up zsh symlinks only
 | `mac/`              | macOS `defaults` tweaks: scroll direction, dock, hot corners, Spotlight hotkey, startup sound.   |
 | `zsh/`              | `.zshrc`, `.hushlogin`, optional local-only `.zshrc.work.sh`.                                    |
 | `starship-prompt/`  | Starship prompt config symlinked to `~/.config/starship.toml`.                                   |
-| `agent-skills/`     | AI agent skills symlinked to `~/.agents`.                                                        |
+| `skills/`           | AI agent skills symlinked to `~/.agents`.                                                        |
+| `opencode/`         | OpenCode config: `AGENTS.md`, `opencode.json`, `tui.json`, `plugins/`, `rules/`, and `~/.omo/omo.jsonc`. |
 | `raycast/`          | Raycast config backup (manual import via the Raycast app).                                       |
 
 ## Conventions

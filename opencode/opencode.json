@@ -1,0 +1,37 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "codegraph": {
+      "type": "local",
+      "command": ["codegraph", "serve", "--mcp"],
+      "enabled": true
+    },
+    "Semantic code search MCP": {
+      "command": "bash",
+      "args": ["/Users/sromeu/semantic-code-search-mcp.sh"],
+      "enabled": false
+    },
+    "Chrome DevTools MCP": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "enabled": false
+    },
+    "Playwright MCP": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "enabled": false
+    }
+  },
+  "tui": {
+    "show_thinking": false,
+    "tool_details_visibility": false
+  },
+  "lsp": true,
+  "plugin": [
+    "oh-my-openagent@latest",
+    "opencode-claude-auth@latest",
+    "@warp-dot-dev/opencode-warp",
+    "@dietrichgebert/ponytail@latest",
+    "opencode-rules@latest"
+  ]
+}

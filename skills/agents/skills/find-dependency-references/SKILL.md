@@ -19,7 +19,7 @@ The script lives with the skill (outside the Kibana repo). Because Node resolves
 cd ~/Code/kibana && \
   NODE_PATH=~/Code/kibana/node_modules \
   node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.dotfiles/agent-skills/agents/skills/find-dependency-references/find_dependency_references.ts \
+  ~/.agents/skills/find-dependency-references/find_dependency_references.ts \
   --dependency <name>
 ```
 
@@ -41,7 +41,7 @@ Output: JSON with:
 cd ~/Code/kibana && \
   NODE_PATH=~/Code/kibana/node_modules \
   node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.dotfiles/agent-skills/agents/skills/find-dependency-references/find_dependency_references.ts \
+  ~/.agents/skills/find-dependency-references/find_dependency_references.ts \
   --dependency enzyme
 ```
 
