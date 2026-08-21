@@ -29,9 +29,8 @@ Team: nightshift-context-and-research. Used when opening PRs and filing issues.
 
 - Team label: `Team:nightshift-context-and-research`
 - Issue repo and PR target repo: `elastic/kibana`; PR base branch: `main`
-- Release note label: `release_note:skip` — use `release_note:enhancement` or
-  `release_note:fix` for user-facing changes
-- Backport label: `backport:version`
+- Release note label: `release_note:skip` — always, the user can modify them if needed
+- Backport label: `backport:skip` — alway, the user can modify them if needed
 - Version labels: none. They are added manually — never pass a version label.
 - Commit types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
 - Public channel: [#nightshift-context-and-research](https://elastic.slack.com/archives/C0BDYNH8T52)

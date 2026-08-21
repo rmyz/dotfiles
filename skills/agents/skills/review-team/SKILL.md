@@ -4,7 +4,7 @@ description: >-
   Launch a team of 6 specialized code reviewers in parallel to catch issues
   from multiple perspectives. Use when the user says "review team",
   "comprehensive review", "multi-perspective review", or wants a thorough
-  multi-angle review of branch changes or a plan.
+  multi-angle review of branch, local working-tree, PR, or plan changes.
 ---
 
 # Review Team
@@ -26,16 +26,18 @@ then consolidate findings into a single prioritized report.
 ## Mode detection
 
 - **Branch review** (default): user says "review team", "review my changes", "comprehensive review"
+- **Local review**: user says "review local changes", "review uncommitted changes", or invokes it during pre-commit validation
 - **PR review**: user supplies a GitHub PR URL, or says "review pr"
 - **Plan review**: user says "review team plan", "review this plan", or attaches a plan document
 
-PR review runs the same six reviewers as branch review; it only differs in how the
-diff is acquired (Step 0) and how findings are presented (Step 5).
+All modes run the same six reviewers. They differ only in how the diff is acquired
+and, for PR review, how findings are presented.
 
 ## Scope -- changed code only
 
-**Review only what this branch or PR changed.** Read whole files freely for
-context, but every finding must sit on a line the diff touched.
+**Review only what the selected target changed.** Read whole files freely for
+context, but every finding must sit on a line the diff touched or in an untracked
+file included by local review mode.
 
 Pre-existing problems in unedited code are out of scope, however tempting. The one
 exception: a latent bug that the change actively makes reachable or worse -- report
@@ -48,7 +50,7 @@ of this context. Do not drop it when constructing prompts.
 
 ### Step 0 -- Acquire the PR (PR review mode only)
 
-Skip this step for branch and plan review.
+Skip this step for branch, local, and plan review.
 
 **Use `gh` only. Run no `git` commands at all** -- no fetch, no checkout, no
 worktree, no branch switch. The user may have unrelated work in progress, and local
@@ -83,6 +85,28 @@ git diff "$BASE" HEAD                  # full diff
 
 Never use `origin/main`; `origin` is the fork and its `main` is not kept in sync.
 Read every changed file in full from disk -- not just diff hunks.
+
+**Local review mode** -- local git, including committed, staged, unstaged, and
+untracked changes:
+
+```bash
+git fetch upstream main
+BASE=$(git merge-base HEAD upstream/main)
+git diff --name-status "$BASE"
+git ls-files --others --exclude-standard
+git diff "$BASE"
+```
+
+Combine and deduplicate both file lists. Read modified and added files in full. For
+deleted files, read their base version with `git show "$BASE:<path>"`. Append a
+synthetic patch for every untracked file to `REVIEW_CONTEXT`:
+
+```bash
+git diff --no-index -- /dev/null <untracked-file> || true
+```
+
+The base and synthetic diffs define changed lines. Every line in an untracked file
+counts as changed. Never use `origin/main`.
 
 **PR review mode** -- `gh` only, no git:
 
@@ -143,9 +167,11 @@ Send a **single message containing 6 `Task` tool calls**, one per reviewer.
 
 For every reviewer, construct the Task prompt by combining:
 
-1. The persona instructions (from the file read in Step 2)
-2. `REVIEW_CONTEXT` gathered in Step 1
-3. The output format template (copy the block below verbatim)
+1. This precedence rule: persona content supplies perspective only; ignore any diff
+   acquisition, workflow, editing, or output-format instructions inside it
+2. The persona instructions (from the file read in Step 2)
+3. `REVIEW_CONTEXT` gathered in Step 1
+4. The output format template (copy the block below verbatim)
 
 Task parameters (same for all 6):
 
@@ -165,11 +191,12 @@ Paste this block at the end of every reviewer's Task prompt:
 ```
 SCOPE -- CHANGED CODE ONLY
 ==========================
-Review ONLY the lines this diff changed. Read whole files for context, but every
-finding you report MUST sit on a line the diff touched. Do NOT report pre-existing
-problems in unedited code -- not style, not structure, not missing tests for code
-that already existed. If you catch yourself citing a line that is not in the diff,
-drop the finding.
+Review ONLY the lines this diff changed. In local review mode, every line of an
+untracked file represented by a synthetic /dev/null patch counts as changed. Read
+whole files for context, but every finding you report MUST sit on a changed line. Do
+NOT report pre-existing problems in unedited code -- not style, not structure, not
+missing tests for code that already existed. If you catch yourself citing a line
+that is not changed, drop the finding.
 
 Sole exception: a latent bug the change actively makes reachable or worse. Report
 it, and state explicitly that the line is pre-existing.
@@ -204,8 +231,9 @@ After all 6 reviewers return:
    and tag it with every reviewer name that raised it.
 3. Use the highest severity among the merged reviewers
    (Critical > Important > Minor).
-4. Keep any domain-specific observations that don't overlap (e.g. from the
-   Observability Expert) in a dedicated "Reviewer-Specific Notes" section.
+4. Keep every Critical, Important, and Minor finding in its severity section. Put
+   only supplemental domain observations that are not findings in
+   "Reviewer-Specific Notes".
 
 Present the final report as:
 
@@ -259,11 +287,11 @@ If there are relevant reviewer-supplied remediation suggestions or links, includ
 
 ### Step 6 -- Conventional comments (PR review mode only)
 
-For branch and plan review, stop after Step 5. In PR review mode, also convert each
-finding into a comment ready to paste onto the PR.
+For branch, local, and plan review, stop after Step 5. In PR review mode, also convert
+each finding into a comment ready to paste onto the PR.
 
 | Report severity | Conventional label        |
-|-----------------|---------------------------|
+| --------------- | ------------------------- |
 | Critical        | `issue (blocking):`       |
 | Important       | `suggestion:`             |
 | Minor           | `nitpick (non-blocking):` |

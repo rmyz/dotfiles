@@ -6,140 +6,380 @@ disable-model-invocation: true
 
 # Ship
 
-Takes one Kibana task from intake to a draft PR, stopping at three human gates.
-Orchestrates existing skills rather than duplicating them.
+Takes one Kibana task from investigation to a draft PR. The flow is:
+
+`Investigate -> Plan -> Implement -> Validate -> Draft PR`
+
+The user validates the plan and the completed work.
 
 ## Invariants
 
 - `origin` is the fork (`rmyz/kibana`); `upstream` is `elastic/kibana`.
-- Diff, branch, and rebase against `upstream/main`. **Never `origin/main`** — it is
-  thousands of commits stale and is never synced.
+- Diff, branch, and rebase against `upstream/main`. Never use `origin/main`.
 - Skills live in `~/.agents/skills/`. Ignore `~/.claude` and `~/.cursor`.
+- Run one shared Elasticsearch instance on port `9200` from the primary `main`
+  worktree. Never start Elasticsearch from a feature worktree.
+- Run one Kibana instance per active worktree. Allocate the lowest free port starting
+  at `5601`, then `5602`, `5603`, and so on.
+- Keep the draft PR below 500 changed lines when the work can be split coherently.
 
-## Human gates
+## Human stops
 
-| Gate | Placed after | Waits for |
-|---|---|---|
-| 1 | Plan validated by momus (Step 3) | Greenlight to implement |
-| 2 | Checks and Scout green (Step 6) | Confirmation the work is done |
-| 3 | review-team report (Step 7) | Which findings to address |
+| Stop       | Placed after               | Waits for                                |
+| ---------- | -------------------------- | ---------------------------------------- |
+| Gate 1     | Styled HTML plan           | Explicit approval to implement           |
+| Validation | All checks and review-team | Explicit approval to create the draft PR |
 
-At each gate: present the result, then **end the response**. Do not create todos, do
-not read further files, do not start the next step. Absence of objection is not
-approval.
+At either stop, present the result and end the response. Do not create todos, inspect
+more files, or start the next phase. Absence of objection is not approval.
 
-## Step 1 — Worktree
+## Step 1: Create the worktree
 
 ```bash
 git fetch upstream main
-wt switch --create <branch>
+wt switch --create <branch> --base upstream/main
 ```
 
 Branch naming: `fix/`, `feat/`, `perf/`, or `refactor/` plus a short description.
+Capture the new worktree path from Worktrunk's output. Use it as the tool working
+directory for every following command. At the start of every resumed phase, restore
+that working directory and recompute shell variables; shell state does not survive a
+human stop.
 
-`wt` runs `yarn kbn bootstrap` in the background (usually under 2 minutes). Steps 2–4
-can proceed while it runs, but **Step 5 fails with `TS Project map missing` until it
-finishes** — confirm via `wt config state logs` before any type check or test.
+`wt` starts `yarn kbn bootstrap` in the background. Investigation and planning may
+continue while it runs. Before starting Kibana, type checks, or tests, confirm the
+bootstrap hook completed successfully through `wt config state logs`.
 
-## Step 2 — Gather resources
-
-Ask once for whatever exists:
-
-- GitHub issue and prior related PR links
-- Slack threads
-- Screenshots, Figma URLs
-
-Read everything provided before planning. If nothing is provided, name what would
-have helped and proceed on the task description alone — do not block.
-
-## Step 3 — Plan, then stop
-
-1. Explore first. Name every file to be changed *before* writing the plan; prefer
-   `codegraph_explore` over a grep-and-read loop.
-2. Write the plan to `.omo/plans/<branch>.md`. It must state each file, the change
-   per file, and how that change gets verified.
-3. Validate it with momus, passing the file path as the **entire** prompt:
-   `task(subagent_type="momus", prompt=".omo/plans/<branch>.md")`
-4. Address what momus flags and revise the file.
-
-**GATE 1 — HARD STOP.** Present the plan plus momus's findings, then end the response.
-No todos. No source edits. Wait for an explicit greenlight.
-
-## Step 4 — Implement
-
-Work the entire plan checklist without pausing for confirmation between items. Stop
-only on a genuine blocker, or when every item is done.
-
-`lsp_diagnostics` must be clean on each changed file before moving to the next.
-
-## Step 5 — Mechanical checks
+The Worktrunk hook copies the ignored development config. Verify it instead of
+assuming the hook succeeded:
 
 ```bash
-node scripts/check.js --scope branch --base-ref upstream/main
+MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+test -f "$MAIN/config/kibana.dev.yml"
+cmp -s "$MAIN/config/kibana.dev.yml" config/kibana.dev.yml || \
+  cp "$MAIN/config/kibana.dev.yml" config/kibana.dev.yml
+cmp -s "$MAIN/config/kibana.dev.yml" config/kibana.dev.yml
 ```
 
-Covers type check, eslint, and jest for affected packages. Fix and re-run until clean.
+Treat a failed final comparison as a blocker.
 
-If any `kibana.jsonc` `owner` field changed, also run `node scripts/generate codeowners`
-and commit the result — otherwise Step 9 reports stale ownership.
+## Step 2: Investigate
 
-## Step 6 — Scout tests
+Ask once for any available GitHub issues, related PRs, Slack threads, screenshots, or
+Figma URLs. Read everything provided. If nothing exists, state what would have helped
+and continue from the task description.
 
-Only when the changed packages have them. Discovery: walk up from each changed file to
-the nearest `kibana.jsonc`, then look for `test/scout*/{ui,api}/playwright.config.ts`
-beneath that package root.
+Trace the affected flow end to end before proposing a solution. Prefer
+`codegraph_explore` over grep-and-read loops. Read existing tests and patterns. Name
+every expected file change and identify the smallest coherent implementation.
+
+Before Gate 1, resolve whether the PR will close an issue, address an issue without
+closing it, or have no issue. Also inspect affected Scout configs and state whether
+their required server settings are compatible with the shared development stack.
+
+Do not edit source files during investigation or planning.
+
+## Step 3: Create the HTML plan, then stop
+
+Write a standalone plan outside the repository:
 
 ```bash
-node scripts/scout start-server --arch stateful --domain classic
-node scripts/scout run-tests --arch stateful --domain classic --config <playwright.config.ts>
+BRANCH=$(git branch --show-current)
+PLAN_FILE="/tmp/ship-plan-${BRANCH//\//-}.html"
 ```
 
-Start the server once and keep it up across runs; do not reboot ES and Kibana per
-invocation. `scripts/check.js` does not run Scout, so this step is additive rather
-than redundant.
+The HTML must be polished, responsive, and self-contained. Use inline CSS, system
+fonts, clear cards, restrained color, status badges, and light/dark color schemes. Do
+not load external scripts, fonts, or styles.
 
-**GATE 2 — HARD STOP.** Report check and Scout results, then end the response.
+Include:
 
-## Step 7 — review-team
+- Task summary and current behavior
+- Proposed behavior, scope, and explicit non-goals
+- Architecture or request/data flow when relevant
+- Every file to change and the exact change per file
+- Verification per change, including targeted tests and Scout when applicable
+- Risks, assumptions, open questions, and rollback considerations
+- Estimated changed-line count and whether the work should be split before 500 lines
 
-Load the `review-team` skill in **branch review mode**: six reviewers in parallel,
-then one consolidated report. Reviewers report only on lines this branch changed.
+Open the plan with `open "$PLAN_FILE"`. If that fails, provide the absolute path.
 
-This runs *after* Step 5 by design. Six agents reading a diff that does not typecheck
-spends the most expensive step in this workflow on the cheapest class of bug.
+**GATE 1: HARD STOP.** Present the plan path and a one-sentence summary, then end the
+response. Wait for explicit approval.
 
-**GATE 3 — HARD STOP.** Present the consolidated report and action plan, then end the
-response. Wait for the user to choose which findings to address. Re-run Step 5 after
-applying any fixes.
+## Step 4: Start the shared development stack
 
-## Step 8 — Draft PR
+This is the first action after Gate 1 approval. The stack must be healthy before
+implementation starts.
 
-Load the `create-pr` skill for commit, push, and PR creation. The values that matter:
+Restore the feature worktree as the command working directory, then recompute state:
+
+```bash
+BRANCH=$(git branch --show-current)
+MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+```
+
+### Elasticsearch
+
+Assume Elasticsearch is already running. Check for a listener on `9200`, then verify
+its response includes the `X-Elastic-Product: Elasticsearch` header. A `401` still
+counts as a running Elasticsearch instance. If another service owns `9200`, stop
+instead of starting another process on the same port.
+
+For an existing Elasticsearch listener, inspect its PID and current working directory
+with `lsof`. It must run from `$MAIN` or `$MAIN/.es`; otherwise stop and report the
+unexpected process instead of treating it as the shared instance.
+
+```bash
+curl -sS -D - -o /dev/null http://127.0.0.1:9200 | \
+  grep -qi '^x-elastic-product: Elasticsearch'
+```
+
+Only when port `9200` has no listener, run this with `$MAIN` as the command working
+directory:
+
+```bash
+nohup wt step tether -C "$MAIN" -- fnm exec --using=.nvmrc \
+  yarn es snapshot --use-cached \
+  > /tmp/kibana-shared-es.log 2>&1 &
+echo $! > /tmp/kibana-shared-es.pid
+```
+
+Poll port `9200` until the Elasticsearch product header appears. On timeout, inspect
+`/tmp/kibana-shared-es.log`, terminate the recorded process tree, remove the stale PID
+file, and stop. Never start a second development Elasticsearch instance for another
+worktree.
+
+### Kibana
+
+Reuse the branch's stored `kibana-port` only when it serves Kibana and the listener's
+current working directory is inside this worktree. Otherwise, acquire an atomic
+`mkdir` lock at `/tmp/kibana-port-allocation.lock`, allocate the lowest unused port
+starting at `5601`, and start immediately. Store the lock owner's PID, recover a stale
+lock only when that PID no longer exists, and hold the lock until Kibana is ready.
+
+```bash
+WORKTREE=$(pwd -P)
+PORT=$(wt config state vars get kibana-port 2>/dev/null || true)
+KIBANA_RUNNING=false
+KIBANA_OWNED=false
+if [ -n "$PORT" ]; then
+  LISTENER_PID=$(lsof -tiTCP:"$PORT" -sTCP:LISTEN | command sed -n '1p')
+  LISTENER_CWD=$(lsof -a -p "$LISTENER_PID" -d cwd -Fn 2>/dev/null | \
+    command sed -n 's/^n//p')
+  case "$LISTENER_CWD" in
+    "$WORKTREE"|"$WORKTREE"/*)
+      KIBANA_OWNED=true
+      for _ in {1..60}; do
+        if curl -fsS -u elastic:changeme \
+          "http://127.0.0.1:$PORT/api/status" >/dev/null 2>&1; then
+          KIBANA_RUNNING=true
+          break
+        fi
+        sleep 2
+      done
+      ;;
+  esac
+fi
+if [ "$KIBANA_OWNED" = true ] && [ "$KIBANA_RUNNING" = false ]; then
+  OLD_KIBANA_PID=$(wt config state vars get kibana-pid 2>/dev/null || true)
+  kill "$OLD_KIBANA_PID" 2>/dev/null || true
+  wt config state vars clear kibana-port
+  wt config state vars clear kibana-pid
+  wt config state vars clear kibana-log
+  for _ in {1..30}; do
+    lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1 || break
+    sleep 1
+  done
+fi
+if [ "$KIBANA_RUNNING" = false ]; then
+  LOCK=/tmp/kibana-port-allocation.lock
+  while ! mkdir "$LOCK" 2>/dev/null; do
+    if [ -f "$LOCK/pid" ]; then
+      read -r LOCK_PID < "$LOCK/pid"
+      if ! kill -0 "$LOCK_PID" 2>/dev/null; then
+        rm -f "$LOCK/pid"
+        rmdir "$LOCK" 2>/dev/null || true
+        continue
+      fi
+    fi
+    sleep 1
+  done
+  printf '%s\n' "$$" > "$LOCK/pid"
+  release_port_lock() {
+    rm -f "$LOCK/pid"
+    rmdir "$LOCK" 2>/dev/null || true
+  }
+  trap release_port_lock EXIT INT TERM
+  PORT=5601
+  while lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; do
+    PORT=$((PORT + 1))
+  done
+  BRANCH_SAFE=${BRANCH//\//-}
+  KIBANA_LOG="/tmp/kibana-${BRANCH_SAFE}-${PORT}.log"
+  nohup wt step tether -- fnm exec --using=.nvmrc yarn start \
+    --port "$PORT" --no-base-path > "$KIBANA_LOG" 2>&1 &
+  KIBANA_PID=$!
+  wt config state vars set kibana-port="$PORT"
+  wt config state vars set kibana-pid="$KIBANA_PID"
+  wt config state vars set kibana-log="$KIBANA_LOG"
+  KIBANA_READY=false
+  for _ in {1..180}; do
+    if curl -fsS -u elastic:changeme \
+      "http://127.0.0.1:$PORT/api/status" >/dev/null 2>&1; then
+      KIBANA_READY=true
+      break
+    fi
+    sleep 2
+  done
+  if [ "$KIBANA_READY" = false ]; then
+    kill "$KIBANA_PID" 2>/dev/null || true
+    wt config state vars clear kibana-port
+    wt config state vars clear kibana-pid
+    wt config state vars clear kibana-log
+    exit 1
+  fi
+  release_port_lock
+  trap - EXIT INT TERM
+fi
+```
+
+On startup failure, inspect the stored log before retrying once. The trap releases the
+allocation lock on failure. Report the healthy URL, then continue directly to
+implementation.
+
+## Step 5: Implement
+
+Implement the approved plan without pausing between items. Stop only for a genuine
+blocker or a material deviation from the approved plan.
+
+Keep diagnostics clean as each file changes. Reuse existing helpers and patterns.
+Do not expand scope or add speculative abstractions.
+
+## Step 6: Validate, then stop
+
+Run validation as one phase with no intermediate human gate. Fix confirmed failures
+and rerun the affected checks until green.
+
+### Targeted tests
+
+Run every targeted unit, integration, API, and UI test named in the approved plan.
+Add the smallest test that proves new non-trivial behavior.
+
+### Mechanical checks
+
+```bash
+node scripts/check.js --scope=local
+```
+
+Use `local`, not `branch`, because changes are still uncommitted. If a
+`kibana.jsonc` owner changed, run `node scripts/generate codeowners` and keep the
+generated change.
+
+### Scout
+
+Discover Scout configs by walking from each changed file to its nearest
+`kibana.jsonc`, then checking that package for
+`test/scout*/{ui,api}/playwright.config.ts`.
+
+Reuse the already-running Kibana and shared Elasticsearch instance only when its
+server settings satisfy the test. Create `.scout/servers/local.json` with the current
+Kibana URL, Elasticsearch `9200`, `elastic`/`changeme` credentials, a trial license,
+and the absolute `.ftr/role_users.json` path. Then run only the local stateful classic
+target:
+
+```json
+{
+  "serverless": false,
+  "http2": false,
+  "uiam": false,
+  "isCloud": false,
+  "cloudUsersFilePath": "<absolute-worktree>/.ftr/role_users.json",
+  "license": "trial",
+  "hosts": {
+    "kibana": "http://127.0.0.1:<kibana-port>",
+    "elasticsearch": "http://127.0.0.1:9200"
+  },
+  "auth": { "username": "elastic", "password": "changeme" }
+}
+```
+
+Run:
+
+```bash
+node scripts/playwright test --config <playwright.config.ts> \
+  --project local --grep @local-stateful-classic
+```
+
+Do not run `node scripts/scout start-server` or `node scripts/scout run-tests`; both
+manage another local stack. If a Scout suite requires a custom server config that the
+development stack does not provide, validation is blocked. Do not start a second
+Elasticsearch instance or proceed to a PR. Resolve the profile conflict or get an
+explicit change to the single-Elasticsearch requirement.
+
+### Review team
+
+Load `review-team` in **local review mode** after tests and mechanical checks. It must
+review committed, staged, unstaged, and untracked changes against `upstream/main`.
+
+Verify each finding. Fix confirmed Critical and Important findings, reject unsupported
+ones, and rerun affected tests plus `node scripts/check.js --scope=local`. Minor
+findings remain optional unless they expose a correctness risk.
+
+### PR size
+
+Measure total additions and deletions against the merge base, including untracked
+files. If the result exceeds 500 changed lines, document whether it can be split into
+smaller coherent PRs. Split it when possible; keep it together only when separation
+would harm correctness or reviewability.
+
+**VALIDATION STOP.** Present:
+
+- Changed files and a brief description of each
+- Test, mechanical check, and Scout results
+- Review-team findings, fixes, and any intentionally deferred items
+- Changed-line count and split assessment
+- Running Kibana URL
+- Any remaining risks or blockers
+
+End the response and wait for explicit approval to create the draft PR.
+
+## Step 7: Create the draft PR
+
+After approval, load `create-pr` for commit, push, and PR creation. Use the issue and
+close/address decision resolved before Gate 1 so this phase introduces no new human
+stop. Inspect status, diff, and recent commits first. Stage only intended files.
 
 ```bash
 git push -u origin HEAD
 gh pr create --repo elastic/kibana --head rmyz:<branch> --base main --draft
 ```
 
-Labels come from `team-config`. The PR opens as a draft and stays one.
+Labels come from `team-config`. The PR opens as a draft and stays a draft.
 
-## Step 9 — Route reviewers
+## Step 8: Route reviewers
 
 ```bash
 co <PR_NUMBER>
 ```
 
-`co` groups files by owner *set* (comma-joined), so a team spanning two sets appears
-twice — **merge by team** before drafting messages.
+`co` groups files by owner set. Merge duplicate entries by team before drafting one
+message per team:
 
-Draft one message per team:
+> Hey team, I need your codeowners review in this PR. It <one-line description> and
+> modifies these files: <that team's files>
 
-> Hey team, I need your codeowners review in this PR, it \<one-line description\> and
-> modifies the following files: \<that team's files\>
-
-**Do not post these.** Hand them to the user, who sends them after
+Do not post these messages. Give them to the user for use after
 `gh pr ready <PR_NUMBER>`.
 
 ## Teardown
 
-Once the PR merges: `wt remove <branch>`.
+After the PR merges or the worktree is abandoned, clear its stored variables and
+remove it with process reaping. `wt step tether` and `--reap` stop Kibana's entire
+process tree. Verify its port closes. Do not stop the shared Elasticsearch instance
+while another worktree may use it.
+
+```bash
+wt config state vars clear --all --branch=<branch>
+wt remove --reap --foreground <branch>
+```

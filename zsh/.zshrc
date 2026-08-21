@@ -11,6 +11,7 @@ eval "$(fnm env --use-on-cd --shell zsh)"
 ## Aliases
 alias vscode="open $1 -a \"Visual Studio Code\""
 alias c="open $1 -a Cursor"
+alias oc="opencode"
 alias grm="git rebase main"
 alias grc="git rebase --continue"
 alias gtc="git town continue"
@@ -35,8 +36,8 @@ export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
 export PATH="/Users/sromeu/.local/bin:$PATH"
 ## Zsh plugins
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-
 ## Work-specific settings (local-only, optional)
 [ -f "$HOME/.zshrc.work.sh" ] && source "$HOME/.zshrc.work.sh"
 

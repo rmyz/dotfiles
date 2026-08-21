@@ -45,6 +45,16 @@
       "skillFolderHash": "",
       "installedAt": "2026-03-26T11:00:23.967Z",
       "updatedAt": "2026-03-26T11:00:23.967Z"
+    },
+    "conventional-comments": {
+      "source": "milistu/agent-skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/milistu/agent-skills.git",
+      "skillPath": "skills/conventional-comments/SKILL.md",
+      "skillFolderHash": "9b3ff777552a514f8446cad0c229404b5e7b409b",
+      "pluginName": "developer-workflow",
+      "installedAt": "2026-08-18T09:45:08.394Z",
+      "updatedAt": "2026-08-18T09:45:08.394Z"
     }
   },
   "dismissed": {
