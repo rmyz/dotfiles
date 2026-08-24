@@ -346,16 +346,23 @@ End the response and wait for explicit approval to create the draft PR.
 
 ## Step 7: Create the draft PR
 
-After approval, load `create-pr` for commit, push, and PR creation. Use the issue and
-close/address decision resolved before Gate 1 so this phase introduces no new human
-stop. Inspect status, diff, and recent commits first. Stage only intended files.
+After approval, load `create-pr` for commit and PR metadata, but use the ordering below
+instead of its default push step. Use the issue and close/address decision resolved
+before Gate 1 so this phase introduces no new human stop. Inspect status, diff, and
+recent commits first. Stage only intended files. After creating the feature commit,
+merge the latest `upstream/main` before pushing. Resolve any conflicts and rerun
+affected validation before continuing.
 
 ```bash
+git fetch upstream main
+git merge --no-edit upstream/main
 git push -u origin HEAD
-gh pr create --repo elastic/kibana --head rmyz:<branch> --base main --draft
+PR_URL=$(gh pr create --repo elastic/kibana --head rmyz:<branch> --base main --draft)
+gh pr comment "$PR_URL" --body '/ci'
 ```
 
-Labels come from `team-config`. The PR opens as a draft and stays a draft.
+Labels come from `team-config`. The PR opens as a draft and stays a draft. The `/ci`
+comment triggers CI after creation.
 
 ## Step 8: Route reviewers
 
