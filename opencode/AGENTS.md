@@ -23,6 +23,24 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 
 Skills live in `~/.agents/skills/`. Ignore `~/.claude` and `~/.cursor` paths.
 
+## Local services
+
+- Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
+  `--eis` and the license config.
+- Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
+  prefix before `/app/`, for example `/kpd/app`.
+- Before starting Elasticsearch, Kibana, or Storybook, create a new Herdr panel
+  in the current tab and run the server inside it. The user can close the panel
+  and read the logs there.
+
+## PR descriptions
+
+- Do not add a Testing section listing jest or FTR files that CI already runs.
+  Write a short "How to test" guide instead, so reviewers can validate locally.
+- Link only `elastic/kibana` issues in the PR description. For private-repo
+  issues, use the Development field on the issue side; public users will not
+  see the link.
+
 ## Team config (elastic/kibana)
 
 Team: nightshift-context-and-research. Used when opening PRs and filing issues.

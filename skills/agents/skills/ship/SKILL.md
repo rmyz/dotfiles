@@ -1,6 +1,6 @@
 ---
 name: ship
-description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana with per-team review requests prepared. Invoke explicitly with an issue link, PR number, or task description.
+description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana. Invoke explicitly with an issue link, PR number, or task description.
 disable-model-invocation: true
 ---
 
@@ -21,7 +21,12 @@ The user validates the plan and the completed work.
   worktree. Never start Elasticsearch from a feature worktree.
 - Run one Kibana instance per active worktree. Allocate the lowest free port starting
   at `5601`, then `5602`, `5603`, and so on.
+- Run one Storybook instance per active worktree, only when the approved plan includes
+  Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
+  `9003`, and so on.
 - Keep the draft PR below 500 changed lines when the work can be split coherently.
+- Ship ends at a created draft PR. Reviewer handoff and worktree teardown are separate
+  skills: `handoff` and `teardown`.
 
 ## Human stops
 
@@ -248,6 +253,36 @@ On startup failure, inspect the stored log before retrying once. The trap releas
 allocation lock on failure. Report the healthy URL, then continue directly to
 implementation.
 
+### Storybook
+
+Skip this section unless the approved plan includes Storybook file changes. Resolve
+the correct alias first: read `src/dev/storybook/aliases.ts` and match each changed
+file path against the alias target directories, keeping the deepest match. If no
+alias matches, stop and ask which alias to use instead of guessing.
+
+Reuse the branch's stored `storybook-port` only when it serves Storybook and the
+listener's current working directory is inside this worktree. Otherwise, take the
+same atomic `mkdir` lock at `/tmp/kibana-port-allocation.lock`, allocate the lowest
+unused port starting at `9001`, and start Storybook:
+
+```bash
+nohup yarn storybook "<alias>" > "$STORYBOOK_LOG" 2>&1 &
+```
+
+`scripts/storybook` hardcodes port `9001` and has no `--port` flag. When the
+allocated port is not `9001`, set it by passing Storybook's own flag through a direct
+invocation of the resolved config directory instead of the wrapper:
+
+```bash
+nohup fnm exec --using=.nvmrc yarn \
+  storybook dev --config-dir "<alias-target-dir>" -p "$PORT" \
+  > "$STORYBOOK_LOG" 2>&1 &
+```
+
+Store `storybook-port`, `storybook-pid`, and `storybook-log` in Worktrunk state the
+same way as Kibana. Poll the port until it answers HTTP 200; on timeout inspect the
+log, kill the stored PID, clear the variables, and stop. Release the lock once ready.
+
 ## Step 5: Implement
 
 Implement the approved plan without pausing between items. Stop only for a genuine
@@ -317,14 +352,24 @@ development stack does not provide, validation is blocked. Do not start a second
 Elasticsearch instance or proceed to a PR. Resolve the profile conflict or get an
 explicit change to the single-Elasticsearch requirement.
 
+### Acceptance criteria
+
+Before review-team, list every acceptance criterion from the issue or task
+description. Verify each one against the implementation, using the running stack when
+the criterion needs manual or UI confirmation. A criterion is done only when you can
+point at the code and the observed behavior that fulfills it. If any criterion fails
+or cannot be verified, fix it before continuing; do not hand unmet criteria to
+review-team.
+
 ### Review team
 
 Load `review-team` in **local review mode** after tests and mechanical checks. It must
 review committed, staged, unstaged, and untracked changes against `upstream/main`.
 
-Verify each finding. Fix confirmed Critical and Important findings, reject unsupported
-ones, and rerun affected tests plus `node scripts/check.js --scope=local`. Minor
-findings remain optional unless they expose a correctness risk.
+Never apply the outcome automatically. Present every finding with severity, file, and
+a one-line suggested fix, plus a proposed action plan ordering what to fix. Let the
+user choose which findings matter; apply only their selection. After applying fixes,
+rerun affected tests plus `node scripts/check.js --scope=local`.
 
 ### PR size
 
@@ -362,31 +407,7 @@ gh pr comment "$PR_URL" --body '/ci'
 ```
 
 Labels come from `team-config`. The PR opens as a draft and stays a draft. The `/ci`
-comment triggers CI after creation.
+comment triggers CI after creation. Ship ends here.
 
-## Step 8: Route reviewers
-
-```bash
-co <PR_NUMBER>
-```
-
-`co` groups files by owner set. Merge duplicate entries by team before drafting one
-message per team:
-
-> Hey team, I need your codeowners review in this PR. It <one-line description> and
-> modifies these files: <that team's files>
-
-Do not post these messages. Give them to the user for use after
-`gh pr ready <PR_NUMBER>`.
-
-## Teardown
-
-After the PR merges or the worktree is abandoned, clear its stored variables and
-remove it with process reaping. `wt step tether` and `--reap` stop Kibana's entire
-process tree. Verify its port closes. Do not stop the shared Elasticsearch instance
-while another worktree may use it.
-
-```bash
-wt config state vars clear --all --branch=<branch>
-wt remove --reap --foreground <branch>
-```
+Afterwards, run `handoff` when the user wants the per-team review-request messages,
+and `teardown` once the PR merges or the worktree is abandoned.
