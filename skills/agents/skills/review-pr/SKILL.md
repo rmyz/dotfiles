@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review a Kibana pull request while preparing its local Worktrunk, Elasticsearch, and Kibana environment for manual testing. Invoke explicitly with a GitHub PR URL.
+description: Review a Kibana pull request while preparing its local worktree, Elasticsearch, and Kibana environment for manual testing. Orca worktrees by default, Worktrunk fallback. Invoke explicitly with a GitHub PR URL.
 disable-model-invocation: true
 ---
 
@@ -32,29 +32,43 @@ At Review Team Step 3, use one `multi_tool_use.parallel` call with seven `task` 
 - The six reviewer tasks required by Review Team, unchanged.
 - One `general` environment task using the prompt below.
 
-Replace `<PR_URL>` with the supplied URL:
+Replace `<PR_URL>` and `<number>` with the supplied PR:
 
 ```text
 Prepare the local Kibana test environment for <PR_URL>. Do not review or edit code and
 do not post anything to GitHub.
 
-Work from /Users/sromeu/Code/kibana. Run `wt switch "<PR_URL>" --no-cd` to check out
-the PR in its own Worktrunk worktree. Do not use `--create`; Worktrunk resolves PR and
-fork refs. Capture the resulting worktree path. If that PR already has a worktree,
-reuse it.
+Inside Orca (default; load the orca-cli skill and resolve the ORCA executable): reuse
+the existing worktree already on the PR branch when one exists. Otherwise create one
+and check the PR out into it:
 
-Use the PR worktree as the working directory for every following command. Wait for
-the Worktrunk bootstrap hook and verify it succeeded with `wt config state logs`.
+  ORCA repo list --json
+  ORCA worktree create --repo id:<kibanaRepoId> --name pr-<number> \
+    --no-parent --setup skip --json
+  gh pr checkout <number>   (run in the new worktree path)
+  ORCA worktree set --worktree path:<worktree-path> \
+    --display-name "PR #<number>: <short title>" --json
 
-Load the `ship` skill and follow only its "Step 4: Start the shared development stack"
-instructions. Reuse the shared Elasticsearch on port 9200 when healthy. Start it from
-the primary main worktree only when absent. Reuse or start a Kibana process owned by
-the PR worktree on the lowest free port starting at 5601. Do not run Ship's other
-steps, tests, validation, or teardown.
+Then start bootstrap in an Orca terminal (fnm exec --using=.nvmrc yarn kbn bootstrap),
+wait for it with `terminal wait --for exit`, and confirm success with `terminal read`.
+
+Outside Orca (fallback): from /Users/sromeu/Code/kibana run `wt switch "<PR_URL>"
+--no-cd` (no `--create`; Worktrunk resolves PR and fork refs), capture the worktree
+path, and wait for the bootstrap hook via `wt config state logs`.
+
+Use the PR worktree as the working directory for every following command. Run
+init-worktree's "Verify the development config" block.
+
+Load the ship skill and follow only its "Ensure the development stack" section, for
+Elasticsearch and Kibana; skip Storybook. Reuse the shared Elasticsearch on port 9200
+when healthy. Start it from the primary main worktree only when absent. Reuse or
+start a Kibana owned by the PR worktree on the lowest free port starting at 5601. Do
+not run ship's other steps, tests, validation, or teardown.
 
 Return the PR branch and commit, worktree path, bootstrap status, Elasticsearch
-status, Kibana URL, and startup log path. Report failures with the command and log
-that failed. Leave successful processes and the worktree running for manual testing.
+status, Kibana URL, and where the logs live (Orca terminal titles, or /tmp paths
+outside Orca). Report failures with the command and output that failed. Leave
+successful processes and the worktree running for manual testing.
 ```
 
 The environment task is isolated from review acquisition. Its local git operations
@@ -74,7 +88,7 @@ Append:
 - Branch and commit: <branch> at <sha>
 - Elasticsearch: <status and URL>
 - Kibana: <status and URL>
-- Startup log: <absolute path>
+- Logs: <Orca terminal titles, or /tmp paths outside Orca>
 ```
 
 If environment setup failed, still return the complete review report and put the

@@ -55,6 +55,33 @@
       "pluginName": "developer-workflow",
       "installedAt": "2026-08-18T09:45:08.394Z",
       "updatedAt": "2026-08-18T09:45:08.394Z"
+    },
+    "orchestration": {
+      "source": "stablyai/orca",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/stablyai/orca.git",
+      "skillPath": "skills/orchestration/SKILL.md",
+      "skillFolderHash": "4199ec6988801dd491631706cba62631b4bed8fb",
+      "installedAt": "2026-08-28T07:33:44.671Z",
+      "updatedAt": "2026-09-03T07:19:48.046Z"
+    },
+    "computer-use": {
+      "source": "stablyai/orca",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/stablyai/orca.git",
+      "skillPath": "skills/computer-use/SKILL.md",
+      "skillFolderHash": "f0561c41d1f709a953684aef5d5368f8c58d269f",
+      "installedAt": "2026-08-28T07:34:15.648Z",
+      "updatedAt": "2026-09-03T07:19:59.586Z"
+    },
+    "orca-cli": {
+      "source": "stablyai/orca",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/stablyai/orca.git",
+      "skillPath": "skills/orca-cli/SKILL.md",
+      "skillFolderHash": "cdf89459f89dddf347ee2759ff884c369051f06a",
+      "installedAt": "2026-08-28T07:36:00.213Z",
+      "updatedAt": "2026-09-03T07:21:09.135Z"
     }
   },
   "dismissed": {

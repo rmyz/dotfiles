@@ -34,7 +34,7 @@ export PATH="$HOME/.pyenv/shims:$PATH"
 export GPG_TTY=$(tty)
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
-export PATH="/Users/sromeu/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 ## Zsh plugins
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $(brew --prefix)/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh

@@ -37,16 +37,24 @@ const processCommands = async (pids) => {
 
   let output;
   try {
-    output = await run("ps", ["-p", pids.join(","), "-o", "pid=,command="]);
+    output = await run("ps", [
+      "-p",
+      pids.join(","),
+      "-o",
+      "pid=,ppid=,command=",
+    ]);
   } catch {
     return new Map();
   }
   return new Map(
     output
       .split("\n")
-      .map((line) => line.match(/^\s*(\d+)\s+(.+)$/))
+      .map((line) => line.match(/^\s*(\d+)\s+(\d+)\s+(.+)$/))
       .filter(Boolean)
-      .map((match) => [Number.parseInt(match[1], 10), match[2]]),
+      .map((match) => [
+        Number.parseInt(match[1], 10),
+        { ppid: Number.parseInt(match[2], 10), command: match[3] },
+      ]),
   );
 };
 
@@ -91,16 +99,21 @@ export const detectServices = async () => {
   }
 
   const commands = await processCommands([...new Set(listeners.values())]);
+  const isKibana = (pid) =>
+    commands.get(pid)?.command.toLowerCase().includes("scripts/kibana") ??
+    false;
+  const kibanaPids = new Set([...listeners.values()].filter(isKibana));
   const services = [];
 
   for (const [port, pid] of listeners) {
-    const command = commands.get(pid)?.toLowerCase() ?? "";
+    const command = commands.get(pid)?.command.toLowerCase() ?? "";
     let name;
 
     if (port === 9200 && command.includes("elasticsearch")) name = "ES";
-    else if (port >= 5601 && port < 5700 && command.includes("/scripts/kibana"))
+    else if (port >= 5601 && port < 5700 && isKibana(pid)) {
+      if (kibanaPids.has(commands.get(pid).ppid)) continue;
       name = "Kibana";
-    else if (port >= 9000 && port < 9100 && command.includes("storybook"))
+    } else if (port >= 9000 && port < 9100 && command.includes("storybook"))
       name = "Storybook";
     else continue;
 

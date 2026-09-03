@@ -19,19 +19,15 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 - The clone also carries many other contributors' remotes. Never infer the fork as
   "the remote that is not `origin`".
 
-## Skills
-
-Skills live in `~/.agents/skills/`. Ignore `~/.claude` and `~/.cursor` paths.
-
 ## Local services
 
 - Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
   `--eis` and the license config.
 - Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
   prefix before `/app/`, for example `/kpd/app`.
-- Before starting Elasticsearch, Kibana, or Storybook, create a new Herdr panel
-  in the current tab and run the server inside it. The user can close the panel
-  and read the logs there.
+- Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
+  terminal (`orca terminal create`). Outside Orca, fall back to a new Herdr panel in
+  the current tab. Either way the user can read the logs there.
 
 ## PR descriptions
 

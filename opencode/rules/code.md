@@ -2,7 +2,11 @@
 
 Apply these rules whenever writing or editing code.
 
-- Almost never add code comments. Add one only when there is an explicit, critical reason to do it.
+- Never add code comments. A comment means the code is not clear; simplify the code instead.
+- No defensive code on trusted internal paths: no try/catch, existence checks, or fallbacks that the surrounding code does not need.
+- Never cast to `any` (or `as unknown as`) to silence a type error; fix the type.
+- Prefer early returns over nested conditionals.
+- Match the surrounding file's style and reuse its helpers instead of introducing parallel patterns.
 - Keep PRs below 500 changed lines. If a PR exceeds 500 lines, assess whether it can be split into smaller coherent changes. Keep it together only when the large refactor or feature cannot be split without harming reviewability or correctness.
 - After any iteration that changes files, end the response with a brief summary naming each changed file and what changed.
 
