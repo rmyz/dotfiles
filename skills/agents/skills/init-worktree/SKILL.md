@@ -37,7 +37,7 @@ runs:
 
 ```text
 ORCA terminal create --worktree id:<worktree.id> --title bootstrap \
-  --command "fnm exec --using=.nvmrc yarn kbn bootstrap" --json
+  --command "kbnb" --json
 ```
 
 Anything that needs built packages (Kibana, type checks, tests) must first confirm
@@ -77,7 +77,7 @@ wt switch --create <branch> --base upstream/main
 ```
 
 Capture the new worktree path from Worktrunk's output and use it as the tool working
-directory. `wt` starts `yarn kbn bootstrap` in the background; confirm it completed
+directory. `wt` starts `pnpm kbn bootstrap` in the background; confirm it completed
 through `wt config state logs` before anything that needs built packages.
 
 ## Index with CodeGraph

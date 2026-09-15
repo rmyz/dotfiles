@@ -140,7 +140,7 @@ listener on `9200` only when an authenticated `elastic:changeme` request answers
 the `X-Elastic-Product: Elasticsearch` header and its process runs from `$MAIN` or
 `$MAIN/.es`; any other process on `9200` is reported as a blocker. Only when the
 port is free does it run the launch command from `$MAIN` and poll until the product
-header appears. The `es` alias expands to `yarn es snapshot --license trial --eis`;
+header appears. The `es` alias expands to `pnpm es snapshot --license trial --eis`;
 running it through `zsh -ic` picks up the alias and the fnm node version exactly like
 a manual terminal.
 
@@ -168,7 +168,7 @@ Otherwise `scripts/launch-server.sh` takes the atomic `mkdir` lock at
 `/tmp/kibana-port-allocation.lock`, allocates the lowest unused port starting at
 `5601`, runs the launch command with `$PORT` exported, polls the health command until
 ready, prints the port, and releases the lock. The `kbn` alias expands to
-`yarn start --eis`.
+`pnpm start --eis`.
 
 ```bash
 HEALTH='curl -fsSL -o /dev/null -u elastic:changeme "http://localhost:$PORT/api/status"'
@@ -198,7 +198,7 @@ command invokes the resolved config directory directly instead of the wrapper:
 STORYBOOK_HEALTH='curl -fsS "http://localhost:$PORT"'
 PORT=$("$SHIP_SCRIPTS/launch-server.sh" 9001 300 "$STORYBOOK_HEALTH" \
   'ORCA terminal create --worktree path:'"$WORKTREE"' --title "storybook:$PORT" \
-    --command "fnm exec --using=.nvmrc yarn storybook dev --config-dir <alias-target-dir> -p $PORT" --json')
+    --command "pnpm storybook dev --config-dir <alias-target-dir> -p $PORT" --json')
 ```
 
 ### Outside Orca
@@ -211,7 +211,7 @@ The same scripts run with these substitutions:
 ```bash
 'nohup wt step tether -- zsh -ic "es --use-cached" > /tmp/kibana-shared-es.log 2>&1 &'
 'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "/tmp/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
-'nohup fnm exec --using=.nvmrc yarn storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "/tmp/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
+'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "/tmp/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
 ```
 
 - Server state lives in Worktrunk: read stored ports with `wt config state vars get

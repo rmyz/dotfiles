@@ -49,7 +49,7 @@ and check the PR out into it:
   ORCA worktree set --worktree path:<worktree-path> \
     --display-name "PR #<number>: <short title>" --json
 
-Then start bootstrap in an Orca terminal (fnm exec --using=.nvmrc yarn kbn bootstrap),
+Then start bootstrap in an Orca terminal (`kbnb`),
 wait for it with `terminal wait --for exit`, and confirm success with `terminal read`.
 
 Outside Orca (fallback): from /Users/sromeu/Code/kibana run `wt switch "<PR_URL>"

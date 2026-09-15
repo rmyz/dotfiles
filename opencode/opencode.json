@@ -28,7 +28,6 @@
   "instructions": ["~/.config/opencode/rules/*.md"],
   "plugin": [
     "opencode-with-claude@latest",
-    // "@warp-dot-dev/opencode-warp",
     "@dietrichgebert/ponytail@latest"
   ],
   "provider": {
