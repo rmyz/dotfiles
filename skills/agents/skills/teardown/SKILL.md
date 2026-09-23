@@ -60,3 +60,10 @@ resolves, the worktree is Orca-managed. Otherwise use the Worktrunk fallback.
    Elasticsearch instance while another worktree may use it. When Elasticsearch was
    started from inside the removed worktree (its `.es/` directory lives there),
    stopping the worktree's processes stops it too, so report that.
+
+3. Clean up branch-specific artifacts under `~/Code/oc-generated`:
+   Replace `/` in the branch name with `-` for `<branch-safe>`.
+   ```bash
+   rm -f "$HOME/Code/oc-generated/plans/ship-plan-<branch-safe>.md"
+   rm -f "$HOME/Code/oc-generated/demo/qa-<branch-safe>"*.webm
+   ```

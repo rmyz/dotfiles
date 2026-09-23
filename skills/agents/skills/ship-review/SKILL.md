@@ -1,12 +1,12 @@
 ---
 name: ship-review
-description: Ship phase 3. In a fresh session, verify acceptance criteria with recorded QA and run the cross-model review, stop for validation approval, then run tests, mechanical checks, and Scout once and create the draft PR. Needs branch, worktree path, and plan file from the implement phase.
+description: Ship phase 3. In a fresh session, verify acceptance criteria, apply confirmed cross-model review fixes, run checks, and create a draft PR without approval stops. Record a demo after PR creation when useful. Needs branch, worktree path, and plan file from the implement phase.
 disable-model-invocation: true
 ---
 
 # Ship: review
 
-Phase 3 of `ship`. The invariants, stops, and session rules in
+Phase 3 of `ship`. The invariants and session rules in
 `~/.agents/skills/ship/SKILL.md` apply; read that file first.
 
 ## First actions
@@ -25,11 +25,8 @@ prior conversation. In order:
 
 ## Validate
 
-Run validation as one phase with no intermediate human gate. Fix confirmed failures
-and rerun the affected checks until green. Tests and mechanical checks do not run
-here; they run exactly once after the validation stop, when review fixes are already
-in. Validation before the stop is behavior and review: acceptance criteria, recorded
-QA, and the cross-model review.
+Fix confirmed failures and rerun affected checks until green. Complete behavior QA,
+review, and checks before creating the draft PR. Stop only for a blocker.
 
 ### Acceptance criteria and QA
 
@@ -39,65 +36,41 @@ when you can point at the code and the observed behavior that fulfills it. If an
 criterion fails or cannot be verified, fix it before continuing; do not hand unmet
 criteria to the reviews.
 
-Run the behavior QA in a subagent so browser snapshots stay out of this session.
-Brief it with the plan summary, the acceptance criteria, the Kibana URL, and the
-`elastic`/`changeme` credentials. The subagent decides how the change is actually
-used:
-
-- **UI surface**: test it in the running Kibana with `agent-browser`, covering the
-  relevant edge cases (cancel/confirm, empty states). Record the whole pass:
-  `agent-browser record start ~/Downloads/qa-<branch>.webm` before the first
-  interaction, `agent-browser record stop` after the last. Verify the real effect
-  (network, saved objects) when it applies, not just the visual layer.
-- **No UI surface**: skip the browser and the video; QA it the way it is used (hit
-  the endpoint, run the command, check logs and relevant tests).
-
-The subagent reports what it tested, what passed or failed, and the absolute video
-path. Present that path at the validation stop so the user can watch it before their
-own manual pass.
+For UI changes, run behavior QA through a `build` subagent using `agent-browser`.
+Brief it with the acceptance criteria, Kibana URL, and credentials. Verify the
+happy path, relevant edge cases, and backend effects. For non-UI changes, use the
+endpoint or command directly. Record what passed and what failed. Do not record a
+demo before creating the PR.
 
 ### Cross-model review
 
-After QA, load `~/.agents/skills/cross-review/SKILL.md` and follow
-it over the change set. It runs three reviewers on different model families with the
-technical and product rubrics, then synthesizes findings into act-on, consider,
+Load `~/.agents/skills/cross-review/SKILL.md` and follow it over the change set.
+It runs four reviewers on different model families with the technical and product
+rubrics, then synthesizes findings into act-on, consider,
 noted, and dismissed buckets weighted by cross-model agreement. Give it the plan file
 path for the intent.
 
 <!-- Alternative: load `review-team` in local review mode here in place of
 cross-review; everything below applies unchanged. -->
 
-Never apply the outcome automatically. Present the synthesized buckets with a
-proposed action plan ordering what to fix. Let the user choose which findings matter
-at the validation stop; the chosen fixes are applied after approval.
+Verify each finding against the code. Fix confirmed correctness, security, and
+maintainability issues that block a PR and fit the task. Record which findings you
+fixed, which you did not fix, and why. Stop if a finding needs a product decision
+that the task context cannot resolve.
+Do not change UI copy without approval of the exact proposed text.
 
 ### PR size
 
 Measure total additions and deletions against the merge base, including untracked
-files. Record whether the result respects the global 500-line rule and, if it does
-not, whether a coherent split exists. The assessment goes into the validation stop.
+files. If the change exceeds 500 lines, assess whether a coherent split is needed.
 
-**VALIDATION STOP.** Present:
+## Run checks
 
-- Changed files and a brief description of each
-- QA outcome and the video path when one was recorded
-- The synthesized review buckets and the proposed action plan
-- Changed-line count and split assessment
-- Running Kibana URL
-- Any remaining risks or blockers
-- A note that tests, mechanical checks, and Scout run once after approval
-
-End the response and wait for explicit approval to create the draft PR, together with
-the user's selection of review findings to apply.
-
-## After approval: fixes and the checks
-
-Apply the review findings the user selected. Then run the full check suite exactly
-once, in this order:
+Run the check suite after review fixes, before creating the draft PR:
 
 ### Targeted tests
 
-Run every targeted unit, integration, API, and UI test named in the approved plan.
+Run every targeted unit, integration, API, and UI test named in the plan.
 Add the smallest test that proves new non-trivial behavior.
 
 ### Mechanical checks
@@ -112,9 +85,9 @@ generated change.
 
 ### Scout
 
-Discover Scout configs by walking from each changed file to its nearest
-`kibana.jsonc`, then checking that package for
-`test/scout*/{ui,api}/playwright.config.ts`.
+Use the Scout config paths recorded in the plan. If the final diff changes a package
+not covered by the plan, check that package's
+`test/scout*/{ui,api}/playwright.config.ts` too.
 
 Reuse the already-running Kibana and shared Elasticsearch instance only when its
 server settings satisfy the test. Create `.scout/servers/local.json` with the current
@@ -152,8 +125,8 @@ Elasticsearch instance or proceed. Resolve the profile conflict or get an explic
 change to the single-Elasticsearch requirement.
 
 Fix confirmed failures from any of the three and rerun only the affected check. If a
-fix requires changes beyond the mechanical (new behavior, scope changes), stop and
-report instead of proceeding to the PR.
+fix changes behavior, rerun affected behavior QA. Stop only when a change requires
+a product decision or exceeds the task scope.
 
 ## Create the draft PR
 
@@ -162,26 +135,23 @@ untracked files: every hunk must belong to this task. Revert anything unrelated
 (debug prints, formatting churn, leftovers, generated files that should not ship) and
 report what was removed. Do not open a PR containing unrelated changes.
 
-Then load `create-pr` for commit and PR metadata, but use the ordering below
-instead of its default push step. Use the issue and close/address decision recorded in
-the plan so this phase introduces no new human stop. Inspect status, diff, and
-recent commits first. Stage only intended files. After creating the feature commit,
-merge the latest `upstream/main` before pushing. Resolve any conflicts and rerun
-affected validation before continuing.
+Then invoke the `create-pr` skill to perform the commit, upstream sync, push, draft PR
+creation, and `/ci` comment. Pass context from the plan and review session:
+- Issue key and close/address status from the plan file
+- Short manual testing steps observed during validation
 
-```bash
-git fetch upstream main
-git merge --no-edit upstream/main
-git push -u origin HEAD
-PR_URL=$(gh pr create --repo elastic/kibana --head rmyz:<branch> --base main --draft)
-gh pr comment "$PR_URL" --body '/ci'
-```
+If `create-pr` halts due to merge conflicts against `upstream/main`, resolve them, rerun
+affected checks or QA, and invoke `create-pr` again.
 
-Labels come from `team-config`. When a QA video was recorded, add a **Demo** section
-to the PR description with a clearly marked placeholder and repeat the video's
-absolute path in the final response, so the user can drag the file in manually. The
-PR opens as a draft and stays a draft. The `/ci` comment triggers CI after creation.
-Ship ends here.
+After the PR exists, record a short demo for visual changes. Use the verified
+happy path and save the video as
+`~/Code/oc-generated/demo/qa-<branch-safe>.webm`, with `/` in the branch name
+replaced by `-`. Give the user its path for manual drag-and-drop. If recording
+fails, report it with the PR URL.
+
+Report the PR URL, the review findings fixed, the findings left open and why, the
+check results, and any remaining considerations. Remind the user about private
+issue linking or demo upload when applicable. Ship ends here.
 
 Afterwards, run `handoff` when the user wants the per-team review-request messages,
 and `teardown` once the PR merges or the worktree is abandoned.

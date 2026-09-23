@@ -1,6 +1,27 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "permission": "allow",
+  "agent": {
+    "ship-plan": {
+      "mode": "primary",
+      "permission": {
+        "*": "allow",
+        "edit": {
+          "*": "deny",
+          "*/oc-generated/plans/*.md": "allow"
+        }
+      }
+    },
+    "plan": {
+      "disable": true
+    },
+    "build": {
+      "mode": "all",
+      "model": "github-copilot/gemini-3.8-flash",
+      "variant": "medium",
+      "permission": "allow"
+    }
+  },
   "mcp": {
     "codegraph": {
       "type": "local",

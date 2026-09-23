@@ -11,6 +11,24 @@ Storybook; server startup belongs to the phase that needs it.
 
 Branch naming: `fix/`, `feat/`, `perf/`, or `refactor/` plus a short description.
 
+## Update the primary worktree
+
+Fetch `upstream/main` before creating the worktree. Fast-forward the primary `main`
+checkout only when it is on `main`, has no tracked or untracked changes, and has not
+diverged. Otherwise leave it unchanged and continue from the fetched remote branch.
+
+```bash
+MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+git -C "$MAIN" fetch upstream main
+
+if test "$(git -C "$MAIN" branch --show-current)" = main && \
+  test -z "$(git -C "$MAIN" status --porcelain)" && \
+  git -C "$MAIN" merge-base --is-ancestor HEAD upstream/main
+then
+  git -C "$MAIN" merge --ff-only upstream/main
+fi
+```
+
 ## Create the worktree (inside Orca, default)
 
 Before the first Orca command, load the `orca-cli` skill, resolve the `ORCA`
@@ -22,11 +40,22 @@ json`: the newest session whose `directory` equals the current working directory
 not create a second OpenCode session for the task.
 
 ```text
-git fetch upstream main
 ORCA repo list --json
 ORCA worktree create --repo id:<kibanaRepoId> --name <branch> \
   --base-branch upstream/main --no-parent --setup skip --json
 ```
+
+If `worktree create` returns `runtime_unavailable`, treat the result as unknown.
+Do not retry the create command. The runtime can create the worktree before it drops
+the response. Check the result with:
+
+```text
+ORCA worktree list --repo id:<kibanaRepoId> --json
+```
+
+Continue when exactly one worktree has the requested `displayName`. Use its `id` and
+`path`. Report the original error when there is no match. Stop and ask which worktree
+to use when there is more than one match.
 
 Capture the full `worktree.id` (`<repoId>::<worktreePath>`) and the worktree path
 from the JSON. Use the path as the working directory for every following command, and
@@ -37,7 +66,7 @@ runs:
 
 ```text
 ORCA terminal create --worktree id:<worktree.id> --title bootstrap \
-  --command "kbnb" --json
+  --command "kbnb; exit \$?" --json
 ```
 
 Anything that needs built packages (Kibana, type checks, tests) must first confirm
@@ -72,7 +101,6 @@ before the plan phase starts.
 ## Create the worktree (outside Orca, fallback)
 
 ```bash
-git fetch upstream main
 wt switch --create <branch> --base upstream/main
 ```
 
@@ -82,13 +110,34 @@ through `wt config state logs` before anything that needs built packages.
 
 ## Index with CodeGraph
 
-Start indexing in the background so `codegraph_explore` answers from this worktree's
-own files. `codegraph init` aborts when its parent process exits, so keep a
-background shell alive as its parent:
+Reuse the primary worktree's index when it is complete and compatible with the
+installed CodeGraph version. Copy only the SQLite database through `.backup`; never
+copy or link daemon state, sockets, locks, or WAL files. Then sync the snapshot with
+this worktree. Fall back to a full index when the primary worktree has no usable
+index.
+
+Snapshot the primary index without waiting for a sync. Run the worktree sync in the
+background so `codegraph_explore` becomes available without blocking provisioning.
+CodeGraph aborts when its parent process exits, so keep a background shell alive as
+its parent:
 
 ```bash
-nohup sh -c 'codegraph init -y "$(pwd -P)"' \
-  > "/tmp/codegraph-init-$(git branch --show-current | tr / -).log" 2>&1 &
+WORKTREE=$(pwd -P)
+MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+BRANCH_SAFE=$(git branch --show-current | tr / -)
+mkdir -p "$HOME/Code/oc-generated/files"
+LOG="$HOME/Code/oc-generated/files/codegraph-$BRANCH_SAFE.log"
+
+if codegraph status "$MAIN" --json 2>/dev/null | \
+  jq -e '.initialized and .index.state == "complete" and (.index.reindexRecommended | not)' >/dev/null
+then
+  mkdir -p "$WORKTREE/.codegraph"
+  sqlite3 "$MAIN/.codegraph/codegraph.db" \
+    ".backup \"$WORKTREE/.codegraph/codegraph.db\""
+  nohup sh -c 'codegraph sync "$1"' sh "$WORKTREE" >> "$LOG" 2>&1 &
+else
+  nohup sh -c 'codegraph init -y "$1"' sh "$WORKTREE" > "$LOG" 2>&1 &
+fi
 ```
 
 ## Verify the development config

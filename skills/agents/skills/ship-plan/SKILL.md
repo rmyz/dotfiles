@@ -1,6 +1,6 @@
 ---
 name: ship-plan
-description: Ship phase 1. Investigate a Kibana task in an existing feature worktree, produce the HTML plan, stop for plan approval, then spawn the implement session. Requires init-worktree to have run first.
+description: Ship phase 1. Investigate a Kibana task in an existing feature worktree, write a short Markdown handoff, then spawn the implement session. Requires init-worktree to have run first.
 disable-model-invocation: true
 ---
 
@@ -20,50 +20,34 @@ files during investigation or planning.
 
 ## Investigate
 
-Ask once for any available GitHub issues, related PRs, Slack threads, screenshots, or
-Figma URLs. Read everything provided. If nothing exists, state what would have helped
-and continue from the task description.
+Treat any task description, issue link, PR, Slack thread, screenshot, or Figma URL in
+the invocation prompt as complete intake. Read everything provided and do not ask for
+more context. Ask once for task context only when the user invoked `ship` without any
+task input. If no other material exists, state what would have helped and continue
+from the task description.
 
 Trace the affected flow end to end before proposing a solution. Prefer
 `codegraph_explore` over grep-and-read loops. Read existing tests and patterns. Name
-every expected file change and identify the smallest coherent implementation.
+every expected file change and identify the smallest coherent implementation. Also
+inspect affected Scout configs and state whether their required server settings are
+compatible with the shared development stack. Record their exact config paths, or
+state that no Scout config applies.
 
-Before plan approval, resolve whether the PR will close an issue, address an issue
-without closing it, or have no issue. Also inspect affected Scout configs and state
-whether their required server settings are compatible with the shared development
-stack.
-
-## Create the HTML plan, then stop
+## Write the implementation handoff
 
 Write a standalone plan outside the repository:
 
 ```bash
 BRANCH=$(git branch --show-current)
-PLAN_FILE="/tmp/ship-plan-${BRANCH//\//-}.html"
+mkdir -p "$HOME/Code/oc-generated/plans"
+PLAN_FILE="$HOME/Code/oc-generated/plans/ship-plan-${BRANCH//\//-}.md"
 ```
 
-The HTML must be polished, responsive, and self-contained. Use inline CSS, system
-fonts, clear cards, restrained color, status badges, and light/dark color schemes. Do
-not load external scripts, fonts, or styles.
-
-Include:
-
-- Task summary and current behavior
-- The linked issue and whether the PR closes it, addresses it, or has none
-- Proposed behavior, scope, and explicit non-goals
-- Architecture or request/data flow when relevant
-- Every file to change and the exact change per file
-- Verification per change, including targeted tests and Scout when applicable
-- Risks, assumptions, open questions, and rollback considerations
-- Estimated changed-line count and whether the work should be split before 500 lines
-
-Open the plan with `open "$PLAN_FILE"`. If that fails, provide the absolute path.
-
-**PLAN APPROVAL: HARD STOP.** Present the plan path and a one-sentence summary, then
-end the response. Wait for explicit approval.
-
-## After approval
+Keep it short and readable by the next session. Include the task and acceptance
+criteria, the linked issue and whether the PR closes or addresses it (or has none),
+the relevant flow, expected file changes, targeted checks, Scout config paths and
+compatibility, and any known risks or open questions. Resolve decisions from the
+task context. Stop only when a missing answer blocks implementation.
 
 Spawn the `[IMPLEMENT]` session following ship's "Spawning the next phase" procedure,
-with payload branch, worktree path, and plan file path. Then end; this session is
-done.
+with payload branch, worktree path, and plan file path. Then end this session.

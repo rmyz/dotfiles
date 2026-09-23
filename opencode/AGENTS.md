@@ -11,6 +11,16 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 
 <!-- CODEGRAPH_END -->
 
+## Agent roles
+
+- Use `ship-plan` for `/ship` planning and its Markdown handoff.
+- Use `build` for code inspection, CodeGraph queries, commands, edits, and tests.
+- `ship-plan` delegates routine I/O to `build` and does not modify source or
+  configuration files. It may write the Markdown handoff.
+- State whether a delegated `build` task is inspection-only or may edit files.
+- Use one writing worker per worktree. Read-only workers may run in parallel.
+- Subagents return concise results to the parent agent.
+
 ## Kibana remotes
 
 - `origin` is the fork (`rmyz/kibana`); `upstream` is `elastic/kibana`.
@@ -28,14 +38,6 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 - Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
   terminal (`orca terminal create`). Outside Orca, fall back to a new Herdr panel in
   the current tab. Either way the user can read the logs there.
-
-## PR descriptions
-
-- Do not add a Testing section listing jest or FTR files that CI already runs.
-  Write a short "How to test" guide instead, so reviewers can validate locally.
-- Link only `elastic/kibana` issues in the PR description. For private-repo
-  issues, use the Development field on the issue side; public users will not
-  see the link.
 
 ## Team config (elastic/kibana)
 

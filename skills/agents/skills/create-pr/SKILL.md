@@ -1,167 +1,137 @@
 ---
 name: create-pr
-description: Create a pull request from the user's fork. Handles branch creation, committing, pushing, and PR creation with proper close references. Uses team config from workspace rules. Use when the user asks to create a PR, open a pull request, submit changes, or push a branch.
+description: Publish a branch as a draft PR on elastic/kibana. Handles commit, sync with upstream/main, push to origin, draft PR creation with team labels, and /ci trigger. Uses team config from workspace rules. Use when the user asks to create a PR, open a pull request, or submit changes.
 ---
 
-# Create Pull Request
+# Create PR
 
-Creates PRs from the user's fork, following the team's workflow conventions. Team-specific values (labels, repos) are read from workspace rules. Fork is auto-detected from git remotes.
+Publishes the current branch as a draft pull request on `elastic/kibana` from the user's fork (`origin`). Reads team labels and defaults from `AGENTS.md`.
 
-## Instructions
+## Workflow
 
-### Step 1: Understand Current State
+### 1. Preconditions and Fork Detection
 
-Run these in parallel to assess the situation:
+Run these checks:
 
 ```bash
 git branch --show-current
-git status
-git diff --stat
-git log --oneline -5
-git remote -v
-```
-
-Check:
-
-- Are we on the right branch, or do we need to create one?
-- Are there uncommitted changes?
-
-**Remote layout**: `origin` **is** the fork; `upstream` is `elastic/kibana`.
-
-```bash
-# Fork owner, read from origin (e.g. "rmyz").
+git status --short
 git remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+$#\1#'
 ```
 
-Do **not** infer the fork from "the remote that is not `origin`" — this clone
-carries ~25 other contributors' remotes, and that rule picks one at random.
+- If on `main`, stop. Ask for the target branch name or create it before continuing.
+- Fork username is `FORK_OWNER`, extracted from `origin` (e.g. `rmyz`). Never treat non-`origin` remotes as the fork.
+- Never push branches or create branches on `upstream` (`elastic/kibana`).
+- Always push branches to the user's fork `origin` (`rmyz/kibana`), and create the PR pointing toward `elastic/kibana:main`.
+- Target repository is always `elastic/kibana`; base branch is `main`.
 
-### Step 2: Branch (if needed)
+### 2. Stage and Commit
 
-If on `main` or an unrelated branch, create a new feature branch:
+If the working tree has uncommitted changes:
 
-```bash
-git checkout -b <branch-name>
-```
-
-Branch naming conventions:
-
-- Bug fix: `fix/<short-description>`
-- Feature/enhancement: `feat/<short-description>`
-- Performance: `perf/<short-description>`
-- Refactor: `refactor/<short-description>`
-
-If already on the correct feature branch, skip this step.
-
-### Step 3: Stage and Commit
-
-Stage relevant changes and commit:
+- Stage only the files intended for this task.
+- Use caller context (e.g. from `/ship` plan) for the commit message. If missing in standalone mode, ask the user for commit type and summary.
+- Format:
 
 ```bash
-git add <relevant-files>
 git commit -m "$(cat <<'EOF'
-<type>: <short description>
+<type>: <short summary>
 
 <optional longer description>
-
-Closes <ISSUE_REPO>#<issue-number>
 EOF
 )"
 ```
 
-**Commit types**: Read from team config, or default to `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
+- Allowed types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`.
+- Do not commit secrets, untracked debris, or use `--no-verify`.
+- Only add `Closes #<id>` or `Addresses #<id>` to the commit body when the issue belongs to `elastic/kibana`. Never mention private repository issues in public commits.
 
-**Important**:
+### 3. Sync Upstream and Push
 
-- Do NOT use `--no-verify` unless the user explicitly asks
-- Do NOT commit `.env`, credentials, or unrelated files
-- Use a HEREDOC for the commit message to handle multi-line properly
-- Include `Closes <ISSUE_REPO>#<issue>` in the commit body if an issue number is known
-- Read **ISSUE_REPO** from workspace rules (team config). Example: `elastic/security-team`
+Always sync with `upstream/main` before pushing:
 
-### Step 4: Determine the Issue Number
-
-The `Closes` reference links the PR to an issue so it auto-closes on merge.
-
-**If known from conversation context**: Use it directly.
-**If not known**: Ask the user:
-
-```
-What issue should this PR close? (e.g., <ISSUE_REPO>#12345)
-Or type "none" if there's no related issue.
+```bash
+git fetch upstream main
+git merge --no-edit upstream/main
 ```
 
-### Step 5: Push to Fork
-
-Push the branch to the fork, which is `origin`:
+- If conflicts occur, stop immediately. Report the conflicting files so validation can be re-run after resolving them.
+- Push only to the user's fork (`origin`): `git push -u origin HEAD`. Never push to `upstream`.
 
 ```bash
 git push -u origin HEAD
 ```
 
-If the branch already exists on the remote and needs updating:
+Use `git push origin HEAD --force-with-lease` when updating an existing remote branch. Never force push to `main`.
+
+### 4. PR Metadata and Body
+
+Read team labels from `AGENTS.md` (`TEAM_LABEL`, `RELEASE_NOTE_LABEL`, `BACKPORT_LABEL`). Never pass a version label.
+
+#### PR Title Rules
+
+- Format: `[<Scope>] <What changed>`.
+- Example: `[Nightshift] Register investigation URL locator`.
+- Always use a short, useful title.
+- Never use conventional commit standards or prefixes such as `feat:`, `fix:`, or `refactor:`. Only use `[Scope] What changed`.
+
+#### PR Description Rules
+
+- Structure:
+  1. `## Summary`
+  2. `## Demo` (conditional: visual changes or recorded QA only)
+  3. `## How to test`
+- **Summary**:
+  - Put `Closes #<id>` or `Addresses #<id>` at the top of the section (elastic/kibana issues only).
+  - For private-repo issues: omit the reference from the PR body. Remind the user to connect it via the Development field on the private issue.
+  - Follow with 1-3 concise bullets explaining what changed and why, plus any non-obvious user impact or key implementation note.
+- **Demo**:
+  - Placed before `## How to test`.
+  - Include this section only for visual changes or when QA recordings exist. Omit it entirely otherwise.
+  - If multiple demo recordings were captured (e.g. happy path and failure scenario), list a clearly labeled drag-and-drop placeholder for each one.
+- **How to test**:
+  - Numbered list of manual steps so reviewers can reproduce and verify locally.
+  - End with an explicit verification check (`Verify <expected result>`).
+  - Never list Jest, FTR, or Scout test files that CI runs automatically.
+
+### 5. Create Draft PR and Trigger CI
+
+Always open PRs as draft. Always set `--head` to `"<FORK_OWNER>:<branch>"` (for example, `rmyz:<branch>`) pointing toward `--repo elastic/kibana --base main`. Never omit the `<FORK_OWNER>:` prefix. Always assign the PR to the author (`@me` or `<FORK_OWNER>`). Trigger CI immediately with `/ci`:
 
 ```bash
-git push origin HEAD --force-with-lease
-```
-
-### Step 6: Create the PR
-
-Read labels and repos from workspace rules (team config). Create the PR:
-
-```bash
-gh pr create \
+PR_URL=$(gh pr create \
   --repo elastic/kibana \
-  --head <FORK_OWNER>:<branch-name> \
+  --head "<FORK_OWNER>:<branch>" \
   --base main \
   --draft \
-  --title "<type>: <description>" \
+  --assignee "@me" \
+  --title "[<Scope>] <What changed>" \
   --label "<TEAM_LABEL>" \
   --label "<RELEASE_NOTE_LABEL>" \
   --label "<BACKPORT_LABEL>" \
   --body "$(cat <<'EOF'
 ## Summary
 
-Closes <ISSUE_REPO>#<issue-number>
+Closes #<id>
 
-<1-3 bullet points describing what changed and why>
+- <what changed and why>
+- <user impact or key detail, if helpful>
 
+## Demo
+
+<!-- Drag and drop video or screenshot here -->
+
+## How to test
+
+1. <action>
+2. <action>
+3. Verify <expected result>
 EOF
-)"
+)")
+
+gh pr comment "$PR_URL" --body '/ci'
 ```
 
-**Values from team config**, which lives in the workspace rules (`AGENTS.md`) --
-read them from there, not from a skill: `TEAM_LABEL`, `RELEASE_NOTE_LABEL`,
-`BACKPORT_LABEL`, `ISSUE_REPO`.
+Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no visual change or recorded artifact.
 
-Never pass a version label -- those are added manually.
-
-**If the workspace rules carry no team config**: ask the user for each value you
-need before proceeding:
-
-- "What is your team's label? (e.g., Team:One Workflow)"
-- "Which repo should I target for the PR? (e.g., elastic/kibana)"
-- "Which repo should I use for issues? (e.g., elastic/security-team)"
-
-**Values auto-detected**:
-
-- `FORK_OWNER` -- extracted from the `origin` URL (see Step 1). Currently `rmyz`.
-
-**Notes on `--head`**: Must be `<FORK_OWNER>:<branch-name>` (the GitHub username, not the remote name) -- e.g. `rmyz:fix/my-branch`.
-
-**Notes on `--draft`**: PRs open as drafts. Mark ready with `gh pr ready <number>`
-once codeowner reviews are actually wanted.
-
-### Step 8: Report Back
-
-Share the PR URL with the user.
-
-## Key Rules
-
-- **Never force push to main/master**
-- **Never skip hooks** unless user explicitly asks
-- **Never commit secrets** (.env, credentials, keys)
-- **Always use `--force-with-lease`** instead of `--force` if force push is needed
-- **Always include `Closes` reference** when an issue exists
-- **`origin` is the fork; `upstream` is `elastic/kibana`** -- never treat a non-origin remote as the fork
-- All team-specific values (labels, repos) come from **workspace rules** (team config)
+Output the created `PR_URL`.

@@ -1,6 +1,6 @@
 ---
 name: ship
-description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals by default, with a Worktrunk/Herdr fallback. Invoke explicitly with an issue link, PR number, or task description.
+description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana without approval stops, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals by default, with a Worktrunk/Herdr fallback. Invoke explicitly with an issue link, PR number, or task description.
 disable-model-invocation: true
 ---
 
@@ -53,8 +53,8 @@ ORCA worktree set --worktree path:<worktree-path> --workspace-status in-progress
 ORCA worktree set --worktree path:<worktree-path> --comment "<one-line phase status>" --json
 ```
 
-Set the comment at least after plan approval, after validation, and after the draft
-PR exists. Set `--workspace-status in-review` when the draft PR is created.
+Set the comment at least after planning, after validation, and after the draft PR
+exists. Set `--workspace-status in-review` when the draft PR is created.
 
 ## Invariants
 
@@ -65,22 +65,20 @@ they are not repeated here.
   worktree. Never start Elasticsearch from a feature worktree.
 - Run one Kibana instance per active worktree. Allocate the lowest free port starting
   at `5601`, then `5602`, `5603`, and so on.
-- Run one Storybook instance per active worktree, only when the approved plan includes
+- Run one Storybook instance per active worktree, only when the plan includes
   Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
   `9003`, and so on.
-- Ship ends at a created draft PR. Reviewer handoff and worktree teardown are separate
+- Ship ends after creating the draft PR, recording a visual demo when applicable,
+  and reporting the outcome. Reviewer handoff and worktree teardown are separate
   skills: `handoff` and `teardown`.
 
-## Human stops
+## Flow
 
-| Stop          | Phase       | Placed after               | Waits for                                |
-| ------------- | ----------- | -------------------------- | ---------------------------------------- |
-| Plan approval | `[PLAN]`    | Styled HTML plan           | Explicit approval to implement           |
-| Validation    | `[REVIEW]`  | All checks and reviews     | Explicit approval to create the draft PR |
-
-At either stop, present the result and end the response. Do not create todos, inspect
-more files, or start the next phase. Absence of objection is not approval. The
-`[IMPLEMENT]` phase has no stop; it spawns `[REVIEW]` directly.
+Planning, implementation, validation, and draft PR creation run without approval
+stops. Stop only for a genuine blocker, such as unclear requirements, an unmet
+acceptance criterion, a failing check that cannot be fixed, or a merge conflict
+that cannot be resolved. Report review changes and remaining considerations with
+the draft PR URL.
 
 ## Sessions
 
@@ -95,13 +93,15 @@ recall.
 
 ### Spawning the next phase
 
-`[PLAN]` spawns `[IMPLEMENT]` only after explicit plan approval. `[IMPLEMENT]` spawns
+`[PLAN]` spawns `[IMPLEMENT]` after writing the plan. `[IMPLEMENT]` spawns
 `[REVIEW]` immediately when implementation and deviation notes are complete.
 
 The next session's command is always:
 
 ```bash
-opencode "<worktree-path>" --prompt "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
+opencode "<worktree-path>" --agent build \
+  --model github-copilot/gemini-3.8-flash \
+  --prompt "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 
 Inside Orca, run it in a new Orca terminal, then end this session:
@@ -111,14 +111,14 @@ ORCA terminal create --worktree path:<worktree-path> \
   --title "[<PHASE>] <branch>" --command '<the opencode command>' --json
 ```
 
-Outside Orca, print the exact `opencode` command and ask the user to run it in a new
-Herdr panel, then end this session.
+Outside Orca, start the command in a new Herdr panel and end this session. If a
+panel cannot be started, report the command as a blocker.
 
 ## Ensure the development stack
 
-`[IMPLEMENT]` runs this as its first action; `[REVIEW]` runs it again before
-validation. The procedure is idempotent: healthy owned servers are reused, missing
-ones are started. `[PLAN]` never starts servers.
+`[REVIEW]` runs this before behavior QA. `[IMPLEMENT]` starts only the services it
+needs during implementation. The procedure is idempotent: healthy owned servers
+are reused, missing ones are started. `[PLAN]` never starts servers.
 
 The scripts in `~/.agents/skills/ship/scripts/` own detection, ownership checks, the
 port allocation lock, and readiness polling. Both runtimes pass their own launch
@@ -184,7 +184,7 @@ retrying once. Report the healthy URL.
 
 ### Storybook
 
-Skip this section unless the approved plan includes Storybook file changes. Resolve
+Skip this section unless the plan includes Storybook file changes. Resolve
 the correct alias first: read `src/dev/storybook/aliases.ts` and match each changed
 file path against the alias target directories, keeping the deepest match. If no
 alias matches, stop and ask which alias to use instead of guessing.
@@ -206,16 +206,18 @@ PORT=$("$SHIP_SCRIPTS/launch-server.sh" 9001 300 "$STORYBOOK_HEALTH" \
 The same scripts run with these substitutions:
 
 - Launch commands become `nohup` strings run through `wt step tether`, with logs in
-  `/tmp`:
+  `~/Code/oc-generated/files`. Create it first with
+  `mkdir -p "$HOME/Code/oc-generated/files"`:
 
 ```bash
-'nohup wt step tether -- zsh -ic "es --use-cached" > /tmp/kibana-shared-es.log 2>&1 &'
-'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "/tmp/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
-'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "/tmp/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
+'nohup wt step tether -- zsh -ic "es --use-cached" > "$HOME/Code/oc-generated/files/kibana-shared-es.log" 2>&1 &'
+'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "$HOME/Code/oc-generated/files/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
+'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "$HOME/Code/oc-generated/files/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
 ```
 
 - Server state lives in Worktrunk: read stored ports with `wt config state vars get
   kibana-port` / `storybook-port`, set them after a successful launch, and clear them
   when cleaning up an owned-but-unhealthy server (kill the listener PID from `lsof`,
   then wait until the port frees).
-- Logs live in the `/tmp` paths above; `export BRANCH_SAFE=${BRANCH//\//-}` first.
+- Logs live in the generated-files paths above; `export
+  BRANCH_SAFE=${BRANCH//\//-}` first.
