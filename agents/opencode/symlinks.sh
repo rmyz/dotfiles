@@ -8,4 +8,4 @@ for item in opencode.json package.json service-status-tui.tsx tui.jsonc commands
   ln -sfn "$PWD/$item" "$target/$item"
 done
 
-ln -sfn "$HOME/.agents/AGENTS.md" "$target/AGENTS.md"
+ln -sfn "$(dirname "$PWD")/AGENTS.md" "$target/AGENTS.md"
