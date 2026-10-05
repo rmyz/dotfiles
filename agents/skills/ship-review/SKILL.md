@@ -11,11 +11,12 @@ Phase 3 of `ship`. The invariants and session rules in
 
 ## First actions
 
-The spawn payload (branch, worktree path, plan file) is the whole truth; there is no
-prior conversation. In order:
+The spawn payload gives the worktree path and plan file; there is no prior
+conversation. Use the checked-out branch as truth. In order:
 
-1. Set the worktree path as the working directory; verify `git branch
-   --show-current` matches the payload branch.
+1. Set the worktree path as the working directory. Set `<branch>` to
+   `git branch --show-current`. If it differs from the payload, report the payload
+   value and keep using the actual branch.
 2. Read the plan file, including its `Deviations` section. Plan plus deviations is
    the intent the implementation must be judged against.
 3. Derive the change set from `git status` and `git diff upstream/main...`,
@@ -25,8 +26,8 @@ prior conversation. In order:
    changes Storybook stories or components shown in Storybook; a targeted test named
    in the plan needs a live server (integration, API, or UI tests); or the plan names
    Scout tests. It does not when it only changes docs, Markdown, unit tests, or config
-   the running app does not read. Only when it does, run ship's "Ensure the
-   development stack"; it is idempotent and reuses the implement phase's servers when
+   the running app does not read. Only when it does, read and follow
+   `~/.agents/skills/ship/dev-stack.md`; it is idempotent and reuses the implement phase's servers when
    they are still healthy. When it starts a new Kibana, use the port that
    `launch-server.sh` prints. When it reuses one, take the port from the
    `kibana:<port>` terminal title, or from `wt config state vars get kibana-port`
@@ -99,7 +100,7 @@ generated change.
 Use the Scout config paths recorded in the plan. If the final diff changes a package
 not covered by the plan, check that package's
 `test/scout*/{ui,api}/playwright.config.ts` too. If that adds a Scout suite after
-step 4 skipped the development stack, run ship's "Ensure the development stack" now.
+step 4 skipped servers, read and follow `~/.agents/skills/ship/dev-stack.md` now.
 
 Reuse the already-running Kibana and shared Elasticsearch instance only when its
 server settings satisfy the test. Create `.scout/servers/local.json` with the current

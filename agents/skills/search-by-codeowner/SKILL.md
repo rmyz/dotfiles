@@ -7,7 +7,7 @@ description: Search for a term in files owned by a specific GitHub team based on
 
 ## Overview
 
-The `.github/CODEOWNERS` file in `~/Code/kibana` maps file paths to owning GitHub teams. This skill searches for a term only within directories owned by a given team in the local Kibana checkout.
+The `.github/CODEOWNERS` file in `~/Code/kibana` maps file paths to owning GitHub teams. This skill searches tracked files whose last matching rule assigns them to the requested team.
 
 The scan root is hardcoded to `~/Code/kibana` — this skill always scans that folder regardless of where it is invoked from.
 
@@ -41,9 +41,9 @@ cd ~/Code/kibana && \
 
 ## How it works
 
-1. Parses `~/Code/kibana/.github/CODEOWNERS` to extract directory patterns assigned to the target team
-2. Validates each directory exists on disk under `~/Code/kibana`
-3. Runs `grep -ril` within those directories for the search term
+1. Parses `~/Code/kibana/.github/CODEOWNERS` in rule order
+2. Lists tracked files and applies CODEOWNERS glob patterns; the last matching rule sets each file's owners
+3. Runs `grep -il` on files owned by the target team
 4. Returns relative file paths (relative to `~/Code/kibana`) sorted alphabetically
 
 ## Manual alternative

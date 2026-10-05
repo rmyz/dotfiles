@@ -50,22 +50,23 @@ and check the PR out into it:
 Then start bootstrap in an Orca terminal (`kbnb`),
 wait for it with `terminal wait --for exit`, and confirm success with `terminal read`.
 
-Outside Orca (fallback): from /Users/sromeu/Code/kibana run `wt switch "<PR_URL>"
+Outside Orca (fallback): from the primary Kibana checkout, run
+`cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")" && wt switch "<PR_URL>"
 --no-cd` (no `--create`; Worktrunk resolves PR and fork refs), capture the worktree
 path, and wait for the bootstrap hook via `wt config state logs`.
 
 Use the PR worktree as the working directory for every following command. Run
 init-worktree's "Verify the development config" block.
 
-Load the ship skill and follow only its "Ensure the development stack" section, for
-Elasticsearch and Kibana; skip Storybook. Reuse the shared Elasticsearch on port 9200
+Read `~/.agents/skills/ship/dev-stack.md` and follow it for Elasticsearch and Kibana;
+skip Storybook. Reuse the shared Elasticsearch on port 9200
 when healthy. Start it from the primary main worktree only when absent. Reuse or
 start a Kibana owned by the PR worktree on the lowest free port starting at 5601. Do
 not run ship's other steps, tests, validation, or teardown.
 
 Return the PR branch and commit, worktree path, bootstrap status, Elasticsearch
-status, Kibana URL, and where the logs live (Orca terminal titles, or /tmp paths
-outside Orca). Report failures with the command and output that failed. Leave
+status, Kibana URL, and where the logs live (Orca terminal titles, or
+`~/Code/ai-generated/files` paths outside Orca). Report failures with the command and output that failed. Leave
 successful processes and the worktree running for manual testing.
 ```
 
@@ -86,7 +87,7 @@ Append:
 - Branch and commit: <branch> at <sha>
 - Elasticsearch: <status and URL>
 - Kibana: <status and URL>
-- Logs: <Orca terminal titles, or /tmp paths outside Orca>
+- Logs: <Orca terminal titles, or `~/Code/ai-generated/files` paths outside Orca>
 ```
 
 If environment setup failed, still return the complete review report and put the

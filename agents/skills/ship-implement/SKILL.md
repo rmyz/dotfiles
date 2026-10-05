@@ -11,11 +11,12 @@ Phase 2 of `ship`. The invariants and session rules in
 
 ## First actions
 
-The spawn payload (branch, worktree path, plan file) is the whole truth; there is no
-prior conversation. In order:
+The spawn payload gives the worktree path and plan file; there is no prior
+conversation. Use the checked-out branch as truth. In order:
 
-1. Set the worktree path as the working directory; verify `git branch
-   --show-current` matches the payload branch.
+1. Set the worktree path as the working directory. Set `<branch>` to
+   `git branch --show-current`. If it differs from the payload, report the payload
+   value and keep using the actual branch.
 2. Read the plan file. It is the implementation handoff; do not re-investigate or
    expand its scope.
 3. Run `git status` and `git diff upstream/main...` to see the current change state.
@@ -23,8 +24,7 @@ prior conversation. In order:
    --worktree path:<worktree-path> --json`, then `ORCA terminal wait --for exit` and
    `ORCA terminal read`. Outside Orca, check `wt config state logs`. Wait for it
    before anything that needs built packages.
-5. Start only the services needed for implementation. The review phase starts the
-   full stack before behavior QA.
+5. Use ship-review's step 4 rule to decide whether implementation needs Kibana.
 
 ## Implement
 

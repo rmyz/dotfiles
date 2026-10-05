@@ -21,35 +21,6 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 - Use one writing worker per worktree. Read-only workers may run in parallel.
 - Subagents return concise results to the parent agent.
 
-## Kibana remotes
-
-- `origin` is the fork (`rmyz/kibana`); `upstream` is `elastic/kibana`.
-- Diff, branch, and rebase against `upstream/main`. Never use `origin/main` — it is
-  thousands of commits stale and is never synced.
-- The clone also carries many other contributors' remotes. Never infer the fork as
-  "the remote that is not `origin`".
-
-## Local services
-
-- Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
-  `--eis` and the license config.
-- Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
-  prefix before `/app/`, for example `/kpd/app`.
-- Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
-  terminal (`orca terminal create`), so the user can read the logs there.
-
-## Team config (elastic/kibana)
-
-Team: nightshift-context-and-research. Used when opening PRs and filing issues.
-
-- Team label: `Team:nightshift-context-and-research`
-- Issue repo and PR target repo: `elastic/kibana`; PR base branch: `main`
-- Release note label: `release_note:skip` — always, the user can modify them if needed
-- Backport label: `backport:skip` — alway, the user can modify them if needed
-- Version labels: none. They are added manually — never pass a version label.
-- Commit types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
-- Public channel: [#nightshift-context-and-research](https://elastic.slack.com/archives/C0BDYNH8T52)
-
 ## Code
 
 Apply these rules whenever writing or editing code.
@@ -74,7 +45,9 @@ Apply these rules whenever writing or editing code.
 - In skills with an investigation phase, run the investigation through subagents
   and keep only the conclusions in the main session.
 - Use the agent's file read, search, and edit tools instead of `cat`, `head`, `tail`, `find`, `grep`, `sed`, and `echo` redirection. Reserve the shell for real commands: git, yarn, curl, servers, and scripts.
-- Use the TUI's patch or edit tools for normal file changes. Use Python only for
+- If the agent has no file read tool, read files with `rg`, `cat`, or `sed -n` in
+  the shell. Never use Python to read or search files.
+- Use the agent's patch or edit tools for normal file changes. Use Python only for
   bulk transformations or generated files.
 - Run repeated multi-line shell procedures from a script file instead of
   retyping them; ship's server scripts live in `~/.agents/skills/ship/scripts/`.
@@ -84,8 +57,45 @@ Apply these rules whenever writing or editing code.
   screenshots and recordings in `demo`, and other standalone files in `files`.
   Create the destination directory before writing. Use `/tmp` only for ephemeral
   process state such as locks and sockets.
+
+## Kibana
+
+Apply this section only when the working directory is a clone or worktree of
+`elastic/kibana`. Ignore it everywhere else.
+
+### Remotes
+
+- `origin` is the fork (`rmyz/kibana`); `upstream` is `elastic/kibana`.
+- Diff, branch, and rebase against `upstream/main`. Never use `origin/main` — it is
+  thousands of commits stale and is never synced.
+- The clone also carries many other contributors' remotes. Never infer the fork as
+  "the remote that is not `origin`".
+
+### Pull requests
+
 - Always create pull requests using the `create-pr` skill. Never create or push branches to `upstream` (`elastic/kibana`). Always push feature branches to the fork `rmyz/kibana` (`origin`) and target `elastic/kibana:main`.
 - Only post `/ci` on draft PRs. Never comment `/ci` on ready (non-draft) PRs because CI runs automatically.
+
+### Local services
+
+- Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
+  `--eis` and the license config.
+- Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
+  prefix before `/app/`, for example `/kpd/app`.
+- Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
+  terminal (`orca terminal create`), so the user can read the logs there.
+
+### Team config
+
+Team: nightshift-context-and-research. Used when opening PRs and filing issues.
+
+- Team label: `Team:nightshift-context-and-research`
+- Issue repo and PR target repo: `elastic/kibana`; PR base branch: `main`
+- Release note label: `release_note:skip` — always, the user can modify them if needed
+- Backport label: `backport:skip` — always, the user can modify them if needed
+- Version labels: none. They are added manually — never pass a version label.
+- Commit types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
+- Public channel: [#nightshift-context-and-research](https://elastic.slack.com/archives/C0BDYNH8T52)
 
 ## Prose
 

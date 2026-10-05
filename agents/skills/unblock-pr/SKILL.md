@@ -53,7 +53,8 @@ git merge-tree "$(git merge-base HEAD upstream/main)" HEAD upstream/main
 ```
 
 - Conflicts: merge `upstream/main`, resolve every conflict in favor of the correct
-  final code (not blind `--ours`), rerun affected validation from `ship` step 6, then
+  final code (not blind `--ours`), rerun affected validation from the "Run checks"
+  section in `~/.agents/skills/ship-review/SKILL.md`, then
   push. If the PR is a draft, trigger CI. Confirm with the user first when a conflict needs a semantic decision.
 - Outdated but mergeable: leave it as is. Do not merge just to refresh the branch.
 - If `git merge-tree` output is ambiguous, verify with a local test merge and abort it.

@@ -11,7 +11,7 @@ quality checklist below, and produce a prioritized refactoring plan.
 ## Investigation workflow
 
 1. **Determine base branch**
-   - `git merge-base HEAD main` (fall back to `master` or the branch the user specifies).
+   - `git merge-base HEAD upstream/main` (fall back to `main` when there is no `upstream` remote, or use the branch the user specifies).
 2. **Gather the changeset**
    - `git diff --name-only <base>...HEAD` for the file list.
    - `git diff <base>...HEAD` for the full diff.

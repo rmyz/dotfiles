@@ -10,7 +10,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { execFile } from 'child_process';
+import { execFile, execFileSync } from 'child_process';
 import { promisify } from 'util';
 
 const execFileAsync = promisify(execFile);
@@ -20,8 +20,7 @@ const KIBANA_ROOT = path.join(os.homedir(), 'Code', 'kibana');
 
 interface CodeOwnerRule {
   pattern: string;
-  teams: string[];
-  specificity: number;
+  owners: string[];
 }
 
 interface SearchResult {
@@ -56,17 +55,10 @@ function loadCodeOwners(): CodeOwnerRule[] {
       }
 
       const pattern = parts[0];
-      const teams = parts.slice(1).filter((part) => part.startsWith('@'));
+      const owners = parts.slice(1).filter((part) => part.startsWith('@'));
 
-      if (teams.length > 0) {
-        // Calculate specificity: more path segments = more specific
-        const specificity = pattern.split('/').filter((seg) => seg && seg !== '*').length;
-
-        rules.push({
-          pattern,
-          teams,
-          specificity,
-        });
+      if (owners.length > 0) {
+        rules.push({ pattern, owners });
       }
     }
   } catch (error) {
@@ -76,95 +68,74 @@ function loadCodeOwners(): CodeOwnerRule[] {
   return rules;
 }
 
-function getTeamPaths(team: string, codeOwnerRules: CodeOwnerRule[]): string[] {
-  const normalizedTeam = team.toLowerCase();
-  const teamPaths: string[] = [];
-  const seenPaths = new Set<string>();
-
-  for (const rule of codeOwnerRules) {
-    const hasTeam = rule.teams.some((t) => t.toLowerCase() === normalizedTeam);
-    if (hasTeam) {
-      // Convert CODEOWNERS pattern to actual path
-      let pattern = rule.pattern;
-      // Remove leading slash
-      if (pattern.startsWith('/')) {
-        pattern = pattern.substring(1);
+function patternRegex(pattern: string): RegExp {
+  const anchored = pattern.startsWith('/');
+  const directory = pattern.endsWith('/');
+  const body = pattern.replace(/^\//, '').replace(/\/$/, '');
+  const regex = body
+    .split(/(\*\*\/|\*\*)/g)
+    .map((part) => {
+      if (part === '**/') {
+        return '(?:.*/)?';
       }
-      // Remove wildcards for directory matching
-      pattern = pattern.replace(/\*/g, '');
-      // Remove trailing slash
-      pattern = pattern.replace(/\/$/, '');
-
-      if (pattern) {
-        const fullPath = path.join(KIBANA_ROOT, pattern);
-
-        // Only add if it's a directory that exists and we haven't seen it
-        if (!seenPaths.has(fullPath)) {
-          try {
-            const stats = fs.statSync(fullPath);
-            if (stats.isDirectory()) {
-              teamPaths.push(fullPath);
-              seenPaths.add(fullPath);
-            }
-          } catch (error) {
-            // Path doesn't exist or can't be accessed, skip it
-          }
-        }
+      if (part === '**') {
+        return '.*';
       }
-    }
-  }
-
-  return teamPaths;
+      return part
+        .split(/(\*)/g)
+        .map((segment) => (segment === '*' ? '[^/]*' : segment.replace(/[|\\{}()[\]^$+?.]/g, '\\$&')))
+        .join('');
+    })
+    .join('');
+  const prefix = anchored || body.includes('/') ? '^' : '^(?:.*/)?';
+  const descendants = directory ? '/.+' : !body.includes('*') ? '(?:/.*)?' : '';
+  return new RegExp(`${prefix}${regex}${descendants}$`);
 }
 
-async function searchWithGrepInPaths(searchTerm: string, paths: string[]): Promise<string[]> {
-  if (paths.length === 0) {
-    return [];
-  }
-
-  try {
-    const args = [
-      '-ril', // recursive, ignore case, files with matches
-      '--include=*.js',
-      '--include=*.jsx',
-      '--include=*.ts',
-      '--include=*.tsx',
-      '--include=*.json',
-      '--include=*.md',
-      '--include=*.yml',
-      '--include=*.yaml',
-      '--exclude-dir=node_modules',
-      '--exclude-dir=.git',
-      '--exclude-dir=build',
-      '--exclude-dir=target',
-      searchTerm,
-      ...paths, // Search only in these paths
-    ];
-
-    const { stdout } = await execFileAsync('grep', args, {
-      maxBuffer: 50 * 1024 * 1024, // 50MB buffer
+function ownedFiles(team: string, rules: CodeOwnerRule[]): string[] {
+  const normalizedTeam = team.toLowerCase();
+  const compiledRules = rules.map((rule) => ({ ...rule, regex: patternRegex(rule.pattern) }));
+  return execFileSync('git', ['-C', KIBANA_ROOT, 'ls-files'], {
+    encoding: 'utf8',
+    maxBuffer: 20 * 1024 * 1024,
+  })
+    .split('\n')
+    .filter(Boolean)
+    .filter((file) => !file.split('/').some((part) => ['node_modules', '.git', 'build', 'target'].includes(part)))
+    .filter((file) => /\.(?:js|jsx|ts|tsx|json|md|yml|yaml)$/i.test(file))
+    .filter((file) => {
+      let owner: (typeof compiledRules)[number] | undefined;
+      for (let index = compiledRules.length - 1; index >= 0; index--) {
+        if (compiledRules[index].regex.test(file)) {
+          owner = compiledRules[index];
+          break;
+        }
+      }
+      return owner?.owners.some((candidate) => candidate.toLowerCase() === normalizedTeam) ?? false;
     });
+}
 
-    const files = stdout
-      .split('\n')
-      .filter((line) => line.trim())
-      .map((file) => path.resolve(file));
-
-    return files;
-  } catch (error: any) {
-    // grep returns exit code 1 when no matches are found (not an error)
-    if (error.code === 1 && error.stdout) {
-      const files = error.stdout
-        .toString()
-        .split('\n')
-        .filter((line: string) => line.trim())
-        .map((file: string) => path.resolve(file));
-      return files;
-    }
-
-    // For any other error, return empty array
+async function searchWithGrepInFiles(searchTerm: string, files: string[]): Promise<string[]> {
+  if (files.length === 0) {
     return [];
   }
+
+  const matches: string[] = [];
+  for (let offset = 0; offset < files.length; offset += 50) {
+    try {
+      const args = ['-il', '-e', searchTerm, '--', ...files.slice(offset, offset + 50).map((file) => path.join(KIBANA_ROOT, file))];
+      const { stdout } = await execFileAsync('grep', args, { maxBuffer: 50 * 1024 * 1024 });
+      matches.push(...stdout.split('\n').filter(Boolean).map((file) => path.resolve(file)));
+    } catch (error: any) {
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 1) {
+        const stdout = 'stdout' in error && typeof error.stdout === 'string' ? error.stdout : '';
+        matches.push(...stdout.split('\n').filter(Boolean).map((file: string) => path.resolve(file)));
+        continue;
+      }
+      return [];
+    }
+  }
+  return matches;
 }
 
 async function performSearch(searchTerm: string, team: string): Promise<SearchResult> {
@@ -175,10 +146,10 @@ async function performSearch(searchTerm: string, team: string): Promise<SearchRe
   const normalizedTeam = team.startsWith('@') ? team : `@${team}`;
 
   // First, get all paths owned by the team from CODEOWNERS
-  const teamPaths = getTeamPaths(normalizedTeam, codeOwnerRules);
+  const files = ownedFiles(normalizedTeam, codeOwnerRules);
 
   // Then search only in those paths (much faster!)
-  const matchingFiles = await searchWithGrepInPaths(searchTerm, teamPaths);
+  const matchingFiles = await searchWithGrepInFiles(searchTerm, files);
 
   const relativeFiles = matchingFiles.map((file) => path.relative(KIBANA_ROOT, file)).sort();
 
@@ -187,7 +158,7 @@ async function performSearch(searchTerm: string, team: string): Promise<SearchRe
   return {
     searchTerm,
     team: normalizedTeam,
-    totalScannedFiles: teamPaths.length, // Number of team-owned paths searched
+    totalScannedFiles: files.length,
     totalMatchingFiles: relativeFiles.length,
     matchingFiles: relativeFiles,
     analysisTimeMs: endTime - startTime,

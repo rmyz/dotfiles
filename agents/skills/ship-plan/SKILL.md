@@ -20,6 +20,9 @@ The working directory must be a Kibana feature worktree: inside a git worktree w
 current branch is not `main`. If it is not, stop and tell the user to run
 `/init-worktree`. Never provision from this skill.
 
+Use `git branch --show-current` in the worktree as the branch value. If it differs
+from the payload, report the payload value and keep using the actual branch.
+
 Do not start Elasticsearch, Kibana, or Storybook in this phase. Do not edit source
 files during investigation or planning.
 

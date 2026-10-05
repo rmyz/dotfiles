@@ -16,7 +16,7 @@ anything.
 2. Group changed files by owner set:
 
    ```bash
-   co <PR_NUMBER>
+   (cd ~/Code/kibana-operations/triage && node code-owners.js "$PR_NUMBER")
    ```
 
 3. `co` groups files by owner set. Merge duplicate entries by team before drafting one

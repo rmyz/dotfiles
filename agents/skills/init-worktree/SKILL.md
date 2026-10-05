@@ -57,6 +57,10 @@ Capture the full `worktree.id` (`<repoId>::<worktreePath>`) and the worktree pat
 from the JSON. Use the path as the working directory for every following command, and
 restore it at the start of every resumed phase.
 
+Read the actual branch with `git -C <worktree.path> branch --show-current`. Use that
+value as `<branch>` in every later step, session title, prompt, and plan file name.
+Orca may prefix the requested name, such as `rmyz/fix-...`.
+
 Start bootstrap immediately in an Orca terminal so later work continues while it
 runs:
 
@@ -104,6 +108,8 @@ wt switch --create <branch> --base upstream/main
 Capture the new worktree path from Worktrunk's output and use it as the tool working
 directory. `wt` starts `pnpm kbn bootstrap` in the background; confirm it completed
 through `wt config state logs` before anything that needs built packages.
+Read the actual branch with `git -C <worktree.path> branch --show-current` and use
+that value as `<branch>` in every later step, session title, prompt, and plan file name.
 
 ## Index with CodeGraph
 
