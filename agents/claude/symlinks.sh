@@ -3,7 +3,7 @@ set -euo pipefail
 
 target="$HOME/.claude"
 skills="$(dirname "$PWD")/skills"
-opencode_only="cross-review init-worktree ship ship-plan ship-implement ship-review"
+opencode_only="cross-review"
 
 mkdir -p "$target/skills"
 ln -sfn "$(dirname "$PWD")/AGENTS.md" "$target/CLAUDE.md"
