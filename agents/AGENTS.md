@@ -58,6 +58,26 @@ Apply these rules whenever writing or editing code.
   Create the destination directory before writing. Use `/tmp` only for ephemeral
   process state such as locks and sockets.
 
+
+## Prose
+
+Apply to every response and to any text written for others: docs, commit messages,
+PRs, issues, reviews, and Slack messages.
+
+- Write in ASD-STE100 Simplified Technical English: short sentences, active voice,
+  one instruction per sentence, plain words.
+- Lead with the answer or result. No greetings, preambles, recaps, or sign-offs.
+- Use the fewest words that keep the useful facts. Cut filler ("in order to",
+  "it is important to note"), hedging, and adverbs.
+- State facts, numbers, and mechanisms. Not feelings or promotion ("robust",
+  "seamless", "powerful").
+- Name the actor. "The loader parses the file", not "the file is parsed".
+- No em dashes. Use a period or a comma.
+- Use sentence case for headings. Bold only what the reader must not miss.
+- Use bullets only when they make the text shorter or easier to scan. Do not repeat
+  them in a summary.
+- Before sending, reread once and delete every sentence that adds no fact.  
+
 ## Kibana
 
 Apply this section only when the working directory is a clone or worktree of
@@ -96,22 +116,3 @@ Team: nightshift-context-and-research. Used when opening PRs and filing issues.
 - Version labels: none. They are added manually — never pass a version label.
 - Commit types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
 - Public channel: [#nightshift-context-and-research](https://elastic.slack.com/archives/C0BDYNH8T52)
-
-## Prose
-
-Apply to every response and to any text written for others: docs, commit messages,
-PRs, issues, reviews, and Slack messages.
-
-- Write in ASD-STE100 Simplified Technical English: short sentences, active voice,
-  one instruction per sentence, plain words.
-- Lead with the answer or result. No greetings, preambles, recaps, or sign-offs.
-- Use the fewest words that keep the useful facts. Cut filler ("in order to",
-  "it is important to note"), hedging, and adverbs.
-- State facts, numbers, and mechanisms. Not feelings or promotion ("robust",
-  "seamless", "powerful").
-- Name the actor. "The loader parses the file", not "the file is parsed".
-- No em dashes. Use a period or a comma.
-- Use sentence case for headings. Bold only what the reader must not miss.
-- Use bullets only when they make the text shorter or easier to scan. Do not repeat
-  them in a summary.
-- Before sending, reread once and delete every sentence that adds no fact.
