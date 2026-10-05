@@ -10,7 +10,8 @@ Takes one Kibana task from investigation to a draft PR across three sessions:
 
 `[PLAN] -> [IMPLEMENT] -> [REVIEW]`
 
-Entry point: run the `init-worktree` skill, then load `ship-plan` and continue in
+Entry point: read and follow `~/.agents/skills/init-worktree/SKILL.md`, then read
+`~/.agents/skills/ship-plan/SKILL.md` and continue in
 this session. The later phases run in fresh sessions spawned by the previous phase.
 This file holds the shared invariants and procedures; every phase skill applies them.
 
@@ -103,7 +104,7 @@ this session, so it can detect the agent:
 
 ```bash
 CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree-path>" \
-  "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>.")
+  "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>.")
 ```
 
 Inside Orca, run it in a new Orca terminal, then end this session:

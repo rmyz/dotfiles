@@ -78,7 +78,7 @@ verbatim, the branch, the worktree path, the bootstrap handle, and whether
 
 ```bash
 CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree.path>" \
-  "[PLAN] <branch>: continue init-worktree in this worktree from 'Index with CodeGraph'. Worktree: <worktree.path>. Bootstrap: <bootstrap-handle>. Invoked from ship: <yes|no>. Request: <original request>" \
+  "[PLAN] <branch>: read ~/.agents/skills/init-worktree/SKILL.md and continue it in this worktree from 'Index with CodeGraph'. Worktree: <worktree.path>. Bootstrap: <bootstrap-handle>. Invoked from ship: <yes|no>. Request: <original request>" \
   <ship-plan when invoked from ship, otherwise build>)
 ```
 
@@ -161,4 +161,4 @@ Treat a failed final comparison as a blocker.
 Provisioning is complete only when the worktree exists, bootstrap is running in its
 terminal, CodeGraph indexing has started, and the development config verification
 passed. Report the branch and the absolute worktree path. When invoked from `ship`,
-only then continue with `ship-plan` in the same session.
+only then read `~/.agents/skills/ship-plan/SKILL.md` and continue with it in the same session.
