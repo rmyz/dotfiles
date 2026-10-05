@@ -20,6 +20,7 @@ alias gs="git sync"
 alias myip="curl ipinfo.io"
 
 ## Generic settings
+export OPENCODE_DISABLE_CLAUDE_CODE=1
 export DISABLE_OPENCOLLECTIVE=1
 export ADBLOCK=1
 export HOMEBREW_GITHUB_API_TOKEN="$(command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/null)"

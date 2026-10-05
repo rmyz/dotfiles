@@ -4,6 +4,8 @@ set -euo pipefail
 target="$HOME/.config/opencode"
 mkdir -p "$target"
 
-for item in AGENTS.md opencode.json package.json service-status-tui.tsx tui.jsonc rules commands agents; do
+for item in opencode.json package.json service-status-tui.tsx tui.jsonc commands agents; do
   ln -sfn "$PWD/$item" "$target/$item"
 done
+
+ln -sfn "$HOME/.agents/AGENTS.md" "$target/AGENTS.md"

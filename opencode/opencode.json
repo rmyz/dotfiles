@@ -17,6 +17,7 @@
       "disable": true
     },
     "build": {
+      "description": "Use for code inspection, CodeGraph queries, commands, edits, and tests.",
       "mode": "all",
       "model": "github-copilot/gpt-6-luna",
       "variant": "medium",
@@ -37,6 +38,5 @@
   },
   "lsp": true,
   "formatter": true,
-  "instructions": ["~/.config/opencode/rules/*.md"],
   "plugin": ["@dietrichgebert/ponytail@latest"]
 }

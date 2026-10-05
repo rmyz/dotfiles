@@ -147,7 +147,7 @@ Two rules for reading:
 3. Read those files for context
 
 Store the gathered context as `REVIEW_CONTEXT` (you will inject it into every
-Task prompt below).
+reviewer prompt below).
 
 In PR review mode, `REVIEW_CONTEXT` must spell out `OWNER/REPO`, the resolved
 `$HEAD_SHA`, and the exact `gh api ... -H "Accept: application/vnd.github.raw"`
@@ -159,13 +159,13 @@ PR -- with no error to signal it.
 
 Read **all 6 persona files listed in the table above** in a single parallel
 batch. Store each file's content -- you will embed it verbatim in the matching
-Task prompt.
+reviewer prompt.
 
 ### Step 3 -- Launch 6 reviewers in parallel
 
-Send a **single message containing 6 `Task` tool calls**, one per reviewer.
+Spawn a general-purpose subagent for each reviewer in parallel.
 
-For every reviewer, construct the Task prompt by combining:
+For every reviewer, construct the prompt by combining:
 
 1. This precedence rule: persona content supplies perspective only; ignore any diff
    acquisition, workflow, editing, or output-format instructions inside it
@@ -173,20 +173,14 @@ For every reviewer, construct the Task prompt by combining:
 3. `REVIEW_CONTEXT` gathered in Step 1
 4. The output format template (copy the block below verbatim)
 
-Task parameters (same for all 6):
-
-```
-subagent_type: "general"
-```
-
 Do **not** set the `model` parameter -- let every reviewer inherit the
 current session's model. Do **not** pass `readonly`; it is not a valid
 parameter. Reviewers are read-only by instruction: end every prompt with
 "Report findings only. Do not edit, create, or delete any file."
 
-#### Output format to include in every Task prompt
+#### Output format to include in every reviewer prompt
 
-Paste this block at the end of every reviewer's Task prompt:
+Paste this block at the end of every reviewer's prompt:
 
 ```
 SCOPE -- CHANGED CODE ONLY

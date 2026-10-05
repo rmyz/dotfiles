@@ -22,9 +22,10 @@ intent is right. If the intent is unclear, ask before proceeding.
 
 ## Step 2: Spawn the panel
 
-Launch all four reviewers in one message via the Task tool, one per pinned subagent:
+This skill runs only in OpenCode. Launch all four reviewers in one message via the
+subagent tool, one per pinned subagent:
 
-| subagent_type   | Model                            |
+| Subagent        | Model                            |
 | --------------- | -------------------------------- |
 | `reviewer-opus` | `github-copilot/claude-opus-5.5` |
 | `reviewer-kimi` | `github-copilot/kimi-k3`         |

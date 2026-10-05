@@ -9,6 +9,11 @@ disable-model-invocation: true
 Phase 1 of `ship`. The invariants, stops, and session rules in
 `~/.agents/skills/ship/SKILL.md` apply; read that file first.
 
+In OpenCode, this phase runs as the `ship-plan` agent and delegates routine I/O
+(code inspection, CodeGraph queries, and commands) to the `build` subagent. State
+whether each delegated task is inspection-only or may edit files. Do not modify
+source or configuration files. Only write the Markdown handoff.
+
 ## Guard
 
 The working directory must be a Kibana feature worktree: inside a git worktree whose
