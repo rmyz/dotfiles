@@ -76,7 +76,7 @@ Apply these rules whenever writing or editing code.
   retyping them; ship's server scripts live in `~/.agents/skills/ship/scripts/`.
 - For GitHub content, fetch `raw.githubusercontent.com` or use `gh api`. Never
   fetch `github.com` HTML pages; they waste thousands of tokens on page chrome.
-- Store generated artifacts under `~/Code/oc-generated`. Put plans in `plans`,
+- Store generated artifacts under `~/Code/ai-generated`. Put plans in `plans`,
   screenshots and recordings in `demo`, and other standalone files in `files`.
   Create the destination directory before writing. Use `/tmp` only for ephemeral
   process state such as locks and sockets.

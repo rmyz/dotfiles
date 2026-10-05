@@ -61,9 +61,9 @@ resolves, the worktree is Orca-managed. Otherwise use the Worktrunk fallback.
    started from inside the removed worktree (its `.es/` directory lives there),
    stopping the worktree's processes stops it too, so report that.
 
-3. Clean up branch-specific artifacts under `~/Code/oc-generated`:
+3. Clean up branch-specific artifacts under `~/Code/ai-generated`:
    Replace `/` in the branch name with `-` for `<branch-safe>`.
    ```bash
-   rm -f "$HOME/Code/oc-generated/plans/ship-plan-<branch-safe>.md"
-   rm -f "$HOME/Code/oc-generated/demo/qa-<branch-safe>"*.webm
+   rm -f "$HOME/Code/ai-generated/plans/ship-plan-<branch-safe>.md"
+   rm -f "$HOME/Code/ai-generated/demo/qa-<branch-safe>"*.webm
    ```

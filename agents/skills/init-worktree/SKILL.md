@@ -122,8 +122,8 @@ its parent:
 WORKTREE=$(pwd -P)
 MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
 BRANCH_SAFE=$(git branch --show-current | tr / -)
-mkdir -p "$HOME/Code/oc-generated/files"
-LOG="$HOME/Code/oc-generated/files/codegraph-$BRANCH_SAFE.log"
+mkdir -p "$HOME/Code/ai-generated/files"
+LOG="$HOME/Code/ai-generated/files/codegraph-$BRANCH_SAFE.log"
 
 if codegraph status "$MAIN" --json 2>/dev/null | \
   jq -e '.initialized and .index.state == "complete" and (.index.reindexRecommended | not)' >/dev/null

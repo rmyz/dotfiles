@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Review PR
 
-Runs Review Team against a remote Kibana PR while preparing the PR's local test
+Runs `cross-review` against a remote Kibana PR while preparing the PR's local test
 environment. It reports findings and copy-ready comments, but never posts comments or
 changes code.
 
@@ -16,21 +16,19 @@ Require one `https://github.com/elastic/kibana/pull/<number>` URL. Ask for it wh
 missing. Reject non-Kibana PRs because the local stack instructions are Kibana-specific.
 
 Read the PR metadata with `gh` before starting. Stop on authentication failure or an
-invalid PR. More than 50 changed files uses Review Team's existing confirmation gate.
+invalid PR. More than 50 changed files uses cross-review's confirmation gate.
 
 ## Workflow
 
-### 1. Prepare Review Team
+### 1. Run review and environment setup together
 
-Load `review-team` in PR review mode. Follow its Steps 0 through 2 exactly. The review
-context must come from `gh`, never from the local checkout.
+Start both at the same time:
 
-### 2. Run review and environment setup together
-
-At Review Team Step 3, use one `multi_tool_use.parallel` call with seven `task` calls:
-
-- The six reviewer tasks required by Review Team, unchanged.
-- One `general` environment task using the prompt below.
+- The review: load `~/.agents/skills/cross-review/SKILL.md` and follow it in PR mode
+  for the supplied URL. The review context must come from `gh`, never from the local
+  checkout. Outside OpenCode, this is its `opencode run` command; wait for it and use
+  its output as the review.
+- The environment: one general-purpose subagent with the prompt below.
 
 Replace `<PR_URL>` and `<number>` with the supplied PR:
 
@@ -72,12 +70,12 @@ successful processes and the worktree running for manual testing.
 ```
 
 The environment task is isolated from review acquisition. Its local git operations
-must never replace Review Team's GitHub diff or file contents.
+must never replace cross-review's GitHub diff or file contents.
 
-### 3. Report
+### 2. Report
 
-Follow Review Team Steps 4 through 6 to consolidate findings, create the action plan,
-and format comments for manual posting. Do not submit a GitHub review or comment.
+Return cross-review's report, including its copy-ready conventional comments. Do not
+submit a GitHub review or comment.
 
 Append:
 

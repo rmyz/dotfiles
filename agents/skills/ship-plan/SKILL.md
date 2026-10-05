@@ -44,8 +44,8 @@ Write a standalone plan outside the repository:
 
 ```bash
 BRANCH=$(git branch --show-current)
-mkdir -p "$HOME/Code/oc-generated/plans"
-PLAN_FILE="$HOME/Code/oc-generated/plans/ship-plan-${BRANCH//\//-}.md"
+mkdir -p "$HOME/Code/ai-generated/plans"
+PLAN_FILE="$HOME/Code/ai-generated/plans/ship-plan-${BRANCH//\//-}.md"
 ```
 
 Keep it short and readable by the next session. Include the task and acceptance

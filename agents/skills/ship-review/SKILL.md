@@ -20,21 +20,24 @@ prior conversation. In order:
    the intent the implementation must be judged against.
 3. Derive the change set from `git status` and `git diff upstream/main...`,
    including untracked files.
-4. Decide whether the change set needs a running Kibana. It does when it changes
-   code that runs in Kibana (server, public, or UI code) or when the plan names Scout
-   tests. It does not when it only changes docs, Markdown, tests without Scout, or
-   config the running app does not read. Only when it does, run ship's "Ensure the
+4. Decide whether the change set needs a running Kibana. It does when any of these
+   holds: it changes code that runs in Kibana (server, public, or UI code); it
+   changes Storybook stories or components shown in Storybook; a targeted test named
+   in the plan needs a live server (integration, API, or UI tests); or the plan names
+   Scout tests. It does not when it only changes docs, Markdown, unit tests, or config
+   the running app does not read. Only when it does, run ship's "Ensure the
    development stack"; it is idempotent and reuses the implement phase's servers when
-   they are still healthy. Use the port that `launch-server.sh` prints; do not look it
-   up again. Record the decision in the report.
+   they are still healthy. When it starts a new Kibana, use the port that
+   `launch-server.sh` prints. When it reuses one, take the port from the
+   `kibana:<port>` terminal title, or from `wt config state vars get kibana-port`
+   outside Orca. Record the decision in the report.
 
 ## Validate
 
 Fix confirmed failures and rerun affected checks until green. Complete behavior QA
 when it applies, the cross-model review, and the mechanical checks before creating
 the draft PR. The cross-model review and `node scripts/check.js --scope=local` are
-required for every change set, including docs-only changes. "Cross-model review"
-means `cross-review` in OpenCode and `review-team` elsewhere. Stop only for a blocker.
+required for every change set, including docs-only changes. Stop only for a blocker.
 
 ### Acceptance criteria and QA
 
@@ -54,15 +57,12 @@ demo before creating the PR.
 
 ### Cross-model review
 
-In OpenCode, load `~/.agents/skills/cross-review/SKILL.md` and follow it over the
-change set. It runs four reviewers on different model families with the technical
-and product rubrics, then synthesizes findings into act-on, consider, noted, and
-dismissed buckets weighted by cross-model agreement. Give it the plan file path for
-the intent.
-
-In any other agent, cross-review is unavailable. Load
-`~/.agents/skills/review-team/SKILL.md` and follow it in local review mode instead;
-everything below applies unchanged.
+Load `~/.agents/skills/cross-review/SKILL.md` and follow it over the change set in
+local mode, in every agent. Outside OpenCode, the skill's "Outside OpenCode" section
+runs the panel through `opencode run`. It runs four reviewers on different model
+families with the technical and product rubrics, then synthesizes findings into
+act-on, consider, noted, and dismissed buckets weighted by cross-model agreement.
+Give it the plan file path for the intent.
 
 Verify each finding against the code. Fix confirmed correctness, security, and
 maintainability issues that block a PR and fit the task. Record which findings you
@@ -98,7 +98,8 @@ generated change.
 
 Use the Scout config paths recorded in the plan. If the final diff changes a package
 not covered by the plan, check that package's
-`test/scout*/{ui,api}/playwright.config.ts` too.
+`test/scout*/{ui,api}/playwright.config.ts` too. If that adds a Scout suite after
+step 4 skipped the development stack, run ship's "Ensure the development stack" now.
 
 Reuse the already-running Kibana and shared Elasticsearch instance only when its
 server settings satisfy the test. Create `.scout/servers/local.json` with the current
@@ -156,7 +157,7 @@ affected checks or QA, and invoke `create-pr` again.
 
 After the PR exists, record a short demo for visual changes. Use the verified
 happy path and save the video as
-`~/Code/oc-generated/demo/qa-<branch-safe>.webm`, with `/` in the branch name
+`~/Code/ai-generated/demo/qa-<branch-safe>.webm`, with `/` in the branch name
 replaced by `-`. Give the user its path for manual drag-and-drop. If recording
 fails, report it with the PR URL.
 

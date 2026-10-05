@@ -203,13 +203,13 @@ PORT=$("$SHIP_SCRIPTS/launch-server.sh" 9001 300 "$STORYBOOK_HEALTH" \
 The same scripts run with these substitutions:
 
 - Launch commands become `nohup` strings run through `wt step tether`, with logs in
-  `~/Code/oc-generated/files`. Create it first with
-  `mkdir -p "$HOME/Code/oc-generated/files"`:
+  `~/Code/ai-generated/files`. Create it first with
+  `mkdir -p "$HOME/Code/ai-generated/files"`:
 
 ```bash
-'nohup wt step tether -- zsh -ic "es --use-cached" > "$HOME/Code/oc-generated/files/kibana-shared-es.log" 2>&1 &'
-'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "$HOME/Code/oc-generated/files/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
-'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "$HOME/Code/oc-generated/files/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
+'nohup wt step tether -- zsh -ic "es --use-cached" > "$HOME/Code/ai-generated/files/kibana-shared-es.log" 2>&1 &'
+'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "$HOME/Code/ai-generated/files/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
+'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "$HOME/Code/ai-generated/files/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
 ```
 
 - Server state lives in Worktrunk: read stored ports with `wt config state vars get

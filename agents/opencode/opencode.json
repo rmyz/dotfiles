@@ -9,7 +9,7 @@
         "*": "allow",
         "edit": {
           "*": "deny",
-          "*/oc-generated/plans/*.md": "allow"
+          "*/ai-generated/plans/*.md": "allow"
         }
       }
     },

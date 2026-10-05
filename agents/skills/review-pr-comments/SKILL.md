@@ -51,8 +51,8 @@ If the diff hunk alone is not enough to judge a comment:
 1. Read the full file around the comment (±30 lines).
 2. Check `git log` / `git blame` for why the code is written that way.
 3. **Last resort only:** if the comment spans multiple files or touches
-   architecture, read and follow `~/.agents/skills/review-team/SKILL.md` in
-   **PR review mode** on the same PR. Do not escalate for single-line style nits
+   architecture, read and follow `~/.agents/skills/cross-review/SKILL.md` in
+   **PR mode** on the same PR. Do not escalate for single-line style nits
    or localized logic questions.
 
 ### Step 4 — Analyze each comment
