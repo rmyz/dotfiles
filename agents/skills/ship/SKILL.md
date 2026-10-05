@@ -100,7 +100,7 @@ recall.
 
 Always run `scripts/spawn-session.sh` from this session. Do not build the command
 yourself and do not decide the runtime. The script detects the current agent
-(OpenCode, Claude Code, Codex, or Cursor) and starts it in a new Orca terminal in the
+(OpenCode, Claude Code, pi, Codex, or Cursor) and starts it in a new Orca terminal in the
 worktree:
 
 ```bash

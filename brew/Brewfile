@@ -17,8 +17,12 @@ brew "jq"
 brew "k9s"
 # Run a Kubernetes cluster locally
 brew "minikube"
-# AI coding agent, built for the terminal
-brew "opencode"
+# AI coding agent, built for the terminal (1.x tap; homebrew-core tracks 2.x)
+brew "anomalyco/tap/opencode"
+# Minimal, extensible AI coding agent
+brew "pi-coding-agent"
+# Git worktree manager for AI agent workflows
+brew "worktrunk"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
 # Search tool like grep and the silver searcher
@@ -33,6 +37,10 @@ cask "alt-tab"
 cask "brave-browser"
 # Tool to manage periodic breaks
 cask "breaktimer"
+# Anthropic's agentic coding tool
+cask "claude-code@latest"
+# OpenAI's coding agent
+cask "codex"
 # Write, edit, and chat about your code with AI
 cask "cursor"
 # Voice and text chat software
