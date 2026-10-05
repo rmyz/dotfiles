@@ -51,6 +51,8 @@ Apply these rules whenever writing or editing code.
   bulk transformations or generated files.
 - Run repeated multi-line shell procedures from a script file instead of
   retyping them; ship's server scripts live in `~/.agents/skills/ship/scripts/`.
+- To wait on an Orca terminal, block on `orca terminal wait --for exit` (commands)
+  or `--for tui-idle` (agent sessions). Never poll a terminal with `sleep` loops.
 - For GitHub content, fetch `raw.githubusercontent.com` or use `gh api`. Never
   fetch `github.com` HTML pages; they waste thousands of tokens on page chrome.
 - Store generated artifacts under `~/Code/ai-generated`. Put plans in `plans`,
