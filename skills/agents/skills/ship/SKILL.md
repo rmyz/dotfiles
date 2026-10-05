@@ -100,7 +100,7 @@ The next session's command is always:
 
 ```bash
 opencode "<worktree-path>" --agent build \
-  --model github-copilot/gemini-3.8-flash \
+  --model github-copilot/gpt-6-luna \
   --prompt "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 

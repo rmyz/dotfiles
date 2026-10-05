@@ -24,12 +24,12 @@ intent is right. If the intent is unclear, ask before proceeding.
 
 Launch all four reviewers in one message via the Task tool, one per pinned subagent:
 
-| subagent_type    | Family              |
-| ---------------- | ------------------- |
-| `reviewer-opus`  | Anthropic (Opus)    |
-| `reviewer-fable` | Anthropic (Fable)   |
-| `reviewer-sol`   | OpenAI              |
-| `reviewer-grok`  | xAI                 |
+| subagent_type   | Model                            |
+| --------------- | -------------------------------- |
+| `reviewer-opus` | `github-copilot/claude-opus-5.5` |
+| `reviewer-kimi` | `github-copilot/kimi-k3`         |
+| `reviewer-sol`  | `openai/gpt-6-sol`               |
+| `reviewer-grok` | `github-copilot/grok-4.7`        |
 
 Every reviewer gets the identical briefing:
 

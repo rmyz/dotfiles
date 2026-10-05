@@ -1,8 +1,8 @@
 ---
-description: Cross-review reviewer pinned to openai/gpt-5.6-sol. Invoked by the cross-review skill; do not use for other tasks.
+description: Cross-review reviewer pinned to openai/gpt-6-sol. Invoked by the cross-review skill; do not use for other tasks.
 mode: subagent
 hidden: true
-model: openai/gpt-5.6-sol
+model: openai/gpt-6-sol
 temperature: 0.1
 permission:
   edit: deny

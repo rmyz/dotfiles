@@ -8,6 +8,8 @@
 - Use Read, Glob, Grep, Edit, and Write instead of `cat`, `head`, `tail`,
   `find`, `grep`, `sed`, and `echo` redirection. Reserve bash for real commands:
   git, yarn, curl, servers, and scripts.
+- Use the TUI's patch or edit tools for normal file changes. Use Python only for
+  bulk transformations or generated files.
 - Run repeated multi-line shell procedures from a script file instead of
   retyping them; ship's server scripts live in `~/.agents/skills/ship/scripts/`.
 - For GitHub content, fetch `raw.githubusercontent.com` or use `gh api`. Never

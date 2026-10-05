@@ -1,8 +1,8 @@
 ---
-description: Cross-review reviewer pinned to github-copilot/grok-4.6. Invoked by the cross-review skill; do not use for other tasks.
+description: Cross-review reviewer pinned to github-copilot/grok-4.7. Invoked by the cross-review skill; do not use for other tasks.
 mode: subagent
 hidden: true
-model: github-copilot/grok-4.6
+model: github-copilot/grok-4.7
 temperature: 0.1
 permission:
   edit: deny
