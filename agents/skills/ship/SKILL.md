@@ -98,24 +98,18 @@ recall.
 `[PLAN]` spawns `[IMPLEMENT]` after writing the plan. `[IMPLEMENT]` spawns
 `[REVIEW]` immediately when implementation and deviation notes are complete.
 
-`scripts/session-command.sh` prints the command that starts the current agent
-(OpenCode, Claude Code, Codex, or Cursor) in a directory with a prompt. Run it from
-this session, so it can detect the agent:
+Always run `scripts/spawn-session.sh` from this session. Do not build the command
+yourself and do not decide the runtime. The script detects the current agent
+(OpenCode, Claude Code, Codex, or Cursor) and starts it in a new Orca terminal in the
+worktree:
 
 ```bash
-CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree-path>" \
-  "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>.")
+"$HOME/.agents/skills/ship/scripts/spawn-session.sh" "<worktree-path>" "[<PHASE>] <branch>" \
+  "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 
-Inside Orca, run it in a new Orca terminal, then end this session:
-
-```text
-ORCA terminal create --worktree path:<worktree-path> \
-  --title "[<PHASE>] <branch>" --command "$CMD" --json
-```
-
-Outside Orca, report `$CMD` to the user so they can start the next session, then end
-this session.
+Exit `0` means the terminal started: end this session. Exit `2` means this session
+is not inside Orca: report the printed command to the user, then end this session.
 
 ## Ensure the development stack
 

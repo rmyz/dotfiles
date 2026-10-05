@@ -76,18 +76,15 @@ conversation, so the prompt carries everything it needs: the user's original req
 verbatim, the branch, the worktree path, the bootstrap handle, and whether
 `init-worktree` was invoked from `ship`.
 
+Always start it with `spawn-session.sh`; do not build the command yourself:
+
 ```bash
-CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree.path>" \
+"$HOME/.agents/skills/ship/scripts/spawn-session.sh" "<worktree.path>" "[PLAN] <branch>" \
   "[PLAN] <branch>: read ~/.agents/skills/init-worktree/SKILL.md and continue it in this worktree from 'Index with CodeGraph'. Worktree: <worktree.path>. Bootstrap: <bootstrap-handle>. Invoked from ship: <yes|no>. Request: <original request>" \
-  <ship-plan when invoked from ship, otherwise build>)
+  <ship-plan when invoked from ship, otherwise build>
 ```
 
-The third argument only selects the OpenCode agent; other agents ignore it.
-
-```text
-ORCA terminal create --worktree id:<worktree.id> --title "[PLAN] <branch>" \
-  --command "$CMD" --focus --json
-```
+The fourth argument only selects the OpenCode agent; other agents ignore it.
 
 After the new terminal starts, close the old terminal's whole tab with
 `ORCA terminal close --terminal <old-handle> --tab --json`. The old handle comes from
