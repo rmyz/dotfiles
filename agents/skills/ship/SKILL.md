@@ -82,8 +82,9 @@ the draft PR URL.
 
 ## Sessions
 
-One session per phase. The spawn prompt's first characters are the phase tag and
-branch (`[IMPLEMENT] <branch>: ...`), so opencode titles the session with them.
+One session per phase, in the same agent that runs the current phase. The spawn
+prompt's first characters are the phase tag and branch (`[IMPLEMENT] <branch>: ...`),
+so the agent titles the session with them.
 
 The handoff payload between phases is exactly: branch, worktree path, plan file path.
 Nothing else. A spawned session treats that payload as the whole truth: its first
@@ -96,23 +97,24 @@ recall.
 `[PLAN]` spawns `[IMPLEMENT]` after writing the plan. `[IMPLEMENT]` spawns
 `[REVIEW]` immediately when implementation and deviation notes are complete.
 
-The next session's command is always:
+`scripts/session-command.sh` prints the command that starts the current agent
+(OpenCode, Claude Code, Codex, or Cursor) in a directory with a prompt. Run it from
+this session, so it can detect the agent:
 
 ```bash
-opencode "<worktree-path>" --agent build \
-  --model github-copilot/gpt-6-luna \
-  --prompt "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
+CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree-path>" \
+  "[<PHASE>] <branch>: load the ship-<phase> skill and follow it. Worktree: <worktree-path>. Plan: <plan-file>.")
 ```
 
 Inside Orca, run it in a new Orca terminal, then end this session:
 
 ```text
 ORCA terminal create --worktree path:<worktree-path> \
-  --title "[<PHASE>] <branch>" --command '<the opencode command>' --json
+  --title "[<PHASE>] <branch>" --command "$CMD" --json
 ```
 
-Outside Orca, start the command in a new Herdr panel and end this session. If a
-panel cannot be started, report the command as a blocker.
+Outside Orca, start `$CMD` in a new Herdr panel and end this session. If a panel
+cannot be started, report the command as a blocker.
 
 ## Ensure the development stack
 

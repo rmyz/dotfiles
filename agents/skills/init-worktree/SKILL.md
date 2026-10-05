@@ -35,10 +35,6 @@ Before the first Orca command, load the `orca-cli` skill, resolve the `ORCA`
 executable, run `ORCA skills get orca-cli`, and confirm the app with
 `ORCA status --json`.
 
-Capture the current OpenCode session ID first, from `opencode session list --format
-json`: the newest session whose `directory` equals the current working directory. Do
-not create a second OpenCode session for the task.
-
 ```text
 ORCA repo list --json
 ORCA worktree create --repo id:<kibanaRepoId> --name <branch> \
@@ -74,29 +70,33 @@ bootstrap succeeded: `ORCA terminal wait --terminal <handle> --for exit --timeou
 2400000 --json`, then `ORCA terminal read` to check the outcome.
 
 The terminal that received the request still belongs to the old Orca card, and Orca
-cannot move a live terminal between worktrees. Resume the same OpenCode session in a
-new terminal tab in the new worktree:
+cannot move a live terminal between worktrees. Continue in a fresh session of the
+same agent in a new terminal tab in the new worktree. The session has no prior
+conversation, so the prompt carries everything it needs: the user's original request
+verbatim, the branch, the worktree path, the bootstrap handle, and whether
+`init-worktree` was invoked from `ship`.
+
+```bash
+CMD=$("$HOME/.agents/skills/ship/scripts/session-command.sh" "<worktree.path>" \
+  "[PLAN] <branch>: continue init-worktree in this worktree from 'Index with CodeGraph'. Worktree: <worktree.path>. Bootstrap: <bootstrap-handle>. Invoked from ship: <yes|no>. Request: <original request>" \
+  <ship-plan when invoked from ship, otherwise build>)
+```
+
+The third argument only selects the OpenCode agent; other agents ignore it.
 
 ```text
 ORCA terminal create --worktree id:<worktree.id> --title "[PLAN] <branch>" \
-  --command 'opencode "<worktree.path>" --session "<session-id>"' \
-  --focus --json
-ORCA terminal wait --terminal <new-handle> --for tui-idle --timeout-ms 60000 --json
-ORCA terminal send --terminal <new-handle> \
-  --text "Continue init-worktree in this worktree. Bootstrap: <bootstrap-handle>." \
-  --enter --json
+  --command "$CMD" --focus --json
 ```
 
-After the continuation input is accepted, close the old terminal's whole tab with
+After the new terminal starts, close the old terminal's whole tab with
 `ORCA terminal close --terminal <old-handle> --tab --json`. The old handle comes from
-`ORCA_TERMINAL_HANDLE`. A short overlap between two TUI clients is acceptable; two
-OpenCode session IDs are not.
+`ORCA_TERMINAL_HANDLE`.
 
-In the resumed session, run `pwd -P` first. It must equal `<worktree.path>`; stop if
-it does not. The full conversation is already present. Do not send a handoff prompt
-or repeat the user request. Then finish every remaining init-worktree step below
-(CodeGraph indexing, development config) before anything else; provisioning completes
-before the plan phase starts.
+In the new session, run `pwd -P` first. It must equal `<worktree.path>`; stop if it
+does not. Then finish every remaining init-worktree step below (CodeGraph indexing,
+development config) before anything else; provisioning completes before the plan
+phase starts.
 
 ## Create the worktree (outside Orca, fallback)
 
