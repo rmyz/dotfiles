@@ -1,6 +1,6 @@
 ---
 name: ship
-description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana without approval stops, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals by default, with a Worktrunk/Herdr fallback. Invoke explicitly with an issue link, PR number, or task description.
+description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana without approval stops, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals by default, with a Worktrunk fallback. Invoke explicitly with an issue link, PR number, or task description.
 disable-model-invocation: true
 ---
 
@@ -25,8 +25,8 @@ Choose the runtime once, at worktree creation, and keep it for the whole task:
 - **Inside Orca**: Orca worktrees, Orca terminals for every process, terminal titles
   as server state, `ORCA terminal read` for logs.
 - **Outside Orca** (fallback): Worktrunk worktrees, `wt config state vars` as server
-  state, `nohup` + `/tmp` logs, Herdr panels for anything the user should watch. The
-  "Outside Orca" blocks below define the substitutions.
+  state, `nohup` + `/tmp` logs. The "Outside Orca" blocks below define the
+  substitutions.
 
 ### Command tabs (inside Orca)
 
@@ -113,8 +113,8 @@ ORCA terminal create --worktree path:<worktree-path> \
   --title "[<PHASE>] <branch>" --command "$CMD" --json
 ```
 
-Outside Orca, start `$CMD` in a new Herdr panel and end this session. If a panel
-cannot be started, report the command as a blocker.
+Outside Orca, report `$CMD` to the user so they can start the next session, then end
+this session.
 
 ## Ensure the development stack
 

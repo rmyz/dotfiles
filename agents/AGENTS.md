@@ -32,8 +32,7 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is 
 - Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
   prefix before `/app/`, for example `/kpd/app`.
 - Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
-  terminal (`orca terminal create`). Outside Orca, fall back to a new Herdr panel in
-  the current tab. Either way the user can read the logs there.
+  terminal (`orca terminal create`), so the user can read the logs there.
 
 ## Team config (elastic/kibana)
 
