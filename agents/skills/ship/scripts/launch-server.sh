@@ -28,7 +28,7 @@ while lsof -nP -iTCP:"$PORT" -sTCP:LISTEN > /dev/null 2>&1; do
 done
 export PORT
 
-sh -c "$LAUNCH_CMD"
+sh -c "$LAUNCH_CMD" >&2
 
 END=$(($(date +%s) + TIMEOUT))
 while [ "$(date +%s)" -lt "$END" ]; do

@@ -20,13 +20,21 @@ prior conversation. In order:
    the intent the implementation must be judged against.
 3. Derive the change set from `git status` and `git diff upstream/main...`,
    including untracked files.
-4. Run ship's "Ensure the development stack"; it is idempotent and reuses the
-   implement phase's servers when they are still healthy.
+4. Decide whether the change set needs a running Kibana. It does when it changes
+   code that runs in Kibana (server, public, or UI code) or when the plan names Scout
+   tests. It does not when it only changes docs, Markdown, tests without Scout, or
+   config the running app does not read. Only when it does, run ship's "Ensure the
+   development stack"; it is idempotent and reuses the implement phase's servers when
+   they are still healthy. Use the port that `launch-server.sh` prints; do not look it
+   up again. Record the decision in the report.
 
 ## Validate
 
-Fix confirmed failures and rerun affected checks until green. Complete behavior QA,
-review, and checks before creating the draft PR. Stop only for a blocker.
+Fix confirmed failures and rerun affected checks until green. Complete behavior QA
+when it applies, the cross-model review, and the mechanical checks before creating
+the draft PR. The cross-model review and `node scripts/check.js --scope=local` are
+required for every change set, including docs-only changes. "Cross-model review"
+means `cross-review` in OpenCode and `review-team` elsewhere. Stop only for a blocker.
 
 ### Acceptance criteria and QA
 
@@ -36,7 +44,9 @@ when you can point at the code and the observed behavior that fulfills it. If an
 criterion fails or cannot be verified, fix it before continuing; do not hand unmet
 criteria to the reviews.
 
-For UI changes, run behavior QA through a `build` subagent using `agent-browser`.
+Skip behavior QA when step 4 decided the change set needs no running Kibana, and
+say so in the report. Otherwise, for UI changes, run behavior QA through a `build`
+subagent using `agent-browser`.
 Brief it with the acceptance criteria, Kibana URL, and credentials. Verify the
 happy path, relevant edge cases, and backend effects. For non-UI changes, use the
 endpoint or command directly. Record what passed and what failed. Do not record a
@@ -44,14 +54,15 @@ demo before creating the PR.
 
 ### Cross-model review
 
-Load `~/.agents/skills/cross-review/SKILL.md` and follow it over the change set.
-It runs four reviewers on different model families with the technical and product
-rubrics, then synthesizes findings into act-on, consider,
-noted, and dismissed buckets weighted by cross-model agreement. Give it the plan file
-path for the intent.
+In OpenCode, load `~/.agents/skills/cross-review/SKILL.md` and follow it over the
+change set. It runs four reviewers on different model families with the technical
+and product rubrics, then synthesizes findings into act-on, consider, noted, and
+dismissed buckets weighted by cross-model agreement. Give it the plan file path for
+the intent.
 
-<!-- Alternative: load `review-team` in local review mode here in place of
-cross-review; everything below applies unchanged. -->
+In any other agent, cross-review is unavailable. Load
+`~/.agents/skills/review-team/SKILL.md` and follow it in local review mode instead;
+everything below applies unchanged.
 
 Verify each finding against the code. Fix confirmed correctness, security, and
 maintainability issues that block a PR and fit the task. Record which findings you
