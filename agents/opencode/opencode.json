@@ -38,5 +38,6 @@
   },
   "lsp": true,
   "formatter": true,
+  "snapshot": false,
   "plugin": ["@dietrichgebert/ponytail@latest"]
 }
