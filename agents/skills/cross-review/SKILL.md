@@ -22,11 +22,13 @@ Read ~/.agents/skills/cross-review/SKILL.md and follow it non-interactively.
 Scope: <local, a ref, or a PR URL>. Intent: <one paragraph>. Plan: <plan file or none>.
 Report only, do not edit files.
 EOF
-)"
+)" < /dev/null
 ```
 
-The run takes several minutes; wait for it to exit. If `opencode` is missing or the
-run fails, report it as a blocker instead of substituting another review.
+The run takes several minutes; wait for it to exit in the foreground. Keep the
+`< /dev/null`: `opencode run` reads stdin until it closes, so without it the command
+hangs forever in a background shell. If `opencode` is missing or the run fails,
+report it as a blocker instead of substituting another review.
 
 When this skill runs non-interactively, it cannot ask the user. Where a step says to
 ask, stop instead and print the question as a blocker.
