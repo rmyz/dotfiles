@@ -32,6 +32,12 @@ conversation. Use the checked-out branch as truth. In order:
    `launch-server.sh` prints. When it reuses one, take the port from the
    `kibana:<port>` terminal title, or from `wt config state vars get kibana-port`
    outside Orca. Record the decision in the report.
+5. Confirm bootstrap succeeded before any check: find the `bootstrap` terminal in
+   `ORCA terminal list --worktree path:<worktree-path> --json`, block on
+   `ORCA terminal wait --terminal <handle> --for exit`, then `ORCA terminal read` to
+   check the exit status. If it failed or no `bootstrap` terminal exists, start
+   `kbnb; exit $?` in a new `bootstrap` terminal and wait for it the same way.
+   Outside Orca, check `wt config state logs`.
 
 ## Validate
 
