@@ -19,8 +19,7 @@
     "build": {
       "description": "Use for code inspection, CodeGraph queries, commands, edits, and tests.",
       "mode": "all",
-      "model": "github-copilot/gpt-6-luna",
-      "variant": "medium",
+      "model": "github-copilot/claude-sonnet-5.5",
       "permission": "allow"
     }
   },
