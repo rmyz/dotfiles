@@ -28,11 +28,6 @@
       "type": "local",
       "command": ["codegraph", "serve", "--mcp"],
       "enabled": true
-    },
-    "Semantic code search MCP": {
-      "type": "local",
-      "command": ["bash", "/Users/sromeu/semantic-code-search-mcp.sh"],
-      "enabled": false
     }
   },
   "lsp": true,

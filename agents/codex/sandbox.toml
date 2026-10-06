@@ -1,0 +1,7 @@
+
+[sandbox_workspace_write]
+network_access = true
+writable_roots = ["~/Code/ai-generated", "~/Code/kibana"]
+
+[auto_review]
+extra_policy = "Approve local development commands for this user's workflow: git (except push to upstream elastic/kibana), gh, orca, wt, codegraph, opencode run, node and pnpm scripts, Kibana and Elasticsearch servers, and writes under ~/Code. Deny pushes to elastic/kibana and anything that deletes data outside the worktree."
