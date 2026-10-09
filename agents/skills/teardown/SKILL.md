@@ -1,6 +1,6 @@
 ---
 name: teardown
-description: Remove a finished Kibana feature worktree, its servers, its stored state, and its local folder after its PR merges or the work is abandoned. Orca worktrees by default, Worktrunk fallback. Invoke explicitly with a branch name.
+description: Remove a finished Kibana feature worktree, its servers, its stored state, and its local folder after its PR merges or the work is abandoned. Invoke explicitly with a branch name.
 disable-model-invocation: true
 ---
 
@@ -11,10 +11,7 @@ Stops one branch's servers and removes its worktree, stored state, and local fol
 Run every step from outside the target worktree, for example the main clone, so the
 shell's working directory does not disappear mid-teardown.
 
-Resolve the runtime first: if `ORCA worktree show --worktree branch:<branch> --json`
-resolves, the worktree is Orca-managed. Otherwise use the Worktrunk fallback.
-
-## Inside Orca (default)
+## Remove
 
 1. Capture the worktree path and full id from `worktree show`.
 
@@ -31,22 +28,7 @@ resolves, the worktree is Orca-managed. Otherwise use the Worktrunk fallback.
    ORCA worktree rm --worktree branch:<branch> --force --json
    ```
 
-## Outside Orca (fallback)
-
-1. Clear the branch's stored variables:
-
-   ```bash
-   wt config state vars clear --all --branch=<branch>
-   ```
-
-2. Remove the worktree with process reaping. `--reap` stops Kibana's entire process
-   tree:
-
-   ```bash
-   wt remove --reap --foreground <branch>
-   ```
-
-## Verify (both runtimes)
+## Verify
 
 1. Confirm the local folder is gone and delete any leftover. Removal normally deletes
    it, but the directory can survive when processes hold files. Only ever target that

@@ -84,24 +84,3 @@ PORT=$("$SHIP_SCRIPTS/launch-server.sh" 9001 300 "$STORYBOOK_HEALTH" \
   'ORCA terminal create --worktree path:'"$WORKTREE"' --title "storybook:$PORT" \
     --command "pnpm storybook dev --config-dir <alias-target-dir> -p $PORT" --json')
 ```
-
-## Outside Orca
-
-The same scripts run with these substitutions:
-
-- Launch commands become `nohup` strings run through `wt step tether`, with logs in
-  `~/Code/ai-generated/files`. Create it first with
-  `mkdir -p "$HOME/Code/ai-generated/files"`:
-
-```bash
-'nohup wt step tether -- zsh -ic "es --use-cached" > "$HOME/Code/ai-generated/files/kibana-shared-es.log" 2>&1 &'
-'nohup wt step tether -- zsh -ic "kbn --port $PORT" > "$HOME/Code/ai-generated/files/kibana-$BRANCH_SAFE-$PORT.log" 2>&1 &'
-'nohup pnpm storybook dev --config-dir "<alias-target-dir>" -p "$PORT" > "$HOME/Code/ai-generated/files/storybook-$BRANCH_SAFE-$PORT.log" 2>&1 &'
-```
-
-- Server state lives in Worktrunk: read stored ports with `wt config state vars get
-  kibana-port` / `storybook-port`, set them after a successful launch, and clear them
-  when cleaning up an owned-but-unhealthy server (kill the listener PID from `lsof`,
-  then wait until the port frees).
-- Logs live in the generated-files paths above; `export
-  BRANCH_SAFE=${BRANCH//\//-}` first.

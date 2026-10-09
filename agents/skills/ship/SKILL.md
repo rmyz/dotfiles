@@ -1,6 +1,6 @@
 ---
 name: ship
-description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana without approval stops, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals by default, with a Worktrunk fallback. Invoke explicitly with an issue link, PR number, or task description.
+description: End-to-end Kibana workflow taking one task from intake to a draft PR on elastic/kibana without approval stops, split into three phases (plan, implement, review) that each run in their own session. Runs on Orca worktrees and terminals. Invoke explicitly with an issue link, PR number, or task description.
 disable-model-invocation: true
 ---
 
@@ -21,13 +21,8 @@ Orca is the default runtime. Before the first Orca command, load the `orca-cli`
 skill, resolve the `ORCA` executable, run `ORCA skills get orca-cli`, and confirm the
 app with `ORCA status --json`.
 
-Choose the runtime once, at worktree creation, and keep it for the whole task:
-
-- **Inside Orca**: Orca worktrees, Orca terminals for every process, terminal titles
-  as server state, `ORCA terminal read` for logs.
-- **Outside Orca** (fallback): Worktrunk worktrees, `wt config state vars` as server
-  state, and `nohup` logs in `~/Code/ai-generated/files`. See
-  `~/.agents/skills/ship/dev-stack.md` for the substitutions.
+Ship uses Orca worktrees and Orca terminals for every process. Terminal titles hold
+server state. `ORCA terminal read` gives logs.
 
 ### Command tabs (inside Orca)
 

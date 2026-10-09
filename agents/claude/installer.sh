@@ -10,7 +10,6 @@ grep -q "ponytail@ponytail" <<<"$plugins" || {
   claude plugin marketplace add DietrichGebert/ponytail
   claude plugin install ponytail@ponytail --scope user
 }
-grep -q "worktrunk@worktrunk" <<<"$plugins" || wt config plugins claude install -y
 
 settings="$HOME/.claude/settings.json"
 mkdir -p "$(dirname "$settings")"

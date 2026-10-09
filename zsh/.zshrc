@@ -59,8 +59,6 @@ _aws_config_bootstrap() {
 _aws_config_bootstrap
 unset -f _aws_config_bootstrap
 
-if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi
-
 # pnpm
 export PNPM_HOME="/Users/sromeu/Library/pnpm"
 case ":$PATH:" in

@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review a Kibana pull request while preparing its local worktree, Elasticsearch, and Kibana environment for manual testing. Orca worktrees by default, Worktrunk fallback. Invoke explicitly with a GitHub PR URL.
+description: Review a Kibana pull request while preparing its local worktree, Elasticsearch, and Kibana environment for manual testing. Invoke explicitly with a GitHub PR URL.
 disable-model-invocation: true
 ---
 
@@ -50,11 +50,6 @@ and check the PR out into it:
 Then start bootstrap in an Orca terminal (`kbnb`),
 wait for it with `terminal wait --for exit`, and confirm success with `terminal read`.
 
-Outside Orca (fallback): from the primary Kibana checkout, run
-`cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")" && wt switch "<PR_URL>"
---no-cd` (no `--create`; Worktrunk resolves PR and fork refs), capture the worktree
-path, and wait for the bootstrap hook via `wt config state logs`.
-
 Use the PR worktree as the working directory for every following command. Run
 init-worktree's "Verify the development config" block.
 
@@ -65,8 +60,7 @@ start a Kibana owned by the PR worktree on the lowest free port starting at 5601
 not run ship's other steps, tests, validation, or teardown.
 
 Return the PR branch and commit, worktree path, bootstrap status, Elasticsearch
-status, Kibana URL, and where the logs live (Orca terminal titles, or
-`~/Code/ai-generated/files` paths outside Orca). Report failures with the command and output that failed. Leave
+status, Kibana URL, and which Orca terminals hold the logs. Report failures with the command and output that failed. Leave
 successful processes and the worktree running for manual testing.
 ```
 
@@ -87,7 +81,7 @@ Append:
 - Branch and commit: <branch> at <sha>
 - Elasticsearch: <status and URL>
 - Kibana: <status and URL>
-- Logs: <Orca terminal titles, or `~/Code/ai-generated/files` paths outside Orca>
+- Logs: <Orca terminal titles>
 ```
 
 If environment setup failed, still return the complete review report and put the

@@ -22,7 +22,7 @@ conversation. Use the checked-out branch as truth. In order:
 3. Run `git status` and `git diff upstream/main...` to see the current change state.
 4. Confirm bootstrap completed: find the `bootstrap` terminal in `ORCA terminal list
    --worktree path:<worktree-path> --json`, then `ORCA terminal wait --for exit` and
-   `ORCA terminal read`. Outside Orca, check `wt config state logs`. Wait for it
+   `ORCA terminal read`. Wait for it
    before anything that needs built packages.
 5. Use ship-review's step 4 rule to decide whether implementation needs Kibana.
 

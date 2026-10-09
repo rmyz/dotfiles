@@ -1,6 +1,6 @@
 ---
 name: init-worktree
-description: Provision a Kibana feature worktree from upstream/main with bootstrap, development config, and CodeGraph indexing. Orca worktree by default, Worktrunk fallback. No servers are started. Used standalone or as the first step of ship.
+description: Provision a Kibana feature worktree from upstream/main with bootstrap, development config, and CodeGraph indexing. No servers are started. Used standalone or as the first step of ship.
 disable-model-invocation: true
 ---
 
@@ -10,6 +10,11 @@ Provisions one Kibana feature worktree. It never starts Elasticsearch, Kibana, o
 Storybook; server startup belongs to the phase that needs it.
 
 Branch naming: `fix/`, `feat/`, `perf/`, or `refactor/` plus a short description.
+
+Worktrees live outside the Kibana checkout, at `~/Code/<worktree>`. Never create one
+inside `~/Code/kibana`. Orca reads its location from the project setting "Worktree
+Location", which must be `/Users/sromeu/Code`, with the global "Nest Workspaces" setting off. After `worktree create`, stop and report if the
+returned path is not directly under `~/Code`.
 
 ## Update the primary worktree
 
@@ -29,7 +34,7 @@ then
 fi
 ```
 
-## Create the worktree (inside Orca, default)
+## Create the worktree
 
 Before the first Orca command, load the `orca-cli` skill, resolve the `ORCA`
 executable, run `ORCA skills get orca-cli`, and confirm the app with
@@ -99,18 +104,6 @@ does not. Then finish every remaining init-worktree step below (CodeGraph indexi
 development config) before anything else; provisioning completes before the plan
 phase starts.
 
-## Create the worktree (outside Orca, fallback)
-
-```bash
-wt switch --create <branch> --base upstream/main
-```
-
-Capture the new worktree path from Worktrunk's output and use it as the tool working
-directory. `wt` starts `pnpm kbn bootstrap` in the background; confirm it completed
-through `wt config state logs` before anything that needs built packages.
-Read the actual branch with `git -C <worktree.path> branch --show-current` and use
-that value as `<branch>` in every later step, session title, prompt, and plan file name.
-
 ## Index with CodeGraph
 
 Reuse the primary worktree's index when it is complete and compatible with the
@@ -145,9 +138,8 @@ fi
 
 ## Verify the development config
 
-Only the Worktrunk fallback has a hook that copies the ignored development config;
-inside Orca nothing copies it for you. Either way, run the block: it copies the file
-when missing or stale and verifies the result.
+Nothing copies the ignored development config into a new worktree. Run the block: it
+copies the file when missing or stale and verifies the result.
 
 ```bash
 MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")

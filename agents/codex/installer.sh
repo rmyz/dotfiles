@@ -20,4 +20,3 @@ grep -q "ponytail@ponytail .*installed" <<<"$plugins" || {
   codex plugin marketplace add DietrichGebert/ponytail
   codex plugin add ponytail@ponytail
 }
-grep -q "worktrunk@worktrunk .*installed" <<<"$plugins" || wt config plugins codex install -y

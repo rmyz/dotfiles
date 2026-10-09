@@ -21,8 +21,6 @@ brew "minikube"
 brew "anomalyco/tap/opencode"
 # Minimal, extensible AI coding agent
 brew "pi-coding-agent"
-# Git worktree manager for AI agent workflows
-brew "worktrunk"
 # Pinentry for GPG on Mac
 brew "pinentry-mac"
 # Search tool like grep and the silver searcher
