@@ -32,6 +32,7 @@ Apply these rules whenever writing or editing code.
 - Match the surrounding file's style and reuse its helpers instead of introducing parallel patterns.
 - Never format files. The pre-commit hook runs formatting; manual formatting causes spurious diffs.
 - Keep PRs below 500 changed lines. If a PR exceeds 500 lines, assess whether it can be split into smaller coherent changes. Keep it together only when the large refactor or feature cannot be split without harming reviewability or correctness.
+- Add telemetry with EBT click tracking. Follow the [EBT click tracking guidelines](https://github.com/elastic/observability-dev/blob/main/docs/telemetry/ebt-click-tracking-guidelines.md). Fetch them with `gh api` first.
 - After any iteration that changes files, end the response with a brief summary naming each changed file and what changed.
 
 ### UI copy
