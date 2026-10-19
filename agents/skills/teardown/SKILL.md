@@ -13,19 +13,21 @@ shell's working directory does not disappear mid-teardown.
 
 ## Remove
 
-1. Capture the worktree path and full id from `worktree show`.
+1. Load the `orca-cli` skill and resolve the `ORCA` executable. Capture the worktree
+   path and full id from `ORCA worktree show --worktree branch:<branch> --json`. Use
+   the id as the selector in the next steps.
 
-2. Stop every terminal in the worktree; this kills the Kibana and Storybook process
-   trees running in them:
+2. Close every terminal in the worktree; this kills the Kibana and Storybook process
+   trees running in them. Stop when the result is `unverifiable`:
 
    ```text
-   ORCA terminal stop --worktree branch:<branch> --json
+   ORCA terminal close --worktree id:<worktree.id> --all --json
    ```
 
 3. Remove the worktree:
 
    ```text
-   ORCA worktree rm --worktree branch:<branch> --force --json
+   ORCA worktree rm --worktree id:<worktree.id> --force --json
    ```
 
 ## Verify
