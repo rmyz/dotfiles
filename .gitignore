@@ -1,2 +1,3 @@
 .DS_Store
 zsh/.zshrc.work.sh
+agents/skills/*/node_modules

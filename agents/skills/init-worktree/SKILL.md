@@ -97,7 +97,8 @@ The fourth argument only selects the OpenCode agent; other agents ignore it.
 
 After the new terminal starts, close the old terminal's whole tab with
 `ORCA terminal close --terminal <old-handle> --tab --json`. The old handle comes from
-`ORCA_TERMINAL_HANDLE`.
+`ORCA_TERMINAL_HANDLE`. Skip this step when `ORCA_TERMINAL_HANDLE` is unset,
+as in Orca chat.
 
 In the new session, run `pwd -P` first. It must equal `<worktree.path>`; stop if it
 does not. Then finish every remaining init-worktree step below (CodeGraph indexing,

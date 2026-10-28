@@ -21,10 +21,10 @@ else
   exit 1
 fi
 
-if [ -z "${ORCA_TERMINAL_HANDLE:-}" ]; then
+if [ -z "${ORCA_TERMINAL_HANDLE:-}${ORCA_AGENT_SESSION_ID:-}" ]; then
   echo "not inside Orca; start the next session with:" >&2
   echo "$CMD"
   exit 2
 fi
 
-orca terminal create --worktree "path:$DIR" --title "$TITLE" --command "$CMD" --json
+"${ORCA_CLI_COMMAND:-orca}" terminal create --worktree "path:$DIR" --title "$TITLE" --command "$CMD" --json

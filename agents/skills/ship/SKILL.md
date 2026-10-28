@@ -103,8 +103,9 @@ worktree:
   "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 
-Exit `0` means the terminal started: end this session. Exit `2` means this session
-is not inside Orca: report the printed command to the user, then end this session.
+Exit `0` means the terminal started: end this session. The script works from an
+Orca terminal and from Orca chat. Exit `2` means this session runs outside Orca:
+report the printed command to the user, then end this session.
 
 When a phase needs servers, read `~/.agents/skills/ship/dev-stack.md` and follow it.
 It is idempotent. `[PLAN]` never starts servers.

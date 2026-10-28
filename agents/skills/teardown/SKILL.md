@@ -8,8 +8,19 @@ disable-model-invocation: true
 
 Stops one branch's servers and removes its worktree, stored state, and local folder.
 
-Run every step from outside the target worktree, for example the main clone, so the
-shell's working directory does not disappear mid-teardown.
+Run every step from outside the target worktree. Closing the worktree's terminals
+kills the agent running inside it, so teardown never finishes there.
+
+## Relocate
+
+1. Resolve the worktree path as in Remove step 1. If the current directory is the
+   worktree path or inside it, spawn a session in the main clone and stop:
+
+   ```bash
+   ~/.agents/skills/ship/scripts/spawn-session.sh ~/Code/kibana "teardown <branch>" "/teardown <branch>"
+   ```
+
+2. Tell the user the teardown continues in the new terminal. Do nothing else here.
 
 ## Remove
 
