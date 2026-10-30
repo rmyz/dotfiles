@@ -35,6 +35,24 @@ Apply these rules whenever writing or editing code.
 - Add telemetry with EBT click tracking. Follow the [EBT click tracking guidelines](https://github.com/elastic/observability-dev/blob/main/docs/telemetry/ebt-click-tracking-guidelines.md). Fetch them with `gh api` first.
 - After any iteration that changes files, end the response with a brief summary naming each changed file and what changed.
 
+### Tests
+
+A test must fail when a real regression ships. Every test costs CI time, and every refactor must update it. Coverage is not a goal.
+
+- Before you add a test, name the regression it catches in one sentence. If you cannot, do not add it.
+- Test behavior that can break: branches, parsers, round-trips, form-to-request mapping, validation, sorting and ranking, state transitions, races and cancellation, error paths, and permission or space isolation.
+- Keep tests that pin a known workaround, for example a third-party rendering bug. Keep the comment that explains the bug.
+- Do not test constants, defaults, or static config against their own values.
+- Do not test static copy, i18n strings, URL strings, aria attributes, or "renders X" checks without logic behind them.
+- Do not test that a mock receives the props or arguments the code passes straight through.
+- Do not test toast, analytics, or telemetry calls on their own.
+- Do not add `it.each` rows that exercise the same branch.
+- Do not test dead code. If only a test uses a function, delete both.
+- If a test needs many mocks to reach a few lines of logic, extract the logic into a function and test that function.
+- Use the cheapest level that catches the regression: unit, then integration, then Scout or FTR. Add one test per behavior.
+- Verify your own work with throwaway scripts or the browser. Commit a check only if it meets these rules.
+- Before you delete a test, find another active test that covers the same behavior. A skipped suite is not coverage.
+
 ### UI copy
 
 - Never modify or rephrase UI text, labels, buttons, tooltips, error messages, or other user-facing strings automatically.
