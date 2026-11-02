@@ -5,8 +5,8 @@ needs during implementation. The procedure is idempotent: healthy owned servers
 are reused, missing ones are started. `[PLAN]` never starts servers.
 
 The scripts in `~/.agents/skills/ship/scripts/` own detection, ownership checks, the
-port allocation lock, and readiness polling. Both runtimes pass their own launch
-command; the scripts export `$PORT` before running it.
+port allocation lock, and readiness polling. Each call passes an `ORCA terminal
+create` launch command; the scripts export `$PORT` before running it.
 
 Recompute state first, from the feature worktree:
 
@@ -49,16 +49,16 @@ unhealthy server, close its terminal with `ORCA terminal close --terminal <handl
 --json` and wait until the port frees; never kill a PID from a file.
 
 Otherwise `scripts/launch-server.sh` takes the atomic `mkdir` lock at
-`/tmp/kibana-port-allocation.lock`, allocates the lowest unused port starting at
-`5601`, runs the launch command with `$PORT` exported, polls the health command until
-ready, prints the port, and releases the lock. The `kbn` alias expands to
+`/tmp/kibana-port-allocation.lock`, allocates the lowest unused port pair (`$PORT` and
+`$PORT + 1`), stepping by 2 from `5601`, runs the launch command with `$PORT`
+exported, polls the health command until ready, prints the port, and releases the lock. The `kbn` alias expands to
 `pnpm start --eis`.
 
 ```bash
 HEALTH='curl -fsSL -o /dev/null -u elastic:changeme "http://localhost:$PORT/api/status"'
 PORT=$("$SHIP_SCRIPTS/launch-server.sh" 5601 360 "$HEALTH" \
   'ORCA terminal create --worktree path:'"$WORKTREE"' --title "kibana:$PORT" \
-    --command "zsh -ic '"'"'kbn --port $PORT'"'"'" --json')
+    --command "zsh -ic '"'"'kbn --port $PORT --dev.basePathProxyTarget=$((PORT + 1))'"'"'" --json' 2)
 ```
 
 The terminal title is the port's system of record; nothing else stores it. Kibana

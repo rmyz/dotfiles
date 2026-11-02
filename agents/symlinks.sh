@@ -5,6 +5,7 @@ set -euo pipefail
 mkdir -p "$HOME/.agents"
 ln -sfn "$PWD/skills" "$HOME/.agents/skills"
 ln -sfn "$PWD/.skill-lock.json" "$HOME/.agents/.skill-lock.json"
+ln -sfn "$PWD/REVIEW.md" "$HOME/.agents/REVIEW.md"
 
 for dir in */; do
   if [ -x "$dir/symlinks.sh" ]; then

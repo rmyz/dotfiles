@@ -19,15 +19,6 @@
       "installedAt": "2026-03-26T11:00:23.960Z",
       "updatedAt": "2026-03-26T11:00:23.960Z"
     },
-    "gh-stack": {
-      "source": "github/gh-stack",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/github/gh-stack.git",
-      "skillPath": "skills/gh-stack/SKILL.md",
-      "skillFolderHash": "c95c8b5b4dd850f3fef007b304428f5684f2fb87",
-      "installedAt": "2026-08-01T14:58:08Z",
-      "updatedAt": "2026-08-01T14:58:09Z"
-    },
     "kibana-synthetic-data-generation": {
       "source": "git@github.com:elastic/skills",
       "sourceType": "git",
@@ -45,16 +36,6 @@
       "skillFolderHash": "",
       "installedAt": "2026-03-26T11:00:23.967Z",
       "updatedAt": "2026-03-26T11:00:23.967Z"
-    },
-    "conventional-comments": {
-      "source": "milistu/agent-skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/milistu/agent-skills.git",
-      "skillPath": "skills/conventional-comments/SKILL.md",
-      "skillFolderHash": "9b3ff777552a514f8446cad0c229404b5e7b409b",
-      "pluginName": "developer-workflow",
-      "installedAt": "2026-08-18T09:45:08.394Z",
-      "updatedAt": "2026-08-18T09:45:08.394Z"
     },
     "orchestration": {
       "source": "stablyai/orca",

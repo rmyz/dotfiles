@@ -24,15 +24,29 @@ conversation. Use the checked-out branch as truth. In order:
    --worktree path:<worktree-path> --json`, then `ORCA terminal wait --for exit` and
    `ORCA terminal read`. Wait for it
    before anything that needs built packages.
-5. Use ship-review's step 4 rule to decide whether implementation needs Kibana.
+5. Read `~/.agents/skills/ship-review/SKILL.md` and use its step 4 rule to decide whether
+   implementation needs Kibana.
 
 ## Implement
 
-Implement the plan without pausing between items. Stop only for a genuine
-blocker.
+Read `~/.agents/REVIEW.md` before the first edit. Implement the plan without pausing
+between items. Stop only for a genuine blocker.
 
-Keep diagnostics clean as each file changes. Reuse existing helpers and patterns.
-Do not expand scope or add speculative abstractions.
+For a bug fix, run the plan's reproduction first and confirm that it fails. A fix
+without a failing reproduction is a guess.
+
+End each step with its check from the plan. Start the next step only when the check
+passes. Reuse existing helpers and patterns. Do not expand scope or add speculative
+abstractions.
+
+## Prove it works
+
+Run every acceptance criterion's check from the plan against the final code. Start
+servers through `~/.agents/skills/ship/dev-stack.md` when a check needs them.
+Append a `Verification` section to the plan with one row per criterion: the check,
+the exit code or observed result, and the evidence. Evidence is quoted output, a
+response body, or a screenshot path under `~/Code/ai-generated/demo`. A claim
+without evidence is not a pass. A check that fails and cannot be fixed is a blocker.
 
 ## Record deviations, then hand off
 

@@ -17,14 +17,14 @@ This file holds the shared invariants and procedures; every phase skill applies 
 
 ## Runtime
 
-Orca is the default runtime. Before the first Orca command, load the `orca-cli`
+Before the first Orca command, load the `orca-cli`
 skill, resolve the `ORCA` executable, run `ORCA skills get orca-cli`, and confirm the
 app with `ORCA status --json`.
 
 Ship uses Orca worktrees and Orca terminals for every process. Terminal titles hold
 server state. `ORCA terminal read` gives logs.
 
-### Command tabs (inside Orca)
+### Command tabs
 
 Every process ship starts after worktree creation runs in its own visible Orca
 terminal tab: bootstrap, Elasticsearch, Kibana, Storybook, generators, lint, type
@@ -40,7 +40,7 @@ Wait for finite commands with `ORCA terminal wait --terminal <handle> --for exit
 after completion so the user can inspect and close it. Only close a tab automatically
 when ship must restart a failed server or move the session off the old card.
 
-### Card status (inside Orca)
+### Card status
 
 Update the Orca card at phase changes:
 
@@ -54,13 +54,11 @@ exists. Set `--workspace-status in-review` when the draft PR is created.
 
 ## Invariants
 
-The global rules already cover remotes, the 500-line PR limit, and skill locations;
-they are not repeated here.
-
 - Run one shared Elasticsearch instance on port `9200` from the primary `main`
   worktree. Never start Elasticsearch from a feature worktree.
-- Run one Kibana instance per active worktree. Allocate the lowest free port starting
-  at `5601`, then `5602`, `5603`, and so on.
+- Run one Kibana instance per active worktree. Allocate the lowest free port pair
+  starting at `5601`, then `5603`, `5605`, and so on. Each instance uses its port and
+  the next one.
 - Run one Storybook instance per active worktree, only when the plan includes
   Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
   `9003`, and so on.

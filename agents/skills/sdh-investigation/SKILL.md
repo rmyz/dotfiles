@@ -22,7 +22,7 @@ You are a **Senior Escalation Engineer** producing an **engineering acceleration
 | Context                                    | Tools                                                                    | Why                                 |
 | ------------------------------------------ | ------------------------------------------------------------------------ | ----------------------------------- |
 | **Artifacts** (downloaded logs, HAR, JSON) | `rg`, `jq`, `grep` in terminal                                           | Files on disk, not in codebase      |
-| **Code** (Kibana source)                   | **SemanticSearch** to understand, **Grep/Read** only to confirm or quote | Avoids `grep`→`read`→`grep` spirals |
+| **Code** (Kibana source)                   | **CodeGraph** (`codegraph_explore`) to understand when the repo has `.codegraph/`, else the agent's semantic search; **Grep/Read** only to confirm or quote | Avoids `grep`→`read`→`grep` spirals |
 
 These are different tools for different jobs. Don't carry terminal grep habits into code search.
 
@@ -67,7 +67,7 @@ Each gate requires a confidence assessment. These are the levels — learn them 
 
 ## Flow
 
-**Do NOT skip steps. Complete each before proceeding. Do NOT run Steps 3 and 4 in parallel — finish Step 3's gate before starting Step 4.**
+Run the steps in order. A gate may route you forward to Step 5. Finish Step 3's gate before you start Step 4.
 
 ### Step 0: Setup & Prior Context
 
@@ -135,8 +135,8 @@ Proven/Strongly supported → Step 5. Otherwise → Step 4.
 
 **Deliverable:** The file path and function where the issue lives, plus a few quoted lines for the report. That's it — you're locating, not explaining.
 
-1. **SemanticSearch** to discover (1–2 queries from different angles: endpoint, error, component)
-2. **SemanticSearch** to follow up if needed (narrow `target_directories` to the area found above)
+1. **CodeGraph** (`codegraph_explore`, or the agent's semantic search when the repo has no `.codegraph/`) to discover (1–2 queries from different angles: endpoint, error, component)
+2. The same tool to follow up if needed, scoped to the area found above
 3. **Read** to quote specific lines for the report (small ranges only)
 4. **Grep** only to confirm a symbol exists (not to explore)
 

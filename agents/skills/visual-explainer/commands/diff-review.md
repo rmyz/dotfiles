@@ -20,6 +20,6 @@ Typical sections; merge, reorder, drop, or add as the content needs:
 | Coupling | small SVG of what depends on the changed code |
 | Fixes | each risk worth acting on: `<ve-ask id="r1" q="Fix the unchecked null in parse()?">` (then `r2`, …; the risk in a few words) with `<ve-opt value="fix" default note="the fix in one line">Fix</ve-opt>` and `<ve-opt value="leave">Leave as is</ve-opt>` |
 
-Colors: red = removed or before · green = added or after · amber = risk · blue = context. Deliver with the skill's rules and hand over in one line.
+Colors: red = removed or before · green = added or after · amber = risk · blue = context. Deliver with the skill's rules; hand over with the page path, the verdict, and the fixes the reader must accept or leave.
 
 When the reply arrives: on a branch the user owns, apply the fixes they accepted. On someone else's PR, draft review comments for them and do not post them.

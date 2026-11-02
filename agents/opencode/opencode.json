@@ -31,7 +31,7 @@
     }
   },
   "lsp": true,
-  "formatter": true,
+  "formatter": false,
   "snapshot": false,
   "plugin": ["@dietrichgebert/ponytail@latest"]
 }

@@ -29,7 +29,7 @@ Watch for:
 
 ## Discussion
 
-Max 5 bullets showing the most recent key developments. Summarize older history in a single TL;DR line at the top. One line per event — who, what, and outcome.
+Show the most recent key developments. Summarize older history in a single TL;DR line at the top. One line per event — who, what, and outcome.
 
 - **TL;DR:** One-sentence summary of older thread history (if any)
 - **YYYY-MM-DD (@user):** One-sentence summary of what happened or was discovered
@@ -70,7 +70,7 @@ Explanation of how this code relates to the reported issue.
 
 ### Diagnosis
 
-The root cause finding in 1-2 paragraphs. Must be provable with specific evidence quoted above.
+The root cause finding. Must be provable with specific evidence quoted above.
 If confidence is "Insufficient": "Insufficient evidence to form hypothesis."
 
 ### Fixed In
@@ -81,7 +81,7 @@ PR #NUMBER (version X.Y.Z+)
 
 ### Evidence Summary
 
-In 2-3 sentences, explain *how you know* — connect the evidence that supports the diagnosis. Reference findings by section (e.g. "the HAR analysis shows...") but don't re-quote them. Don't re-explain the diagnosis.
+Explain *how you know* — connect the evidence that supports the diagnosis. Reference findings by section (e.g. "the HAR analysis shows...") but don't re-quote them. Don't re-explain the diagnosis.
 
 ### Missing Information
 

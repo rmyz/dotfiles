@@ -23,6 +23,7 @@ alias myip="curl ipinfo.io"
 export OPENCODE_DISABLE_CLAUDE_CODE=1
 export DISABLE_OPENCOLLECTIVE=1
 export ADBLOCK=1
+export VISUAL_EXPLAINER_OUTPUT_DIR="$HOME/Code/ai-generated/files"
 export HOMEBREW_GITHUB_API_TOKEN="$(command -v gh >/dev/null 2>&1 && gh auth token 2>/dev/null)"
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 

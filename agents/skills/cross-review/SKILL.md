@@ -19,7 +19,8 @@ Replace the `<...>` values; the quoted heredoc keeps quotes and `$` in them safe
 ```bash
 cd "<worktree-or-repo>" && opencode run --agent build "$(cat <<'EOF'
 Read ~/.agents/skills/cross-review/SKILL.md and follow it non-interactively.
-Scope: <local, a ref, or a PR URL>. Intent: <one paragraph>. Plan: <plan file or none>.
+Scope: <local, a ref, a git diff range, or a PR URL>. Intent: <one paragraph>. Plan: <plan file or none>.
+Earlier findings: <list, or none>.
 Report only, do not edit files.
 EOF
 )" < /dev/null
@@ -38,8 +39,8 @@ ask, stop instead and print the question as a blocker.
 Two modes:
 
 - **Local** (default): uncommitted changes plus branch commits against
-  `upstream/main` (committed, staged, unstaged, untracked), or the ref the invocation
-  names. Never use `origin/main`.
+  `upstream/main` (committed, staged, unstaged, untracked), or the ref or
+  `git diff <a> <b>` range the invocation names. Never use `origin/main`.
 - **PR**: the invocation supplies a GitHub PR URL. Use `gh` only and run no `git`
   commands; local git state is not a trustworthy source for a remote PR. Read
   `gh pr view <n> --repo <owner/repo> --json title,body,headRefOid,files,additions,deletions`
@@ -77,6 +78,12 @@ Every reviewer gets the identical briefing:
 - Instructions to read and apply both rubrics:
   `~/.agents/skills/technical-review/SKILL.md` and
   `~/.agents/skills/product-review/SKILL.md`.
+- Hunt for bugs before style: races, ordering, wrong stored values, missing empty
+  and error paths, and missing ownership checks. Each bug states the input or
+  sequence of events that triggers it. A bug without a trigger is a guess, so drop
+  it.
+- The findings from earlier rounds, when the invocation gives them. Do not repeat
+  them.
 - Output format: one finding per line item with severity, `file:line`, rubric item,
   and a one-line suggested fix.
 
@@ -104,24 +111,4 @@ End with an agreement map: where the models agreed, where they diverged, and wha
 pattern says about confidence.
 
 In PR mode, also turn every Act-on and Consider finding into a comment ready to paste
-onto the PR, following `~/.agents/skills/conventional-comments/SKILL.md`. Group them
-by file and line. Never post anything to GitHub.
-
-## Phase 2: auto-apply (not enabled)
-
-Do not act on this section yet. It becomes active only when the user removes this
-marker after grading the Act-on bucket across several PRs.
-
-When enabled, findings may be applied without a per-finding user decision only when
-all three hold:
-
-1. Consensus: two or more model families raised it independently.
-2. Safe class: a demonstrated correctness bug (write the failing test first, the fix
-   turns it green), dead code introduced by the diff, or missed error handling inside
-   changed code. Never UI copy, never architecture or refactors beyond the diff,
-   never scope changes, never files outside the plan's file list.
-3. Revalidation: affected tests and `node scripts/check.js --scope=local` rerun green
-   after the fix.
-
-Everything applied is listed afterwards with the models that agreed. All other
-findings still go to the user.
+onto the PR. Group them by file and line. Never post anything to GitHub.

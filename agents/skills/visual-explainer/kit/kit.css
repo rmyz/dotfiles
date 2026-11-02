@@ -140,6 +140,7 @@ figcaption { font-size: var(--t-body); color: var(--text-dim); margin-top: var(-
 .ve-e.is-async { stroke-dasharray: 6 5; }
 .ve-el { fill: var(--text-dim); font: 500 14px var(--font-mono); text-anchor: middle; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
 .ve-el.l { text-anchor: end; } .ve-el.r { text-anchor: start; }
+:where(.ve-svg, .ve-mini) text:where(:not([fill])) { fill: var(--text-dim); }
 /* a dashed boundary around a group, with a mono tag in its corner */
 .ve-bnd { fill: none; stroke: var(--border-bright); stroke-width: 1; stroke-dasharray: 6 5; }
 .ve-bnd-t { fill: var(--text-dim); font: 600 14px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
@@ -234,8 +235,9 @@ button:hover, button:focus-visible { border-color: var(--accent); }
 .ve-bars .hot + text { fill: var(--text); }
 
 /* small multiples: one mini diagram per case; the changed part takes the case's status color */
-.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr)); gap: var(--s-4); }
-.case { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2); padding: var(--s-4); display: grid; gap: var(--s-3); align-content: start; transition: border-color var(--fast) var(--ease); }
+.cases { --cols: 3; display: grid; grid-template-columns: repeat(auto-fit, minmax(max(14.5rem, (100% - (var(--cols) - 1) * var(--s-4)) / var(--cols)), 1fr)); gap: var(--s-4); }
+.cases:has(> :nth-child(4n):last-child) { --cols: 4; }
+.case { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-2); padding: var(--s-4); display: grid; gap: var(--s-3); grid-template-rows: auto 1fr; transition: border-color var(--fast) var(--ease); }
 .case[data-st=ok] { --st: var(--ok); } .case[data-st=warn] { --st: var(--warn); } .case[data-st=risk] { --st: var(--risk); }
 .ve-mini { width: 100%; height: auto; font: 600 15px var(--font-body); }
 .ve-mini .ve-n .sh { filter: none; }

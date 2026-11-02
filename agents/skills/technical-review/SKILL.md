@@ -9,6 +9,9 @@ Review the diff. By default that means uncommitted changes plus the commits on t
 branch against `upstream/main` (committed, staged, unstaged, and untracked); if the
 invocation names a ref, branch, or PR, review that instead.
 
+Apply `~/.agents/REVIEW.md` first. Its rules come from real reviewer comments, and
+its "For reviewers" section sets the output rules.
+
 Focus on code architecture, bad patterns, consistency with existing conventions and
 components in the surrounding Kibana code, and the Fowler code smells below. Match
 each smell against the diff — name it and quote the hunk — as judgement-call
@@ -40,7 +43,7 @@ checks, i18n checks).
 - **Refused Bequest** — a subclass or implementer that ignores most of what it
   inherits. → drop the inheritance, use composition.
 
-Beyond the smells, flag these slop patterns aggressively:
+Beyond the smells, flag these slop patterns:
 
 - Defensive code on trusted internal paths: try/catch, existence checks, or
   fallbacks the surrounding code does not need. → delete; let internal invariants
@@ -52,6 +55,6 @@ Beyond the smells, flag these slop patterns aggressively:
 - Feature-specific logic leaking into shared modules or the wrong layer. → move it
   behind the feature's own boundary.
 
-Report each finding with severity, file, and a one-line suggested fix. Do not apply
-changes. End with a short list of which findings you would act on and which you would
-drop, and why.
+Report each finding with its `file:line`, its tag from the "For reviewers" section of
+`~/.agents/REVIEW.md`, and a one-line suggested fix. Do not apply changes. End with a
+short list of which findings you would act on and which you would drop, and why.

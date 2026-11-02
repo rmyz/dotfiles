@@ -21,4 +21,4 @@ Typical sections; merge, reorder, drop, or add as the content needs:
 | Commands and files | compact reference table |
 | Next | `<ve-ask id="next" q="Where do we start?">` with one `<ve-opt>` per evidence-based next step; the best one carries `default` |
 
-Deliver with the skill's rules and hand over in one line. When the reply arrives, start on the step the reader picked.
+Deliver with the skill's rules; hand over with the page path and the recommended next step. When the reply arrives, start on the step the reader picked.

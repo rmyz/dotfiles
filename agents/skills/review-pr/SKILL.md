@@ -56,7 +56,7 @@ init-worktree's "Verify the development config" block.
 Read `~/.agents/skills/ship/dev-stack.md` and follow it for Elasticsearch and Kibana;
 skip Storybook. Reuse the shared Elasticsearch on port 9200
 when healthy. Start it from the primary main worktree only when absent. Reuse or
-start a Kibana owned by the PR worktree on the lowest free port starting at 5601. Do
+start a Kibana owned by the PR worktree on the lowest free port pair starting at 5601. Do
 not run ship's other steps, tests, validation, or teardown.
 
 Return the PR branch and commit, worktree path, bootstrap status, Elasticsearch

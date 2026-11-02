@@ -80,15 +80,24 @@ Read team labels from `AGENTS.md` (`TEAM_LABEL`, `RELEASE_NOTE_LABEL`, `BACKPORT
 - Structure:
   1. `## Summary`
   2. `## Demo` (conditional: visual changes or recorded QA only)
-  3. `## How to test`
+  3. `## Risk` (conditional: see below)
+  4. `## How to test`
 - **Summary**:
   - Put `Closes #<id>` or `Addresses #<id>` at the top of the section (elastic/kibana issues only).
   - For private-repo issues: omit the reference from the PR body. Remind the user to connect it via the Development field on the private issue.
-  - Follow with 1-3 concise bullets explaining what changed and why, plus any non-obvious user impact or key implementation note.
+  - Follow with concise bullets explaining what changed and why, plus any non-obvious user impact or key implementation note.
 - **Demo**:
   - Placed before `## How to test`.
   - Include this section only for visual changes or when QA recordings exist. Omit it entirely otherwise.
   - If multiple demo recordings were captured (e.g. happy path and failure scenario), list a clearly labeled drag-and-drop placeholder for each one.
+- **Risk**:
+  - Include it only when the change renames or removes a stored id, schema field,
+    route, or URL parameter; adds a migration; changes privileges; or exceeds 500
+    lines. Omit it otherwise.
+  - One bullet per item: what breaks, and for whom.
+  - Add a revert note only when a plain revert does not undo the change, for example
+    after a migration has run or data has been written.
+  - For a PR over 500 lines, state why it is not split.
 - **How to test**:
   - Numbered list of manual steps so reviewers can reproduce and verify locally.
   - End with an explicit verification check (`Verify <expected result>`).
@@ -132,6 +141,7 @@ EOF
 gh pr comment "$PR_URL" --body '/ci'
 ```
 
-Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no visual change or recorded artifact.
+Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no visual change or recorded artifact. Insert `## Risk`
+before `## How to test` only when the Risk rules apply.
 
 Output the created `PR_URL`.

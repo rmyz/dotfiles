@@ -5,6 +5,7 @@ BASE_PORT=$1
 TIMEOUT=$2
 HEALTH_CMD=$3
 LAUNCH_CMD=$4
+STEP=${5:-1}
 
 LOCK=/tmp/kibana-port-allocation.lock
 while ! mkdir "$LOCK" 2>/dev/null; do
@@ -23,8 +24,16 @@ release_lock() {
 trap release_lock EXIT INT TERM
 
 PORT=$BASE_PORT
-while lsof -nP -iTCP:"$PORT" -sTCP:LISTEN > /dev/null 2>&1; do
-  PORT=$((PORT + 1))
+port_busy() {
+  i=0
+  while [ "$i" -lt "$STEP" ]; do
+    lsof -nP -iTCP:"$((PORT + i))" -sTCP:LISTEN > /dev/null 2>&1 && return 0
+    i=$((i + 1))
+  done
+  return 1
+}
+while port_busy; do
+  PORT=$((PORT + STEP))
 done
 export PORT
 

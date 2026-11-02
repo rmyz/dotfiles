@@ -19,7 +19,7 @@ anything.
    (cd ~/Code/kibana-operations/triage && node code-owners.js "$PR_NUMBER")
    ```
 
-3. `co` groups files by owner set. Merge duplicate entries by team before drafting one
+3. The script groups files by owner set. Merge duplicate entries by team before drafting one
    message per team:
 
    > Hey team, I need your codeowners review in this PR. It <one-line description> and

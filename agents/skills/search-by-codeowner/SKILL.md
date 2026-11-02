@@ -7,7 +7,7 @@ description: Search for a term in files owned by a specific GitHub team based on
 
 ## Overview
 
-The `.github/CODEOWNERS` file in `~/Code/kibana` maps file paths to owning GitHub teams. This skill searches tracked files whose last matching rule assigns them to the requested team.
+The `.github/CODEOWNERS` file in `~/Code/kibana` maps file paths to owning GitHub teams. This skill searches tracked `.js`, `.jsx`, `.ts`, `.tsx`, `.json`, `.md`, `.yml`, and `.yaml` files outside `node_modules`, `build`, and `target` directories whose last matching rule assigns them to the requested team.
 
 The scan root is hardcoded to `~/Code/kibana` — this skill always scans that folder regardless of where it is invoked from.
 
@@ -50,5 +50,6 @@ cd ~/Code/kibana && \
 
 If you prefer using the agent's built-in Grep tool directly:
 
-1. Read `.github/CODEOWNERS` and find paths for the target team
-2. Use the Grep tool scoped to each directory from step 1
+1. Read `.github/CODEOWNERS` and find the patterns for the target team
+2. Drop paths that a later rule assigns to another team; the last matching rule wins
+3. Use the Grep tool scoped to the remaining paths

@@ -42,7 +42,7 @@ const renderInputSchema = z.object({
   path: z.string().min(1).optional().describe("Instead of html: a <name>.src.html file in the output directory."),
   root: z.string().min(1).optional().describe("For a plan source (<ve-plan> tags): the repository its citations are checked against. Defaults to the server's working directory."),
   open: z.boolean().default(false).describe("Open the written file after rendering. Defaults to false for MCP."),
-  viewer: viewerSchema.default("browser").describe("Viewer to use when open is true."),
+  viewer: viewerSchema.default("browser").describe("When open is true: browser opens the default browser; glimpse opens a glimpseui window; auto tries glimpseui, then the browser. Defaults to browser."),
 }).strict();
 
 const renderOutputSchema = z.object({
@@ -371,7 +371,7 @@ function registerPrompts(server) {
 function registerTools(server) {
   server.registerTool("visual_explainer_prepare", {
     title: "Prepare Visual Explainer",
-    description: "Plan a visual explanation. Does not call an LLM or write files.",
+    description: "Return a fixed four-step checklist for making a visual-explainer page, with the given topic, goal, audience, and files echoed back. It does not read the files, inspect the repository, choose a page shape, call an LLM, or write files. Use it when the visual-explainer skill is not loaded; skip it when you already follow the skill.",
     inputSchema: prepareInputSchema,
     outputSchema: prepareOutputSchema,
     annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -385,7 +385,7 @@ function registerTools(server) {
 
   server.registerTool("visual_explainer_render_html", {
     title: "Render Visual Explainer HTML",
-    description: "Render a page source (path) or HTML to the configured output directory (default ~/.agent/diagrams/). Does not call an LLM.",
+    description: "Render a page source to one self-contained HTML file in the output directory (default ~/.agent/diagrams/, or VISUAL_EXPLAINER_OUTPUT_DIR). Pass path (a <name>.src.html inside the output directory; the page is named after it) or html with filename, not both. The input must be a complete HTML document. A kit page (data-ve-kit) or plan source is validated first: on errors the tool returns them and writes nothing; with html, the source is also saved as <name>.src.html. An existing page with the same name is overwritten. A kit page is then loaded in a headless browser, and the result lists each visual problem as a ✗ line and attaches contact-sheet images; this check is skipped when no browser can start. Does not call an LLM.",
     inputSchema: renderInputSchema,
     outputSchema: renderOutputSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },

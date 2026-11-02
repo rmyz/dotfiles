@@ -25,6 +25,6 @@ Cover both angles:
      contrast) where relevant. Copy findings are report-only; UI text changes always
      need explicit user approval.
 
-Report each finding with severity, file, and a one-line suggested fix. Do not apply
-changes. End with a short list of which findings you would act on and which you would
-drop, and why.
+Report each finding with its `file:line`, its tag from the "For reviewers" section of
+`~/.agents/REVIEW.md`, and a one-line suggested fix. Do not apply changes. End with a
+short list of which findings you would act on and which you would drop, and why.

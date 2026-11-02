@@ -4,9 +4,11 @@ Reference commands for each investigation step. Replace `ISSUE`, `REPO`, `TOKEN`
 
 ## Step 0: Setup
 
+If `.cursor/sdh/` is not in `.gitignore`, add it with the edit tool.
+
 ```bash
-# Ensure artifacts dir is gitignored
-grep -qxF '.cursor/sdh/' .gitignore 2>/dev/null || echo '.cursor/sdh/' >> .gitignore
+# Check that the artifacts dir is gitignored
+grep -qxF '.cursor/sdh/' .gitignore && echo ignored
 
 # Check for prior report
 ls -la .cursor/sdh/ISSUE/sdh_report_* 2>/dev/null

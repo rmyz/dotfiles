@@ -3,7 +3,6 @@ description: Cross-review reviewer pinned to github-copilot/claude-opus-5.5. Inv
 mode: subagent
 hidden: true
 model: github-copilot/claude-opus-5.5
-temperature: 0.1
 permission:
   edit: deny
   task: deny

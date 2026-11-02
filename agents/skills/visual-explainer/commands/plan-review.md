@@ -17,4 +17,4 @@ Write the review as a plan page (`references/plans.md`), so the reader accepts o
 - **Decisions**: each finding gets `<ve-ask id="f1" q="Fix the plan this way?">` (then `f2`, …) with `<ve-opt value="accept" default>` describing the fix and `<ve-opt value="reject">Keep the plan as written</ve-opt>`, plus any real alternative.
 - **End** with `aux="scope"`: what the plan gets right.
 
-Hand over in one line. When the response arrives, edit the plan file: apply accepted fixes and leave rejected ones as written.
+Hand over with the page path and the verdict. When the response arrives, edit the plan file: apply accepted fixes and leave rejected ones as written.

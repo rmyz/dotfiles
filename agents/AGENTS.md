@@ -6,7 +6,7 @@ alwaysApply: true
 
 ## CodeGraph
 
-In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it before grep/find or reading files when you need to understand or locate code:
 
 - **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
 - **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
@@ -31,8 +31,8 @@ Apply these rules whenever writing or editing code.
 - Prefer early returns over nested conditionals.
 - Match the surrounding file's style and reuse its helpers instead of introducing parallel patterns.
 - Never format files. The pre-commit hook runs formatting; manual formatting causes spurious diffs.
-- Keep PRs below 500 changed lines. If a PR exceeds 500 lines, assess whether it can be split into smaller coherent changes. Keep it together only when the large refactor or feature cannot be split without harming reviewability or correctness.
-- Add telemetry with EBT click tracking. Follow the [EBT click tracking guidelines](https://github.com/elastic/observability-dev/blob/main/docs/telemetry/ebt-click-tracking-guidelines.md). Fetch them with `gh api` first.
+- Keep PRs below 500 changed lines. If a PR exceeds 500 lines, assess whether it can be split into smaller coherent changes. Keep it together only when every split would merge unfinished or broken work.
+- When you add telemetry, use EBT click tracking. Fetch the [EBT click tracking guidelines](https://github.com/elastic/observability-dev/blob/main/docs/telemetry/ebt-click-tracking-guidelines.md) with `gh api` and follow them.
 - After any iteration that changes files, end the response with a brief summary naming each changed file and what changed.
 
 ### Tests
@@ -87,7 +87,7 @@ PRs, issues, reviews, and Slack messages.
 
 - Write in ASD-STE100 Simplified Technical English: short sentences, active voice,
   one instruction per sentence, plain words.
-- Lead with the answer or result. No greetings, preambles, recaps, or sign-offs.
+- Lead with the answer or result. No greetings, preambles, recaps, or sign-offs. The changed-files summary is the one exception.
 - Use the fewest words that keep the useful facts. Cut filler ("in order to",
   "it is important to note"), hedging, and adverbs.
 - State facts, numbers, and mechanisms. Not feelings or promotion ("robust",
@@ -112,6 +112,10 @@ Apply this section only when the working directory is a clone or worktree of
 - The clone also carries many other contributors' remotes. Never infer the fork as
   "the remote that is not `origin`".
 
+### Review rules
+
+- Before you write or review code, read and apply `~/.agents/REVIEW.md`.
+
 ### Pull requests
 
 - Always create pull requests using the `create-pr` skill. Never create or push branches to `upstream` (`elastic/kibana`). Always push feature branches to the fork `rmyz/kibana` (`origin`) and target `elastic/kibana:main`.
@@ -121,8 +125,9 @@ Apply this section only when the working directory is a clone or worktree of
 
 - Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
   `--eis` and the license config.
-- Never pass `--no-base-path` to Kibana. Kibana always serves under a 3-letter
-  prefix before `/app/`, for example `/kpd/app`.
+- Start Kibana with `--dev.basePathProxyTarget=<port+1>`, so each instance uses two
+  ports: `<port>` and `<port+1>`. Never pass `--no-base-path`. Kibana always serves
+  under a 3-letter prefix before `/app/`, for example `/kpd/app`.
 - Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
   terminal (`orca terminal create`), so the user can read the logs there.
 

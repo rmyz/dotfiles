@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "matched": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "expected_id": { "type": "string" },
+          "finding": { "type": "string" }
+        },
+        "required": ["expected_id", "finding"]
+      }
+    },
+    "findings_total": { "type": "integer" },
+    "unmatched_findings": { "type": "array", "items": { "type": "string" } }
+  },
+  "required": ["matched", "findings_total", "unmatched_findings"]
+}

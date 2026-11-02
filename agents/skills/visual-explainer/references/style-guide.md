@@ -25,7 +25,7 @@ The project's own design system overrides the register; a named palette → `the
 
 - **Measure:** body about 65ch; side notes 40–50ch. Break display lines at phrase boundaries. Flush left; never justify. Promote only what must be read first.
 - **Numerals:** `tabular-nums` in tables, KPIs, and anything that updates; proportional in prose (oldstyle in Paper); number columns right-aligned. Format for reading (`5.6k`, `−86%`), repeat the unit in every label, and state the comparison (`from 5,600`).
-- **Characters:** curly quotes. `–` for ranges, `—` for a break, `−` for minus, `×` for multipliers, `…`, `≤`. A no-break space between number and unit (`1&nbsp;ms`).
+- **Characters:** curly quotes. `–` for ranges, no em dashes, `−` for minus, `×` for multipliers, `…`, `≤`. A no-break space between number and unit (`1&nbsp;ms`).
 - **Emphasis:** bold or italic, never both; italics and uppercase (`.caps`) only for 3 words or fewer. Underline only links and linked terms.
 
 ## Layout

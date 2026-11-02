@@ -63,3 +63,16 @@ kills the agent running inside it, so teardown never finishes there.
    rm -f "$HOME/Code/ai-generated/plans/ship-plan-<branch-safe>.md"
    rm -f "$HOME/Code/ai-generated/demo/qa-<branch-safe>"*.webm
    ```
+
+## Feed the review eval
+
+When the PR merged, start the `review-eval` automation if its precheck finds work.
+It runs in its own Orca session, so do not wait for it:
+
+```bash
+if ~/.agents/skills/review-eval/scripts/pending.sh; then
+  ORCA automations run --id "$(ORCA automations list --json | jq -r '.result.automations[] | select(.name == "review-eval") | .id')" --json
+fi
+```
+
+Skip this step when the work was abandoned.

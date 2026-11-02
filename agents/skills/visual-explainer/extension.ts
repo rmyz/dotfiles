@@ -448,7 +448,7 @@ export default function (pi: ExtensionAPI) {
   pi.registerTool<typeof visualExplainerParameters, VisualExplainerDetails>({
     name: "visual_explainer",
     label: "Visual Explainer",
-    description: "Plan visual explanations, or render a page source to HTML in ~/.agent/diagrams/ (or VISUAL_EXPLAINER_OUTPUT_DIR when set).",
+    description: "Prepare or render visual-explainer pages. action=prepare returns a fixed checklist and, when a subagent tool is active and preferSubagent is not false, a scout-subagent prompt; it does not read files or write anything. action=render turns a page source into one self-contained HTML file in ~/.agent/diagrams/ (or VISUAL_EXPLAINER_OUTPUT_DIR when set): pass path (a <name>.src.html inside that directory) or html with filename, not both. A kit page or plan source with errors writes nothing; a kit page is then checked in a headless browser, and the result lists each visual problem as a ✗ line with contact-sheet images. With open and viewer glimpse or auto, a kit or plan page can send the reader's reply back later as a message.",
     promptSnippet: "Plan or render visual-explainer pages. Use render with path for a page source.",
     promptGuidelines: [
       "After a plan, architecture, diff review, or substantial implementation, offer a visual explanation when it would clarify the work.",

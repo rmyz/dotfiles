@@ -1,21 +1,12 @@
----
-name: review-pr-comments
-description: Triage PR review comments — decide whether to accept or push back on each one. Given comment links from a GitHub PR, fetches comment content and PR diff, then reasons about each comment in context and drafts a reply. Use when the user shares PR comment links, asks "should I accept this feedback", or wants help responding to PR review comments.
----
-
-# Review PR Comments
+# Comment triage
 
 Analyze review comments on a GitHub PR and recommend whether to **accept** or
 **push back** on each one, with reasoning grounded in the actual diff.
 
 ## Inputs
 
-The user provides:
-
-1. One or more GitHub PR comment links (e.g. `https://github.com/org/repo/pull/123#discussion_r456`)
-2. Optionally, the PR URL itself
-
-Extract `OWNER/REPO`, `PR_NUMBER`, and any comment/discussion IDs from the links.
+The input is one or more GitHub PR comment links (e.g. `https://github.com/org/repo/pull/123#discussion_r456`), or a PR.
+Extract `OWNER/REPO`, `PR_NUMBER`, and any comment/discussion IDs.
 
 ## Workflow
 
@@ -36,6 +27,12 @@ gh api "repos/$OWNER/$REPO/pulls/$PR_NUMBER/comments" --paginate
 Filter to the comments the user linked. If the user gave only a PR URL with no
 specific links, analyze every unresolved review comment.
 
+For an `elastic/kibana` PR, also read the threads of Libra, Kibana's AI reviewer,
+with `node ~/Code/kibana/.agents/skills/pr-babysit/scripts/pr.mjs threads <PR_NUMBER>`.
+Read the body of Libra's latest review too, because some findings appear only
+there. When a thread has `followUp: true`, triage only its latest reply, and reply
+at most once more.
+
 For each comment, extract:
 
 - `body` — the reviewer's text
@@ -46,26 +43,18 @@ For each comment, extract:
 
 ### Step 3 — Gather deeper context (if needed)
 
-If the diff hunk alone is not enough to judge a comment:
-
-1. Read the full file around the comment (±30 lines).
-2. Check `git log` / `git blame` for why the code is written that way.
-3. **Last resort only:** if the comment spans multiple files or touches
-   architecture, read and follow `~/.agents/skills/cross-review/SKILL.md` in
-   **PR mode** on the same PR. Do not escalate for single-line style nits
-   or localized logic questions.
+If the diff hunk alone is not enough to judge a comment, read the file around it
+and check `git log` / `git blame` for why the code is written that way. Escalate
+only when a comment spans multiple files or touches architecture: read and follow
+`~/.agents/skills/cross-review/SKILL.md` in **PR mode** on the same PR. Do not
+escalate for single-line style nits or localized logic questions.
 
 ### Step 4 — Analyze each comment
 
-For every comment, reason through:
-
-1. **Is the reviewer correct?** Does it identify a real issue, or is it based on
-   a misreading of the code or context?
-2. **Severity** — blocking, nice-to-have, or purely stylistic?
-3. **Cost vs benefit** — effort to address vs improvement gained. Mechanical fix,
-   or does it require rethinking the approach?
-4. **Alternatives** — if the suggestion is not ideal, is there a better middle
-   ground?
+For every comment, decide whether the reviewer is correct or misread the code or
+context, how severe the point is (blocking, nice-to-have, or stylistic), and whether
+the effort is worth the gain. When the suggestion is not ideal, look for a middle
+ground.
 
 ### Step 5 — Present verdicts
 
@@ -78,7 +67,7 @@ One block per comment:
 
 **Verdict: ✅ Accept** | **Verdict: 🔙 Push back** | **Verdict: 🤝 Compromise**
 
-[2-4 sentences of reasoning, referencing the actual code]
+[short reasoning that references the actual code]
 
 **Suggested reply:**
 > [draft reply]
@@ -106,10 +95,22 @@ it is warranted, never reflexively. When pushing back, lead with the technical
 reason rather than an apology. Say plainly when something is a preference rather
 than a defect.
 
+### Step 6 — Encode the lesson
+
+For each accepted or compromise comment, ask whether it applies beyond this PR.
+When it does, read `~/.agents/REVIEW.md`:
+
+- No rule covers it: propose one imperative sentence under the matching heading.
+- A rule covers it: the rule did not hold. Propose a lint rule or a skill check
+  instead of a second sentence.
+
+Show the proposals after the verdicts. Edit `~/.agents/REVIEW.md` only after the
+user approves them.
+
 ### End with a summary
 
 ```
-**Summary**: X comments analyzed — Y accept, Z push back, W compromise
+**Summary**: X comments analyzed — Y accept, Z push back, W compromise, R rules proposed
 ```
 
 ## Edge cases

@@ -46,7 +46,6 @@ interface AnalysisResult {
 interface CodeOwnerRule {
   pattern: string;
   teams: string[];
-  specificity: number; // Higher = more specific
 }
 
 function loadGitignore(): Set<string> {
@@ -306,13 +305,9 @@ function loadCodeOwners(): CodeOwnerRule[] {
       const teams = parts.slice(1).filter((part) => part.startsWith('@'));
 
       if (teams.length > 0) {
-        // Calculate specificity: more path segments = more specific
-        const specificity = pattern.split('/').filter((seg) => seg && seg !== '*').length;
-
         rules.push({
           pattern,
           teams,
-          specificity,
         });
       }
     }
@@ -363,11 +358,7 @@ function getTeamForFile(filePath: string, rules: CodeOwnerRule[]): string[] {
     return ['@unowned'];
   }
 
-  // Sort by specificity (most specific last) and return the most specific rule's teams
-  matchingRules.sort((a, b) => a.specificity - b.specificity);
-  const mostSpecificRule = matchingRules[matchingRules.length - 1];
-
-  return mostSpecificRule.teams;
+  return matchingRules[matchingRules.length - 1].teams;
 }
 
 function analyzeFileForDependency(filePath: string, dependencyName: string): UsageResult | null {

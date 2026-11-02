@@ -48,16 +48,21 @@ required for every change set, including docs-only changes. Stop only for a bloc
 
 Before the reviews, list every acceptance criterion from the issue or task
 description. Verify each one against the implementation. A criterion is done only
-when you can point at the code and the observed behavior that fulfills it. If any
-criterion fails or cannot be verified, fix it before continuing; do not hand unmet
-criteria to the reviews.
+when you can point at the code and the observed behavior that fulfills it. Rerun
+each check in the plan's `Verification` section yourself. Do not accept the implement
+phase's evidence without a rerun. If any criterion fails or cannot be verified, fix
+it before continuing; do not hand unmet criteria to the reviews.
 
 Skip behavior QA when step 4 decided the change set needs no running Kibana, and
-say so in the report. Otherwise, for UI changes, run behavior QA through a `build`
-subagent using `agent-browser`.
-Brief it with the acceptance criteria, Kibana URL, and credentials. Verify the
-happy path, relevant edge cases, and backend effects. For non-UI changes, use the
-endpoint or command directly. Record what passed and what failed. Do not record a
+say so in the report. Otherwise, for UI changes, run behavior QA through a
+subagent that uses `agent-browser`.
+Brief it with the acceptance criteria, Kibana URL, credentials, and
+`~/.agents/skills/kibana-verify/SKILL.md` with the feature file the plan names. The
+subagent creates or updates that feature file after the run. Verify the
+happy path, relevant edge cases, and backend effects. The subagent returns a
+screenshot path or a response body for each check. Open the screenshots yourself
+before you count a check as passed. For non-UI changes, use the endpoint or command
+directly. Record what passed and what failed. Do not record a
 demo before creating the PR.
 
 ### Cross-model review
@@ -69,16 +74,26 @@ families with the technical and product rubrics, then synthesizes findings into
 act-on, consider, noted, and dismissed buckets weighted by cross-model agreement.
 Give it the plan file path for the intent.
 
+Before you apply any fix, run `"$HOME/.agents/skills/ship/scripts/snapshot.sh"` and
+record the printed SHA as `PRE`.
+
 Verify each finding against the code. Fix confirmed correctness, security, and
 maintainability issues that block a PR and fit the task. Record which findings you
 fixed, which you did not fix, and why. Stop if a finding needs a product decision
 that the task context cannot resolve.
 Do not change UI copy without approval of the exact proposed text.
 
+When you fixed at least one finding, run a second round on the fixes only. Run the snapshot script
+again and record the SHA as `POST`. Run cross-review with scope
+`git diff <PRE> <POST>`. Give it the round-one findings and tell it not to
+repeat them. Fix confirmed Act-on findings from round two. Do not run a third round.
+If round two shows the approach itself is wrong, stop and report it as a blocker.
+
 ### PR size
 
 Measure total additions and deletions against the merge base, including untracked
-files. If the change exceeds 500 lines, assess whether a coherent split is needed.
+files. If the change exceeds 500 lines and the plan has no `Size` reason, stop and
+report a split proposal.
 
 ## Run checks
 
@@ -156,6 +171,8 @@ Then invoke the `create-pr` skill to perform the commit, upstream sync, push, dr
 creation, and `/ci` comment. Pass context from the plan and review session:
 - Issue key and close/address status from the plan file
 - Short manual testing steps observed during validation
+- Risk: breaking changes, migrations, privilege changes, and the `Size` reason from
+  the plan, when any apply
 
 If `create-pr` halts due to merge conflicts against `upstream/main`, resolve them, rerun
 affected checks or QA, and invoke `create-pr` again.
@@ -167,7 +184,7 @@ replaced by `-`. Give the user its path for manual drag-and-drop. If recording
 fails, report it with the PR URL.
 
 Report the PR URL, the review findings fixed, the findings left open and why, the
-check results, and any remaining considerations. Remind the user about private
+check results, the plan's `Follow-ups`, and any remaining considerations. Remind the user about private
 issue linking or demo upload when applicable. Ship ends here.
 
 Afterwards, run `handoff` when the user wants the per-team review-request messages,
