@@ -45,7 +45,7 @@ Run every acceptance criterion's check from the plan against the final code. Sta
 servers through `~/.agents/skills/ship/dev-stack.md` when a check needs them.
 Append a `Verification` section to the plan with one row per criterion: the check,
 the exit code or observed result, and the evidence. Evidence is quoted output, a
-response body, or a screenshot path under `~/Code/ai-generated/demo`. A claim
+response body, or a screenshot path under `~/Code/ai-generated/<work-id>/demo`. A claim
 without evidence is not a pass. A check that fails and cannot be fixed is a blocker.
 
 ## Record deviations, then hand off

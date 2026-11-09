@@ -74,9 +74,10 @@ A test must fail when a real regression ships. Every test costs CI time, and eve
   or `--for tui-idle` (agent sessions). Never poll a terminal with `sleep` loops.
 - For GitHub content, fetch `raw.githubusercontent.com` or use `gh api`. Never
   fetch `github.com` HTML pages; they waste thousands of tokens on page chrome.
-- Store generated artifacts under `~/Code/ai-generated`. Put plans in `plans`,
-  screenshots and recordings in `demo`, and other standalone files in `files`.
-  Create the destination directory before writing. Use `/tmp` only for ephemeral
+- Store generated artifacts under `~/Code/ai-generated/<issue_number>/`. Put plans
+  in `plans`, screenshots and recordings in `demo`, and other standalone files in
+  `files`. When the work has no issue number, use the branch name with `/` replaced
+  by `-`. Create the destination directory before writing. Use `/tmp` only for ephemeral
   process state such as locks and sockets.
 
 
@@ -123,11 +124,11 @@ Apply this section only when the working directory is a clone or worktree of
 
 ### Local services
 
-- Start Elasticsearch with `es` and Kibana with `kbn`. These aliases also pass
+- Start Elasticsearch with `es` and Kibana with `kbn <port>`. They also pass
   `--eis` and the license config.
-- Start Kibana with `--dev.basePathProxyTarget=<port+1>`, so each instance uses two
-  ports: `<port>` and `<port+1>`. Never pass `--no-base-path`. Kibana always serves
-  under a 3-letter prefix before `/app/`, for example `/kpd/app`.
+- `kbn <port>` sets `--port=<port>` and `--dev.basePathProxyTarget=<port+1>`, so each
+  instance uses two ports: `<port>` and `<port+1>`. Never pass `--no-base-path`.
+  Kibana always serves under a 3-letter prefix before `/app/`, for example `/kpd/app`.
 - Before starting Elasticsearch, Kibana, or Storybook, run the server in a new Orca
   terminal (`orca terminal create`), so the user can read the logs there.
 

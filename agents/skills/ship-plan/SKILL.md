@@ -64,9 +64,9 @@ full `type_check` as a step check.
 Write a standalone plan outside the repository:
 
 ```bash
-BRANCH=$(git branch --show-current)
-mkdir -p "$HOME/Code/ai-generated/plans"
-PLAN_FILE="$HOME/Code/ai-generated/plans/ship-plan-${BRANCH//\//-}.md"
+WORK_ID=<issue number, or the branch name with / replaced by - when there is no issue>
+mkdir -p "$HOME/Code/ai-generated/$WORK_ID/plans"
+PLAN_FILE="$HOME/Code/ai-generated/$WORK_ID/plans/ship-plan.md"
 ```
 
 Keep it short and readable by the next session. Include the task and acceptance

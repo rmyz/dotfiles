@@ -179,8 +179,8 @@ affected checks or QA, and invoke `create-pr` again.
 
 After the PR exists, record a short demo for visual changes. Use the verified
 happy path and save the video as
-`~/Code/ai-generated/demo/qa-<branch-safe>.webm`, with `/` in the branch name
-replaced by `-`. Give the user its path for manual drag-and-drop. If recording
+`~/Code/ai-generated/<work-id>/demo/qa.webm`, where `<work-id>` is the issue
+number, or the branch name with `/` replaced by `-` when there is no issue. Give the user its path for manual drag-and-drop. If recording
 fails, report it with the PR URL.
 
 Report the PR URL, the review findings fixed, the findings left open and why, the

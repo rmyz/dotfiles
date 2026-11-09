@@ -31,7 +31,7 @@ before you judge the feature.
    observability data.
 3. Follow its steps with `agent-browser` for UI or `curl` for API. Use its
    `data-test-subj` selectors.
-4. Record evidence for each check: a screenshot under `~/Code/ai-generated/demo/`
+4. Record evidence for each check: a screenshot under `~/Code/ai-generated/<work-id>/demo/`
    or the quoted response body. A check without evidence did not pass.
 
 Never weaken a step or an expected result to make a check pass. When the app does

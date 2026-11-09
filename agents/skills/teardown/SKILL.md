@@ -57,11 +57,12 @@ kills the agent running inside it, so teardown never finishes there.
    started from inside the removed worktree (its `.es/` directory lives there),
    stopping the worktree's processes stops it too, so report that.
 
-3. Clean up branch-specific artifacts under `~/Code/ai-generated`:
-   Replace `/` in the branch name with `-` for `<branch-safe>`.
+3. Clean up the work artifacts under `~/Code/ai-generated`:
+   `<work-id>` is the issue number, or the branch name with `/` replaced by `-`
+   when there is no issue.
    ```bash
-   rm -f "$HOME/Code/ai-generated/plans/ship-plan-<branch-safe>.md"
-   rm -f "$HOME/Code/ai-generated/demo/qa-<branch-safe>"*.webm
+   rm -f "$HOME/Code/ai-generated/<work-id>/plans/ship-plan.md"
+   rm -f "$HOME/Code/ai-generated/<work-id>/demo/qa.webm"
    ```
 
 ## Feed the review eval
