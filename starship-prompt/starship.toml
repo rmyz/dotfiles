@@ -5,3 +5,6 @@
 
 [gcloud]
 disabled = true
+
+[git_status]
+stashed = ""
