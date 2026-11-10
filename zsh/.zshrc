@@ -32,7 +32,6 @@ export GOPATH=$HOME/go
 export GOBIN=$HOME/bin/go
 export PATH=$PATH:$GOPATH/bin:$GOBIN:$GOBIN/elastic-package
 export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
-export PATH="$HOME/.pyenv/shims:$PATH"
 export GPG_TTY=$(tty)
 export PATH="$PATH:/Applications/Docker.app/Contents/Resources/bin/"
 export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
