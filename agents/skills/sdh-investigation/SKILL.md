@@ -42,7 +42,7 @@ From the issue URL `https://github.com/{owner}/{repo}/issues/{number}`, extract:
 
 - **REPO** → `{owner}/{repo}` (e.g., `elastic/sdh-kibana`)
 - **ISSUE** → the number (e.g., `6052`)
-- **ARTIFACTS_DIR** → `.cursor/sdh/ISSUE/` (relative to workspace root)
+- **ARTIFACTS_DIR** → `~/Code/ai-generated/ISSUE/files/`
 
 ## Prerequisites
 
@@ -71,7 +71,7 @@ Run the steps in order. A gate may route you forward to Step 5. Finish Step 3's 
 
 ### Step 0: Setup & Prior Context
 
-Ensure `.cursor/sdh/` is gitignored. Check for a prior report — if one exists, build upon it, don't restart. See [commands.md](./references/commands.md) for setup commands.
+Check for a prior report — if one exists, build upon it, don't restart. See [commands.md](./references/commands.md) for setup commands.
 
 ### Step 1: Gather Info from GitHub Issue
 
@@ -82,7 +82,7 @@ Extract:
 - **Version**, **Symptoms**, **Labels** (`pending_on_support` vs `pending_on_dev`)
 - **Questions**: Track unanswered questions from anyone in the thread
 
-Download artifacts from `upload.elastic.co` URLs to `.cursor/sdh/ISSUE/` — skip files already downloaded. Extract archives.
+Download artifacts from `upload.elastic.co` URLs to `~/Code/ai-generated/ISSUE/files/` — skip files already downloaded. Extract archives.
 
 **Bailout conditions** (stop and explain why):
 
@@ -163,7 +163,7 @@ Proven/Strongly supported → Step 5. Otherwise → Step 4.
 
 Summary → Discussion (timeline) → Artifact Analysis → Code Analysis → Similar Issues → Related PRs → Conclusion (diagnosis, confidence, evidence summary, next steps)
 
-Archive any prior report before saving (see [commands.md](./references/commands.md)). Save to `.cursor/sdh/ISSUE/sdh_report_ISSUE.md`.
+Archive any prior report before saving (see [commands.md](./references/commands.md)). Save to `~/Code/ai-generated/ISSUE/files/sdh_report_ISSUE.md`.
 
 ---
 

@@ -4,14 +4,9 @@ Reference commands for each investigation step. Replace `ISSUE`, `REPO`, `TOKEN`
 
 ## Step 0: Setup
 
-If `.cursor/sdh/` is not in `.gitignore`, add it with the edit tool.
-
 ```bash
-# Check that the artifacts dir is gitignored
-grep -qxF '.cursor/sdh/' .gitignore && echo ignored
-
 # Check for prior report
-ls -la .cursor/sdh/ISSUE/sdh_report_* 2>/dev/null
+ls -la $HOME/Code/ai-generated/ISSUE/files/sdh_report_* 2>/dev/null
 ```
 
 ## Step 1: Read Issue & Download Artifacts
@@ -30,8 +25,8 @@ gh issue view ISSUE --repo REPO --json title,state,labels,body,comments \
 
 ```bash
 # Download artifacts
-mkdir -p .cursor/sdh/ISSUE
-cd .cursor/sdh/ISSUE
+mkdir -p "$HOME/Code/ai-generated/ISSUE/files"
+cd "$HOME/Code/ai-generated/ISSUE/files"
 ```
 
 Artifacts in SDH issues appear in two formats. Parse the issue body and comments, then download each artifact.
@@ -64,7 +59,7 @@ tar -xzf archive.tar.gz -C extracted_name 2>/dev/null
 ## Step 2: List Artifacts
 
 ```bash
-find .cursor/sdh/ISSUE/ -type f -exec du -sh {} \; | sort -rh
+find $HOME/Code/ai-generated/ISSUE/files/ -type f -exec du -sh {} \; | sort -rh
 ```
 
 ## Step 3: Search GitHub
@@ -86,5 +81,5 @@ gh pr diff NUMBER --repo elastic/kibana -- path/to/file.ts
 ## Step 5: Archive Prior Report
 
 ```bash
-mv .cursor/sdh/ISSUE/sdh_report_ISSUE.md .cursor/sdh/ISSUE/sdh_report_ISSUE_$(date +%Y-%m-%d_%H%M).md 2>/dev/null
+mv $HOME/Code/ai-generated/ISSUE/files/sdh_report_ISSUE.md $HOME/Code/ai-generated/ISSUE/files/sdh_report_ISSUE_$(date +%Y-%m-%d_%H%M).md 2>/dev/null
 ```

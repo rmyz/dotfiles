@@ -2,7 +2,7 @@
 
 Use this template when writing the investigation report. Omit empty sections.
 
-**Save to:** `.cursor/sdh/ISSUE/sdh_report_ISSUE.md`
+**Save to:** `~/Code/ai-generated/ISSUE/files/sdh_report_ISSUE.md`
 
 ⚠️ **Before saving**: Redact customer PII. Replace the **entire value** with a placeholder — no partial redaction (e.g., `smtp.<redacted>.com` is wrong, `[HOSTNAME]` is correct).
 

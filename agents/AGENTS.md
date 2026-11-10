@@ -69,15 +69,16 @@ A test must fail when a real regression ships. Every test costs CI time, and eve
 - Use the agent's patch or edit tools for normal file changes. Use Python only for
   bulk transformations or generated files.
 - Run repeated multi-line shell procedures from a script file instead of
-  retyping them; ship's server scripts live in `~/.agents/skills/ship/scripts/`.
+  retyping them; server scripts live in `~/.agents/skills/kibana-dev-stack/scripts/`.
 - To wait on an Orca terminal, block on `orca terminal wait --for exit` (commands)
   or `--for tui-idle` (agent sessions). Never poll a terminal with `sleep` loops.
 - For GitHub content, fetch `raw.githubusercontent.com` or use `gh api`. Never
   fetch `github.com` HTML pages; they waste thousands of tokens on page chrome.
-- Store generated artifacts under `~/Code/ai-generated/<issue_number>/`. Put plans
-  in `plans`, screenshots and recordings in `demo`, and other standalone files in
-  `files`. When the work has no issue number, use the branch name with `/` replaced
-  by `-`. Create the destination directory before writing. Use `/tmp` only for ephemeral
+- Store generated artifacts under `~/Code/ai-generated/<work-id>/`. `<work-id>` is the
+  current branch name with `/` replaced by `-`, or the issue number when there is no
+  branch. Put plans in `plans`, screenshots and recordings in `demo`, and other
+  standalone files in `files`. Stores shared across work, such as `review-eval`, live
+  under `~/Code/ai-generated/files/`. Create the destination directory before writing. Use `/tmp` only for ephemeral
   process state such as locks and sockets.
 
 
@@ -98,7 +99,7 @@ PRs, issues, reviews, and Slack messages.
 - Use sentence case for headings. Bold only what the reader must not miss.
 - Use bullets only when they make the text shorter or easier to scan. Do not repeat
   them in a summary.
-- Before sending, reread once and delete every sentence that adds no fact.  
+- Before sending, reread once and delete every sentence that adds no fact.
 
 ## Kibana
 
@@ -120,7 +121,7 @@ Apply this section only when the working directory is a clone or worktree of
 ### Pull requests
 
 - Always create pull requests using the `create-pr` skill. Never create or push branches to `upstream` (`elastic/kibana`). Always push feature branches to the fork `rmyz/kibana` (`origin`) and target `elastic/kibana:main`.
-- Only post `/ci` on draft PRs. Never comment `/ci` on ready (non-draft) PRs because CI runs automatically.
+- Post `/ci` only on a draft PR, and only after pushing changes. Never comment `/ci` on a ready (non-draft) PR because CI runs automatically.
 
 ### Local services
 
@@ -136,10 +137,10 @@ Apply this section only when the working directory is a clone or worktree of
 
 Team: nightshift-context-and-research. Used when opening PRs and filing issues.
 
-- Team label: `Team:nightshift-context-and-research`
+- `TEAM_LABEL`: `Team:nightshift-context-and-research`
 - Issue repo and PR target repo: `elastic/kibana`; PR base branch: `main`
-- Release note label: `release_note:skip` — always, the user can modify them if needed
-- Backport label: `backport:skip` — always, the user can modify them if needed
+- `RELEASE_NOTE_LABEL`: `release_note:skip` — always, the user can modify them if needed
+- `BACKPORT_LABEL`: `backport:skip` — always, the user can modify them if needed
 - Version labels: none. They are added manually — never pass a version label.
 - Commit types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`
 - Public channel: [#nightshift-context-and-research](https://elastic.slack.com/archives/C0BDYNH8T52)

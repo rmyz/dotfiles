@@ -7,17 +7,17 @@ description: Search for a term in files owned by a specific GitHub team based on
 
 ## Overview
 
-The `.github/CODEOWNERS` file in `~/Code/kibana` maps file paths to owning GitHub teams. This skill searches tracked `.js`, `.jsx`, `.ts`, `.tsx`, `.json`, `.md`, `.yml`, and `.yaml` files outside `node_modules`, `build`, and `target` directories whose last matching rule assigns them to the requested team.
+The `.github/CODEOWNERS` file in the Kibana checkout maps file paths to owning GitHub teams. This skill searches tracked `.js`, `.jsx`, `.ts`, `.tsx`, `.json`, `.md`, `.yml`, and `.yaml` files outside `node_modules`, `build`, and `target` directories whose last matching rule assigns them to the requested team.
 
-The scan root is hardcoded to `~/Code/kibana` — this skill always scans that folder regardless of where it is invoked from.
+The scan root is the current directory. Run the script from the root of the Kibana checkout or worktree to scan.
 
 ## Helper script
 
 The script lives with the skill (outside the Kibana repo). Because Node resolves modules relative to the script's location, `NODE_PATH` must point at Kibana's `node_modules` so `@kbn/setup-node-env`, `@babel/runtime`, etc. resolve correctly:
 
 ```bash
-cd ~/Code/kibana && \
-  NODE_PATH=~/Code/kibana/node_modules \
+cd "$(git rev-parse --show-toplevel)" && \
+  NODE_PATH="$PWD/node_modules" \
   node --no-experimental-require-module -r @kbn/setup-node-env \
   ~/.agents/skills/search-by-codeowner/search_by_codeowner.ts \
   --team <team> --search <term>
@@ -32,8 +32,8 @@ Output: JSON with `team`, `searchTerm`, `totalScannedFiles`, `totalMatchingFiles
 ### Examples
 
 ```bash
-cd ~/Code/kibana && \
-  NODE_PATH=~/Code/kibana/node_modules \
+cd "$(git rev-parse --show-toplevel)" && \
+  NODE_PATH="$PWD/node_modules" \
   node --no-experimental-require-module -r @kbn/setup-node-env \
   ~/.agents/skills/search-by-codeowner/search_by_codeowner.ts \
   --team @elastic/kibana-core --search "useEffect"
@@ -41,10 +41,10 @@ cd ~/Code/kibana && \
 
 ## How it works
 
-1. Parses `~/Code/kibana/.github/CODEOWNERS` in rule order
+1. Parses `.github/CODEOWNERS` in rule order
 2. Lists tracked files and applies CODEOWNERS glob patterns; the last matching rule sets each file's owners
 3. Runs `grep -il` on files owned by the target team
-4. Returns relative file paths (relative to `~/Code/kibana`) sorted alphabetically
+4. Returns relative file paths (relative to the scan root) sorted alphabetically
 
 ## Manual alternative
 

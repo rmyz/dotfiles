@@ -5,7 +5,7 @@ description: Publish a branch as a draft PR on elastic/kibana. Handles commit, s
 
 # Create PR
 
-Publishes the current branch as a draft pull request on `elastic/kibana` from the user's fork (`origin`). Reads team labels and defaults from `AGENTS.md`.
+Publishes the current branch as a draft pull request on `elastic/kibana` from the user's fork (`origin`). Reads `TEAM_LABEL`, `RELEASE_NOTE_LABEL`, `BACKPORT_LABEL`, and the remote rules from `AGENTS.md`.
 
 ## Workflow
 
@@ -19,11 +19,8 @@ git status --short
 git remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+$#\1#'
 ```
 
-- If on `main`, stop. Ask for the target branch name or create it before continuing.
+- If on `main`, create a branch named `<type>/<short-description>` from the diff, then continue.
 - Fork username is `FORK_OWNER`, extracted from `origin` (e.g. `rmyz`). Never treat non-`origin` remotes as the fork.
-- Never push branches or create branches on `upstream` (`elastic/kibana`).
-- Always push branches to the user's fork `origin` (`rmyz/kibana`), and create the PR pointing toward `elastic/kibana:main`.
-- Target repository is always `elastic/kibana`; base branch is `main`.
 
 ### 2. Stage and Commit
 
@@ -56,7 +53,6 @@ git merge --no-edit upstream/main
 ```
 
 - If conflicts occur, stop immediately. Report the conflicting files so validation can be re-run after resolving them.
-- Push only to the user's fork (`origin`): `git push -u origin HEAD`. Never push to `upstream`.
 
 ```bash
 git push -u origin HEAD
@@ -66,7 +62,7 @@ Use `git push origin HEAD --force-with-lease` when updating an existing remote b
 
 ### 4. PR Metadata and Body
 
-Read team labels from `AGENTS.md` (`TEAM_LABEL`, `RELEASE_NOTE_LABEL`, `BACKPORT_LABEL`). Never pass a version label.
+Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LABEL`, and `BACKPORT_LABEL`. Never pass a version label.
 
 #### PR Title Rules
 

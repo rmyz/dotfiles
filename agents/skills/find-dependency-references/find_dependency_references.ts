@@ -8,11 +8,10 @@
  */
 
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 
 // Hardcoded root: this skill only ever scans the local Kibana checkout.
-const KIBANA_ROOT = path.join(os.homedir(), 'Code', 'kibana');
+const KIBANA_ROOT = process.cwd();
 
 // File extensions to analyze
 const SUPPORTED_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx', '.d.ts'];

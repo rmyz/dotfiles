@@ -11,7 +11,7 @@ starts from what the last run learned instead of rediscovering it.
 
 ## Launch
 
-Read and follow `~/.agents/skills/ship/dev-stack.md`. It is idempotent and gives the
+Read and follow `~/.agents/skills/kibana-dev-stack/SKILL.md`. It is idempotent and gives the
 Kibana URL with its base path. Credentials are `elastic`/`changeme`.
 
 Before the first drive, and after any failed drive, run the doctor. Kibana must

@@ -28,7 +28,7 @@ Filter to the comments the user linked. If the user gave only a PR URL with no
 specific links, analyze every unresolved review comment.
 
 For an `elastic/kibana` PR, also read the threads of Libra, Kibana's AI reviewer,
-with `node ~/Code/kibana/.agents/skills/pr-babysit/scripts/pr.mjs threads <PR_NUMBER>`.
+with `pr.mjs threads <PR_NUMBER>` (defined in `SKILL.md`).
 Read the body of Libra's latest review too, because some findings appear only
 there. When a thread has `followUp: true`, triage only its latest reply, and reply
 at most once more.
@@ -61,11 +61,11 @@ ground.
 One block per comment:
 
 ```
-### 💬 Comment by @reviewer — file/path.ts (line 42)
+### Comment by @reviewer — file/path.ts (line 42)
 
 > [quoted reviewer comment, truncated if long]
 
-**Verdict: ✅ Accept** | **Verdict: 🔙 Push back** | **Verdict: 🤝 Compromise**
+**Verdict: Accept** | **Verdict: Push back** | **Verdict: Compromise**
 
 [short reasoning that references the actual code]
 
@@ -77,23 +77,9 @@ One block per comment:
 
 | Verdict | When to use |
 |---------|-------------|
-| ✅ Accept | The comment is correct, improves the code, and the fix is reasonable |
-| 🔙 Push back | The comment is incorrect, misreads the code, or the cost outweighs the benefit |
-| 🤝 Compromise | The reviewer has a point but the suggested fix is not ideal — propose an alternative |
-
-Lean toward **accepting** when the reviewer caught a genuine bug or edge case,
-the suggestion measurably improves readability, or the fix is low-effort.
-
-Lean toward **pushing back** when the comment misreads intent or context, the
-suggestion adds unnecessary complexity, it is a pure style preference with no
-clear winner, or it asks for something outside the PR's scope.
-
-### Tone for suggested replies
-
-Write as a peer: direct, specific, and actionable. Thank the reviewer only when
-it is warranted, never reflexively. When pushing back, lead with the technical
-reason rather than an apology. Say plainly when something is a preference rather
-than a defect.
+| Accept | The comment is correct, improves the code, and the fix is reasonable |
+| Push back | The comment is incorrect, misreads the code, or the cost outweighs the benefit |
+| Compromise | The reviewer has a point but the suggested fix is not ideal — propose an alternative |
 
 ### Step 6 — Encode the lesson
 

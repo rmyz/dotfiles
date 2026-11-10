@@ -1,10 +1,10 @@
 ---
-name: handoff
-description: Draft per-team codeowners review-request messages for an open elastic/kibana PR. Invoke explicitly with a PR number or URL when the user wants the handoff messages.
+name: request-reviews
+description: Draft per-team codeowners review-request messages for an open elastic/kibana PR. Invoke explicitly with a PR number or URL when the user wants the review-request messages.
 disable-model-invocation: true
 ---
 
-# Handoff
+# Request reviews
 
 Drafts one review-request message per owning team for a Kibana PR. It never posts
 anything.

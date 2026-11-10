@@ -11,12 +11,13 @@ or failing checks. The flow is:
 `Comments -> Mergeability -> CI -> Wait`
 
 Never post comments, replies, reviews, reactions, or label changes, never resolve
-threads, and never retry CI jobs without explicit approval. Fixing code and pushing
-approved fixes is allowed. Exception: always comment `/ci` after pushing changes to
-a draft PR to trigger CI. Never run `gh pr ready`.
+threads, and never retry CI jobs or post `run docs-build` without explicit approval.
+Fixing code and pushing approved fixes is allowed. The one comment you post without
+approval is `/ci`, under the `/ci` rule in `AGENTS.md`. Never run `gh pr ready`.
 
-`pr.mjs` below means `node ~/Code/kibana/.agents/skills/pr-babysit/scripts/pr.mjs`.
-Use that path, not the copy in the current worktree.
+`pr.mjs` below means `node "$MAIN/.agents/skills/pr-babysit/scripts/pr.mjs"`, where
+`MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")` is the
+primary checkout. Use that path, not the copy in the current worktree.
 
 ## Step 0: Resolve the PR and the mode
 
@@ -60,8 +61,8 @@ git merge-tree "$(git merge-base HEAD upstream/main)" HEAD upstream/main
 - Conflicts: merge `upstream/main` and resolve every conflict in favor of the
   correct final code, not blind `--ours`. Regenerate generated files instead of
   merging them by hand. If a conflict needs a semantic decision, abort the merge and
-  ask the user. Rerun the affected checks from the "Run checks" section in
-  `~/.agents/skills/ship-review/SKILL.md`, then push.
+  ask the user. Rerun the affected targeted tests and `node scripts/check.js --scope=local`, then
+  push.
 - Outdated but mergeable: leave it. Do not merge only to refresh the branch.
 - If the `git merge-tree` output is unclear, verify with a local test merge and
   abort it.

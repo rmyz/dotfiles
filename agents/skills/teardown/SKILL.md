@@ -11,32 +11,36 @@ Stops one branch's servers and removes its worktree, stored state, and local fol
 Run every step from outside the target worktree. Closing the worktree's terminals
 kills the agent running inside it, so teardown never finishes there.
 
+## Resolve
+
+Load the `orca-cli` skill and resolve the `ORCA` executable. Capture the worktree
+path and full id from `ORCA worktree show --worktree name:<branch> --json`. Do not use
+`branch:<branch>`: the git branch carries a prefix such as `rmyz/`, so it does not
+match. Use the id as the selector in the next steps.
+
 ## Relocate
 
-1. Resolve the worktree path as in Remove step 1. If the current directory is the
-   worktree path or inside it, spawn a session in the main clone and stop:
+If the current directory is the worktree path or inside it, spawn a session in the
+main clone and stop. Tell the user the teardown continues in the new terminal. Do
+nothing else here.
 
-   ```bash
-   ~/.agents/skills/ship/scripts/spawn-session.sh ~/Code/kibana "teardown <branch>" "/teardown <branch>"
-   ```
-
-2. Tell the user the teardown continues in the new terminal. Do nothing else here.
+```bash
+MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+~/.agents/skills/spawn-session/scripts/spawn-session.sh "$MAIN" "teardown <branch>" "/teardown <branch>"
+```
 
 ## Remove
 
-1. Load the `orca-cli` skill and resolve the `ORCA` executable. Capture the worktree
-   path and full id from `ORCA worktree show --worktree name:<branch> --json`. Do not use
-   `branch:<branch>`: the git branch carries a prefix such as `rmyz/`, so it does not
-   match. Use the id as the selector in the next steps.
-
-2. Close every terminal in the worktree; this kills the Kibana and Storybook process
+1. Close every terminal in the worktree; this kills the Kibana and Storybook process
    trees running in them. Stop when the result is `unverifiable`:
 
    ```text
    ORCA terminal close --worktree id:<worktree.id> --all --json
    ```
 
-3. Remove the worktree:
+2. Remove the worktree. It can take over two minutes, so run it as a background
+   command and wait for it. Never end the command with `&` in a shell, which kills
+   the job when the shell exits:
 
    ```text
    ORCA worktree rm --worktree id:<worktree.id> --force --json
@@ -57,12 +61,19 @@ kills the agent running inside it, so teardown never finishes there.
    started from inside the removed worktree (its `.es/` directory lives there),
    stopping the worktree's processes stops it too, so report that.
 
-3. Clean up the work artifacts under `~/Code/ai-generated`:
-   `<work-id>` is the issue number, or the branch name with `/` replaced by `-`
-   when there is no issue.
+3. When `worktree show` reported a `linkedPR`, delete the local PR ref that
+   `init-worktree` fetched:
+
    ```bash
-   rm -f "$HOME/Code/ai-generated/<work-id>/plans/ship-plan.md"
-   rm -f "$HOME/Code/ai-generated/<work-id>/demo/qa.webm"
+   MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
+   git -C "$MAIN" update-ref -d refs/remotes/pr/<linkedPR>
+   ```
+
+4. Remove the work artifacts. `<work-id>` is the branch name with `/` replaced
+   by `-`:
+
+   ```bash
+   rm -rf "$HOME/Code/ai-generated/<work-id>"
    ```
 
 ## Feed the review eval

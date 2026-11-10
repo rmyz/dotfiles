@@ -7,17 +7,17 @@ description: Find all files that import or require a specific dependency, with t
 
 ## Overview
 
-Finds all files in the local Kibana checkout (`~/Code/kibana`) that import or use a given dependency (e.g., `lodash`, `moment`, `enzyme`), extracts which APIs are used, and groups results by team ownership.
+Finds all files in the current Kibana checkout that import or use a given dependency (e.g., `lodash`, `moment`, `enzyme`), extracts which APIs are used, and groups results by team ownership.
 
-The scan root is hardcoded to `~/Code/kibana` — this skill always scans that folder regardless of where it is invoked from.
+The scan root is the current directory. Run the script from the root of the Kibana checkout or worktree to scan.
 
 ## Helper script
 
 The script lives with the skill (outside the Kibana repo). Because Node resolves modules relative to the script's location, `NODE_PATH` must point at Kibana's `node_modules` so `@kbn/setup-node-env`, `@babel/runtime`, etc. resolve correctly:
 
 ```bash
-cd ~/Code/kibana && \
-  NODE_PATH=~/Code/kibana/node_modules \
+cd "$(git rev-parse --show-toplevel)" && \
+  NODE_PATH="$PWD/node_modules" \
   node --no-experimental-require-module -r @kbn/setup-node-env \
   ~/.agents/skills/find-dependency-references/find_dependency_references.ts \
   --dependency <name>
@@ -38,8 +38,8 @@ Output: JSON with:
 ### Examples
 
 ```bash
-cd ~/Code/kibana && \
-  NODE_PATH=~/Code/kibana/node_modules \
+cd "$(git rev-parse --show-toplevel)" && \
+  NODE_PATH="$PWD/node_modules" \
   node --no-experimental-require-module -r @kbn/setup-node-env \
   ~/.agents/skills/find-dependency-references/find_dependency_references.ts \
   --dependency enzyme
@@ -47,7 +47,7 @@ cd ~/Code/kibana && \
 
 ## How it works
 
-1. Scans all `.js`, `.jsx`, `.ts`, `.tsx`, `.d.ts` files under `~/Code/kibana` (respecting `.gitignore`)
+1. Scans all `.js`, `.jsx`, `.ts`, `.tsx`, `.d.ts` files under the scan root (respecting `.gitignore`)
 2. Detects ES6 imports (`import ... from 'dep'`), CommonJS requires (`require('dep')`), and dynamic imports (`import('dep')`)
 3. Extracts API usage: destructured imports, static method calls, and method calls on assigned variables
 4. Cross-references each matching file with `.github/CODEOWNERS` for team grouping (most-specific rule wins)

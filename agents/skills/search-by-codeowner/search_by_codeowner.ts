@@ -8,7 +8,6 @@
  */
 
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { execFile, execFileSync } from 'child_process';
 import { promisify } from 'util';
@@ -16,7 +15,7 @@ import { promisify } from 'util';
 const execFileAsync = promisify(execFile);
 
 // Hardcoded root: this skill only ever scans the local Kibana checkout.
-const KIBANA_ROOT = path.join(os.homedir(), 'Code', 'kibana');
+const KIBANA_ROOT = process.cwd();
 
 interface CodeOwnerRule {
   pattern: string;

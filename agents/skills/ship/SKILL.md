@@ -10,10 +10,13 @@ Takes one Kibana task from investigation to a draft PR across three sessions:
 
 `[PLAN] -> [IMPLEMENT] -> [REVIEW]`
 
-Entry point: read and follow `~/.agents/skills/init-worktree/SKILL.md`, then read
-`~/.agents/skills/ship-plan/SKILL.md` and continue in
-this session. The later phases run in fresh sessions spawned by the previous phase.
-This file holds the shared invariants and procedures; every phase skill applies them.
+Entry point: read and follow `~/.agents/skills/init-worktree/SKILL.md`. Pass it the
+tag `[PLAN]` and the instruction `read ~/.agents/skills/ship-plan/SKILL.md and follow
+it`. It provisions the worktree and starts the `[PLAN]` session there, so this
+session ends.
+
+The later phases run in fresh sessions spawned by the previous phase. This file holds
+the shared invariants and procedures; every phase skill applies them.
 
 ## Runtime
 
@@ -63,8 +66,8 @@ exists. Set `--workspace-status in-review` when the draft PR is created.
   Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
   `9003`, and so on.
 - Ship ends after creating the draft PR, recording a visual demo when applicable,
-  and reporting the outcome. Reviewer handoff and worktree teardown are separate
-  skills: `handoff` and `teardown`.
+  and reporting the outcome. Review requests and worktree teardown are separate
+  skills: `request-reviews` and `teardown`.
 
 ## Flow
 
@@ -80,11 +83,30 @@ One session per phase, in the same agent that runs the current phase. The spawn
 prompt's first characters are the phase tag and branch (`[IMPLEMENT] <branch>: ...`),
 so the agent titles the session with them.
 
-The handoff payload between phases is exactly: branch, worktree path, plan file path.
-Nothing else. A spawned session uses the checked-out branch as truth. Its first actions
-are to set the worktree as the working directory, read the plan file, and run
-`git status` plus `git diff upstream/main...`. There is no prior conversation to
-recall.
+`[PLAN]` receives the prompt that `init-worktree` builds: worktree path, bootstrap
+handle, and the original request. The handoff payload from `[PLAN]` to `[IMPLEMENT]`
+and `[REVIEW]` is exactly: branch, worktree path, plan file path. Nothing else.
+
+There is no prior conversation to recall.
+
+### First actions
+
+A spawned session uses the checked-out branch as truth. In order:
+
+1. Run `pwd -P`. It must equal the worktree path in the payload; stop if it does not.
+   Set `<branch>` to `git branch --show-current`. If it differs from the payload,
+   report the payload value and keep using the actual branch.
+2. Read the plan file (`[IMPLEMENT]` and `[REVIEW]` only).
+3. Run `git status` and `git diff upstream/main...` to see the current change state
+   (`[IMPLEMENT]` and `[REVIEW]` only).
+
+### Confirm bootstrap
+
+Before anything that needs built packages, find the `bootstrap` terminal in
+`ORCA terminal list --worktree path:<worktree-path> --json`, block on
+`ORCA terminal wait --terminal <handle> --for exit`, then `ORCA terminal read` to
+check the exit status. If it failed or no `bootstrap` terminal exists, start
+`kbnb; exit $?` in a new `bootstrap` terminal and wait for it the same way.
 
 ### Spawning the next phase
 
@@ -97,7 +119,7 @@ yourself and do not decide the runtime. The script detects the current agent
 worktree:
 
 ```bash
-"$HOME/.agents/skills/ship/scripts/spawn-session.sh" "<worktree-path>" "[<PHASE>] <branch>" \
+"$HOME/.agents/skills/spawn-session/scripts/spawn-session.sh" "<worktree-path>" "[<PHASE>] <branch>" \
   "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 
@@ -105,5 +127,5 @@ Exit `0` means the terminal started: end this session. The script works from an
 Orca terminal and from Orca chat. Exit `2` means this session runs outside Orca:
 report the printed command to the user, then end this session.
 
-When a phase needs servers, read `~/.agents/skills/ship/dev-stack.md` and follow it.
+When a phase needs servers, read `~/.agents/skills/kibana-dev-stack/SKILL.md` and follow it.
 It is idempotent. `[PLAN]` never starts servers.

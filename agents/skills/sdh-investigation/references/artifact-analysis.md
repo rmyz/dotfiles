@@ -237,17 +237,17 @@ These extract to directories with Kubernetes resources and logs.
 
 ```bash
 # Explore structure first
-find .cursor/sdh/ISSUE/eck-diagnostics-*/ -type f | head -30
+find $HOME/Code/ai-generated/ISSUE/files/eck-diagnostics-*/ -type f | head -30
 
 # Kibana pod logs — error counts
-rg -c -i "error|warn" .cursor/sdh/ISSUE/eck-diagnostics-*/kibana-*/logs/*.log
+rg -c -i "error|warn" $HOME/Code/ai-generated/ISSUE/files/eck-diagnostics-*/kibana-*/logs/*.log
 
 # Then drill into the noisiest log
-rg -i "error|warn" .cursor/sdh/ISSUE/eck-diagnostics-*/kibana-*/logs/SPECIFIC.log | cut -c1-300 | head -30
+rg -i "error|warn" $HOME/Code/ai-generated/ISSUE/files/eck-diagnostics-*/kibana-*/logs/SPECIFIC.log | cut -c1-300 | head -30
 
 # Elasticsearch cluster health — status and key indicators only
-jq '{status, number_of_nodes, active_shards, unassigned_shards, relocating_shards}' .cursor/sdh/ISSUE/eck-diagnostics-*/elasticsearch-*/*cluster-health* 2>/dev/null
+jq '{status, number_of_nodes, active_shards, unassigned_shards, relocating_shards}' $HOME/Code/ai-generated/ISSUE/files/eck-diagnostics-*/elasticsearch-*/*cluster-health* 2>/dev/null
 
 # Pod status
-jq '.items[] | {name: .metadata.name, phase: .status.phase, restarts: (.status.containerStatuses[]?.restartCount // 0)}' .cursor/sdh/ISSUE/eck-diagnostics-*/pods.json 2>/dev/null
+jq '.items[] | {name: .metadata.name, phase: .status.phase, restarts: (.status.containerStatuses[]?.restartCount // 0)}' $HOME/Code/ai-generated/ISSUE/files/eck-diagnostics-*/pods.json 2>/dev/null
 ```

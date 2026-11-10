@@ -11,31 +11,17 @@ Phase 3 of `ship`. The invariants and session rules in
 
 ## First actions
 
-The spawn payload gives the worktree path and plan file; there is no prior
-conversation. Use the checked-out branch as truth. In order:
+Run ship's "First actions" and "Confirm bootstrap" from
+`~/.agents/skills/ship/SKILL.md`. Read the plan's `Deviations` section too: plan plus
+deviations is the intent the implementation must be judged against. Include untracked
+files in the change set. Then:
 
-1. Set the worktree path as the working directory. Set `<branch>` to
-   `git branch --show-current`. If it differs from the payload, report the payload
-   value and keep using the actual branch.
-2. Read the plan file, including its `Deviations` section. Plan plus deviations is
-   the intent the implementation must be judged against.
-3. Derive the change set from `git status` and `git diff upstream/main...`,
-   including untracked files.
-4. Decide whether the change set needs a running Kibana. It does when any of these
-   holds: it changes code that runs in Kibana (server, public, or UI code); it
-   changes Storybook stories or components shown in Storybook; a targeted test named
-   in the plan needs a live server (integration, API, or UI tests); or the plan names
-   Scout tests. It does not when it only changes docs, Markdown, unit tests, or config
-   the running app does not read. Only when it does, read and follow
-   `~/.agents/skills/ship/dev-stack.md`; it is idempotent and reuses the implement phase's servers when
-   they are still healthy. When it starts a new Kibana, use the port that
-   `launch-server.sh` prints. When it reuses one, take the port from the
-   `kibana:<port>` terminal title. Record the decision in the report.
-5. Confirm bootstrap succeeded before any check: find the `bootstrap` terminal in
-   `ORCA terminal list --worktree path:<worktree-path> --json`, block on
-   `ORCA terminal wait --terminal <handle> --for exit`, then `ORCA terminal read` to
-   check the exit status. If it failed or no `bootstrap` terminal exists, start
-   `kbnb; exit $?` in a new `bootstrap` terminal and wait for it the same way.
+- Decide whether the change set needs a running Kibana, using the rule in
+  `~/.agents/skills/kibana-dev-stack/SKILL.md`. Only when it does, follow that file; it is
+  idempotent and reuses the implement phase's servers when they are still healthy.
+  When it starts a new Kibana, use the port that `launch-server.sh` prints. When it
+  reuses one, take the port from the `kibana:<port>` terminal title. Record the
+  decision in the report.
 
 ## Validate
 
@@ -68,8 +54,7 @@ demo before creating the PR.
 ### Cross-model review
 
 Load `~/.agents/skills/cross-review/SKILL.md` and follow it over the change set in
-local mode, in every agent. Outside OpenCode, the skill's "Outside OpenCode" section
-runs the panel through `opencode run`. It runs four reviewers on different model
+local mode. It runs four reviewers on different model
 families with the technical and product rubrics, then synthesizes findings into
 act-on, consider, noted, and dismissed buckets weighted by cross-model agreement.
 Give it the plan file path for the intent.
@@ -119,42 +104,9 @@ generated change.
 Use the Scout config paths recorded in the plan. If the final diff changes a package
 not covered by the plan, check that package's
 `test/scout*/{ui,api}/playwright.config.ts` too. If that adds a Scout suite after
-step 4 skipped servers, read and follow `~/.agents/skills/ship/dev-stack.md` now.
+step 4 skipped servers, read and follow `~/.agents/skills/kibana-dev-stack/SKILL.md` now.
 
-Reuse the already-running Kibana and shared Elasticsearch instance only when its
-server settings satisfy the test. Create `.scout/servers/local.json` with the current
-Kibana URL, Elasticsearch `9200`, `elastic`/`changeme` credentials, a trial license,
-and the absolute `.ftr/role_users.json` path. Then run only the local stateful classic
-target:
-
-```json
-{
-  "serverless": false,
-  "http2": false,
-  "uiam": false,
-  "isCloud": false,
-  "cloudUsersFilePath": "<absolute-worktree>/.ftr/role_users.json",
-  "license": "trial",
-  "hosts": {
-    "kibana": "http://localhost:<kibana-port>",
-    "elasticsearch": "http://localhost:9200"
-  },
-  "auth": { "username": "elastic", "password": "changeme" }
-}
-```
-
-Run:
-
-```bash
-node scripts/playwright test --config <playwright.config.ts> \
-  --project local --grep @local-stateful-classic
-```
-
-Do not run `node scripts/scout start-server` or `node scripts/scout run-tests`; both
-manage another local stack. If a Scout suite requires a custom server config that the
-development stack does not provide, the PR is blocked. Do not start a second
-Elasticsearch instance or proceed. Resolve the profile conflict or get an explicit
-change to the single-Elasticsearch requirement.
+Then run the suite as `~/.agents/skills/kibana-dev-stack/SKILL.md` describes under "Scout".
 
 Fix confirmed failures from any of the three and rerun only the affected check. If a
 fix changes behavior, rerun affected behavior QA. Stop only when a change requires
@@ -179,13 +131,10 @@ affected checks or QA, and invoke `create-pr` again.
 
 After the PR exists, record a short demo for visual changes. Use the verified
 happy path and save the video as
-`~/Code/ai-generated/<work-id>/demo/qa.webm`, where `<work-id>` is the issue
-number, or the branch name with `/` replaced by `-` when there is no issue. Give the user its path for manual drag-and-drop. If recording
+`~/Code/ai-generated/<work-id>/demo/qa.webm`. Give the user its path for manual drag-and-drop. If recording
 fails, report it with the PR URL.
 
 Report the PR URL, the review findings fixed, the findings left open and why, the
 check results, the plan's `Follow-ups`, and any remaining considerations. Remind the user about private
-issue linking or demo upload when applicable. Ship ends here.
+issue linking or demo upload when applicable.
 
-Afterwards, run `handoff` when the user wants the per-team review-request messages,
-and `teardown` once the PR merges or the worktree is abandoned.

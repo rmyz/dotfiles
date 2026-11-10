@@ -110,5 +110,5 @@ when you can verify it yourself in the code.
 End with an agreement map: where the models agreed, where they diverged, and what the
 pattern says about confidence.
 
-In PR mode, also turn every Act-on and Consider finding into a comment ready to paste
+In PR mode, or when the invocation names the PR that the local branch is the head of, also turn every Act-on and Consider finding into a comment ready to paste
 onto the PR. Group them by file and line. Never post anything to GitHub.

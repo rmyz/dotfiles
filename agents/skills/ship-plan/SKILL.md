@@ -1,6 +1,6 @@
 ---
 name: ship-plan
-description: Ship phase 1. Investigate a Kibana task in an existing feature worktree, write a short Markdown handoff, then spawn the implement session. Requires init-worktree to have run first.
+description: Ship phase 1. Investigate a Kibana task in an existing feature worktree, write a short Markdown handoff, then spawn the implement session. Ship runs init-worktree, which starts this phase in the new worktree.
 disable-model-invocation: true
 ---
 
@@ -20,8 +20,8 @@ The working directory must be a Kibana feature worktree: inside a git worktree w
 current branch is not `main`. If it is not, stop and tell the user to run
 `/init-worktree`. Never provision from this skill.
 
-Use `git branch --show-current` in the worktree as the branch value. If it differs
-from the payload, report the payload value and keep using the actual branch.
+Run ship's "First actions" step 1 from `~/.agents/skills/ship/SKILL.md`. The
+`Worktree` path in the invocation prompt is the payload.
 
 Do not start Elasticsearch, Kibana, or Storybook in this phase.
 
@@ -64,7 +64,7 @@ full `type_check` as a step check.
 Write a standalone plan outside the repository:
 
 ```bash
-WORK_ID=<issue number, or the branch name with / replaced by - when there is no issue>
+WORK_ID=$(git branch --show-current | tr / -)
 mkdir -p "$HOME/Code/ai-generated/$WORK_ID/plans"
 PLAN_FILE="$HOME/Code/ai-generated/$WORK_ID/plans/ship-plan.md"
 ```
