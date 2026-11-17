@@ -20,9 +20,8 @@ the shared invariants and procedures; every phase skill applies them.
 
 ## Runtime
 
-Before the first Orca command, load the `orca-cli`
-skill, resolve the `ORCA` executable, run `ORCA skills get orca-cli`, and confirm the
-app with `ORCA status --json`.
+Before the first Orca command, load the `orca-cli` skill, complete its setup, and
+confirm the app with `ORCA status --json`.
 
 Ship uses Orca worktrees and Orca terminals for every process. Terminal titles hold
 server state. `ORCA terminal read` gives logs.
@@ -34,8 +33,8 @@ terminal tab: bootstrap, Elasticsearch, Kibana, Storybook, generators, lint, typ
 checks, tests, `check.js`, and Scout. Use `ORCA terminal create --worktree <selector>
 --title <short-title> --command "<exact-command>; exit \$?" --json` for finite
 commands; the explicit exit lets `terminal wait --for exit` observe completion. Use
-the exact server command without an exit for long-running servers. Do not use
-terminal splits, background shell jobs, or reuse a prior command tab.
+the exact server command without an exit for long-running servers. Do not run these
+processes as background shell jobs, and do not reuse a prior command tab.
 
 Wait for finite commands with `ORCA terminal wait --terminal <handle> --for exit
 --timeout-ms <timeout> --json`, then read their output with `ORCA terminal read
@@ -45,31 +44,16 @@ when ship must restart a failed server or move the session off the old card.
 
 ### Card status
 
-Update the Orca card at phase changes:
-
-```text
-ORCA worktree set --worktree path:<worktree-path> --workspace-status in-progress --json
-ORCA worktree set --worktree path:<worktree-path> --comment "<one-line phase status>" --json
-```
-
-Set the comment at least after planning, after validation, and after the draft PR
-exists. Set `--workspace-status in-review` when the draft PR is created.
+Each phase skill sets the Orca card status and a one-line comment with
+`ORCA worktree set --worktree path:<worktree-path> --workspace-status <id> --comment "<text>" --json`.
 
 ## Invariants
 
-- Run one Elasticsearch instance per active worktree. Never start Elasticsearch or
-  Kibana from the primary `main` worktree. Allocate the lowest free port starting at
-  `9200`, then `9201`, `9202`, and so on. Each Kibana connects to its own worktree's
-  Elasticsearch.
-- Run one Kibana instance per active worktree. Allocate the lowest free port pair
-  starting at `5601`, then `5603`, `5605`, and so on. Each instance uses its port and
-  the next one.
-- Run one Storybook instance per active worktree, only when the plan includes
-  Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
-  `9003`, and so on.
-- Ship ends after creating the draft PR, attaching the QA demo to the PR,
-  and reporting the outcome. Review requests and worktree teardown are separate
-  skills: `request-reviews` and `teardown`.
+- Servers follow `~/.agents/skills/kibana-dev-stack/SKILL.md`: one Elasticsearch,
+  one Kibana, and when needed one Storybook per active worktree, and none from the
+  primary `main` worktree.
+- Ship ends after creating the draft PR, attaching the QA demo to the PR, and
+  reporting the outcome.
 
 ## Flow
 
@@ -82,14 +66,11 @@ the draft PR URL.
 ## Sessions
 
 One session per phase, in the same agent that runs the current phase. The spawn
-prompt's first characters are the phase tag and branch (`[IMPLEMENT] <branch>: ...`),
-so the agent titles the session with them.
+prompt's first characters are the phase tag and branch (`[IMPLEMENT] <branch>: ...`).
 
 `[PLAN]` receives the prompt that `init-worktree` builds: worktree path, bootstrap
 handle, and the original request. The handoff payload from `[PLAN]` to `[IMPLEMENT]`
 and `[REVIEW]` is exactly: branch, worktree path, plan file path. Nothing else.
-
-There is no prior conversation to recall.
 
 ### First actions
 
@@ -104,30 +85,28 @@ A spawned session uses the checked-out branch as truth. In order:
 
 ### Confirm bootstrap
 
-Before anything that needs built packages, find the `bootstrap` terminal in
-`ORCA terminal list --worktree path:<worktree-path> --json`, block on
-`ORCA terminal wait --terminal <handle> --for exit`, then `ORCA terminal read` to
-check the exit status. If it failed or no `bootstrap` terminal exists, start
-`kbnb; exit $?` in a new `bootstrap` terminal and wait for it the same way.
+Before anything that needs built packages, confirm bootstrap as
+`~/.agents/skills/init-worktree/SKILL.md` describes under "Bootstrap".
 
 ### Spawning the next phase
 
 `[PLAN]` spawns `[IMPLEMENT]` after writing the plan. `[IMPLEMENT]` spawns
 `[REVIEW]` immediately when implementation and deviation notes are complete.
 
-Always run `scripts/spawn-session.sh` from this session. Do not build the command
-yourself and do not decide the runtime. The script detects the current agent
-(OpenCode, Claude Code, pi, Codex, or Cursor) and starts it in a new Orca terminal in the
-worktree:
+Run `spawn-session.sh` from this session:
 
 ```bash
 "$HOME/.agents/skills/spawn-session/scripts/spawn-session.sh" "<worktree-path>" "[<PHASE>] <branch>" \
   "[<PHASE>] <branch>: read ~/.agents/skills/ship-<phase>/SKILL.md and follow it. Worktree: <worktree-path>. Plan: <plan-file>."
 ```
 
-Exit `0` means the terminal started: end this session. The script works from an
-Orca terminal and from Orca chat. Exit `2` means this session runs outside Orca:
-report the printed command to the user, then end this session.
+On exit `0` or `2`, end this session as `~/.agents/skills/spawn-session/SKILL.md`
+describes. On exit `0`, close this terminal's whole tab last, because it kills the
+agent and nothing runs after it. Skip the close when `ORCA_TERMINAL_HANDLE` is unset.
+
+```bash
+ORCA terminal close --terminal "$ORCA_TERMINAL_HANDLE" --tab --json
+```
 
 When a phase needs servers, read `~/.agents/skills/kibana-dev-stack/SKILL.md` and follow it.
-It is idempotent. `[PLAN]` never starts servers.
+`[PLAN]` never starts servers.

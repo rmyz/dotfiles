@@ -7,8 +7,7 @@ description: Multi-model review of local changes or a GitHub PR. Four reviewers 
 
 Multiple models review the same change independently. The adversarial signal comes
 from model diversity, not personas: agreement across model families is
-high-confidence signal, a lone-model finding is a noise candidate. This skill only
-reports; it never applies changes.
+high-confidence signal, a lone-model finding is a noise candidate.
 
 ## Outside OpenCode
 
@@ -20,7 +19,7 @@ Replace the `<...>` values; the quoted heredoc keeps quotes and `$` in them safe
 cd "<worktree-or-repo>" && opencode run --agent build "$(cat <<'EOF'
 Read ~/.agents/skills/cross-review/SKILL.md and follow it non-interactively.
 Scope: <local, a ref, a git diff range, or a PR URL>. Intent: <one paragraph>. Plan: <plan file or none>.
-Earlier findings: <list, or none>.
+Earlier findings: <one line per finding with file:line and summary, or none>.
 Report only, do not edit files.
 EOF
 )" < /dev/null
@@ -31,16 +30,18 @@ The run takes several minutes; wait for it to exit in the foreground. Keep the
 hangs forever in a background shell. If `opencode` is missing or the run fails,
 report it as a blocker instead of substituting another review.
 
-When this skill runs non-interactively, it cannot ask the user. Where a step says to
-ask, stop instead and print the question as a blocker.
+When this skill runs non-interactively, it cannot ask the user. Skip the 50-file
+warning and use the Intent given. Where another step says to ask, stop instead and
+print the question as a blocker.
 
 ## Step 1: Scope and intent
 
 Two modes:
 
-- **Local** (default): uncommitted changes plus branch commits against
-  `upstream/main` (committed, staged, unstaged, untracked), or the ref or
-  `git diff <a> <b>` range the invocation names. Never use `origin/main`.
+- **Local** (default): the default scope from `~/.agents/REVIEW.md`. The diff is
+  `git diff "$(git merge-base upstream/main HEAD)"` plus the untracked files from
+  `git ls-files --others --exclude-standard`, or the ref or `git diff <a> <b>` range
+  the invocation names.
 - **PR**: the invocation supplies a GitHub PR URL. Use `gh` only and run no `git`
   commands; local git state is not a trustworthy source for a remote PR. Read
   `gh pr view <n> --repo <owner/repo> --json title,body,headRefOid,files,additions,deletions`
@@ -84,8 +85,9 @@ Every reviewer gets the identical briefing:
   it.
 - The findings from earlier rounds, when the invocation gives them. Do not repeat
   them.
-- Output format: one finding per line item with severity, `file:line`, rubric item,
-  and a one-line suggested fix.
+- Output format: one finding per line item with `file:line`, the `REVIEW.md` tag
+  (`Important`, `Nit`, or `Pre-existing`), the rubric item, and a one-line suggested
+  fix.
 
 If a reviewer subagent is unavailable, continue with the remaining ones and say so in
 the report; never substitute two reviewers from the same model family.
@@ -97,18 +99,18 @@ same issue and note which models raised each one. Then bucket every finding:
 
 - **Act on** — real correctness, security, or maintainability issues given the actual
   goal. Would block a PR.
-- **Consider** — legitimate, but the cost of addressing it now is not clearly worth
-  it. The user decides.
-- **Noted** — valid but low-impact or premature.
+- **Consider** — legitimate, with user-visible or correctness impact, but the fix
+  needs a product decision or costs more than about 20 lines. The user decides.
+- **Noted** — valid but no user-visible or correctness impact, or premature.
 - **Dismissed** — wrong, nitpicky, or missing context, with a one-line reason.
   Always show this bucket so the user can override the filtering.
 
 Weight by agreement: findings raised independently by two or more models rank above
 lone-model findings of the same severity. A lone-model finding lands in Act on only
-when you can verify it yourself in the code.
+when you can quote the line and state the input that fails.
 
 End with an agreement map: where the models agreed, where they diverged, and what the
 pattern says about confidence.
 
 In PR mode, or when the invocation names the PR that the local branch is the head of, also turn every Act-on and Consider finding into a comment ready to paste
-onto the PR. Group them by file and line. Never post anything to GitHub.
+onto the PR. Group them by file and line.

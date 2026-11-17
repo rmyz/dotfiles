@@ -1,6 +1,6 @@
 ---
 name: create-pr
-description: Publish a branch as a draft PR on elastic/kibana. Handles commit, sync with upstream/main, push to origin, draft PR creation with team labels, and /ci trigger. Uses team config from workspace rules. Use when the user asks to create a PR, open a pull request, or submit changes.
+description: Publish a branch as a draft PR on elastic/kibana. Handles commit, sync with upstream/main, push to origin, draft PR creation with team labels, and /ci trigger. Uses team config from AGENTS.md. Use when the user asks to create a PR, open a pull request, or submit changes.
 ---
 
 # Create PR
@@ -19,8 +19,8 @@ git status --short
 git remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+$#\1#'
 ```
 
-- If on `main`, create a branch named `<type>/<short-description>` from the diff, then continue.
-- Fork username is `FORK_OWNER`, extracted from `origin` (e.g. `rmyz`). Never treat non-`origin` remotes as the fork.
+- If on `main`, create a branch named `<type>/<short-description>`, where `<type>` is the commit type and `<short-description>` is two or three words naming the dominant directory of the diff. Then continue.
+- Fork username is `FORK_OWNER`, extracted from `origin` (e.g. `rmyz`).
 
 ### 2. Stage and Commit
 
@@ -39,9 +39,8 @@ EOF
 )"
 ```
 
-- Allowed types: `feat`, `fix`, `perf`, `refactor`, `test`, `docs`, `chore`.
-- Do not commit secrets, untracked debris, or use `--no-verify`.
-- Only add `Closes #<id>` or `Addresses #<id>` to the commit body when the issue belongs to `elastic/kibana`. Never mention private repository issues in public commits.
+- Never use `--no-verify`.
+- Only add `Closes #<id>` or `Addresses #<id>` to the commit body when the issue belongs to `elastic/kibana`.
 
 ### 3. Sync Upstream and Push
 
@@ -58,17 +57,15 @@ git merge --no-edit upstream/main
 git push -u origin HEAD
 ```
 
-Use `git push origin HEAD --force-with-lease` when updating an existing remote branch. Never force push to `main`.
-
 ### 4. PR Metadata and Body
 
-Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LABEL`, and `BACKPORT_LABEL`. Never pass a version label.
+Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LABEL`, and `BACKPORT_LABEL`.
 
 #### PR Title Rules
 
 - Format: `[<Scope>] <What changed>`.
 - Example: `[Nightshift] Register investigation URL locator`.
-- Always use a short, useful title.
+- Keep the title under 70 characters.
 - Never use conventional commit standards or prefixes such as `feat:`, `fix:`, or `refactor:`. Only use `[Scope] What changed`.
 
 #### PR Description Rules
@@ -85,11 +82,11 @@ Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LA
 - **Demo**:
   - Placed before `## How to test`.
   - Include this section whenever QA demo files exist. Omit it entirely otherwise.
-  - Attach every demo file (recording or screenshot). Label each one, for example happy path and failure scenario. Never leave a drag-and-drop placeholder.
-  - Screenshots and videos you can upload (`gh` 2.99.0+): never leave a placeholder. After the PR exists, upload them with `gh pr edit <n> --repo elastic/kibana --body-file <body.md> --attach './file.png#alt text'` (repeat the flag per file). `gh` uploads each file to `user-attachments` and appends `![alt](url)` to the body. Paths resolve relative to the body file's directory, then the cwd.
-  - For a before and after table, use a `Cell | Before | After` table. `gh` rewrites only markdown references (`![alt](./a.png)`), not `<img src="./a.png">`, and markdown images cannot set width. So run `--attach` once, read the URLs back with `gh pr view <n> --json body -q .body`, rebuild the body with `<img src="<url>" width="300">` tags, and apply it with `--body-file` and no `--attach`. Each `--attach` run uploads again, so never repeat it for the same files.
+  - Attach every demo file (recording, screenshot, or text output). Label each one, for example happy path and failure scenario.
+  - After the PR exists, upload the files with `gh pr edit <n> --repo elastic/kibana --body-file <body.md> --attach './file.png#alt text'` (repeat the flag per file). `gh` uploads each file to `user-attachments` and appends `![alt](url)` to the body. Paths resolve relative to the body file's directory, then the cwd.
+  - Use a `Cell | Before | After` table only when the change alters an existing screen. `gh` rewrites only markdown references (`![alt](./a.png)`), not `<img src="./a.png">`, and markdown images cannot set width. So run `--attach` once, read the URLs back with `gh pr view <n> --json body -q .body`, rebuild the body with `<img src="<url>" width="300">` tags, and apply it with `--body-file` and no `--attach`. Each `--attach` run uploads again, so never repeat it for the same files.
   - A body reference only matches an attached file when it uses the same text as the flag without the `#alt` part (`![alt](./a.png)` with `--attach ./a.png#alt` fails). When it fails, `gh` appends the uploaded files at the end, so read the URLs from there and remove the appended lines.
-  - Check that the final body contains `user-attachments` and no local paths.
+  - Check that the final body contains `user-attachments` and no local paths. If the upload fails, report the demo file paths with the PR URL.
 - **Risk**:
   - Include it only when the change renames or removes a stored id, schema field,
     route, or URL parameter; adds a migration; changes privileges; or exceeds 500
@@ -97,7 +94,6 @@ Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LA
   - One bullet per item: what breaks, and for whom.
   - Add a revert note only when a plain revert does not undo the change, for example
     after a migration has run or data has been written.
-  - For a PR over 500 lines, state why it is not split.
 - **How to test**:
   - Numbered list of manual steps so reviewers can reproduce and verify locally.
   - End with an explicit verification check (`Verify <expected result>`).
@@ -105,9 +101,30 @@ Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LA
 
 ### 5. Create Draft PR and Trigger CI
 
-Always open PRs as draft. Always set `--head` to `"<FORK_OWNER>:<branch>"` (for example, `rmyz:<branch>`) pointing toward `--repo elastic/kibana --base main`. Never omit the `<FORK_OWNER>:` prefix. Always assign the PR to the author (`@me` or `<FORK_OWNER>`). Trigger CI immediately with `/ci`:
+Always open PRs as draft. Always set `--head` to `"<FORK_OWNER>:<branch>"` (for example, `rmyz:<branch>`) pointing toward `--repo elastic/kibana --base main`. Never omit the `<FORK_OWNER>:` prefix. Always assign the PR to `@me`. Trigger CI immediately with `/ci`:
 
 ```bash
+BODY_FILE="$HOME/Code/ai-generated/<work-id>/files/pr-body.md"
+mkdir -p "$(dirname "$BODY_FILE")"
+cat > "$BODY_FILE" <<'EOF'
+## Summary
+
+Closes #<id>
+
+- <what changed and why>
+- <user impact or key detail, if helpful>
+
+## Demo
+
+![<label>](<demo-file>)
+
+## How to test
+
+1. <action>
+2. <action>
+3. Verify <expected result>
+EOF
+
 PR_URL=$(gh pr create \
   --repo elastic/kibana \
   --head "<FORK_OWNER>:<branch>" \
@@ -118,30 +135,13 @@ PR_URL=$(gh pr create \
   --label "<TEAM_LABEL>" \
   --label "<RELEASE_NOTE_LABEL>" \
   --label "<BACKPORT_LABEL>" \
-  --body "$(cat <<'EOF'
-## Summary
-
-Closes #<id>
-
-- <what changed and why>
-- <user impact or key detail, if helpful>
-
-## Demo
-
-<!-- Drag and drop video or screenshot here -->
-
-## How to test
-
-1. <action>
-2. <action>
-3. Verify <expected result>
-EOF
-)")
+  --body-file "$BODY_FILE")
 
 gh pr comment "$PR_URL" --body '/ci'
 ```
 
 Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no demo file. Insert `## Risk`
-before `## How to test` only when the Risk rules apply.
+before `## How to test` only when the Risk rules apply. With demo files, repeat the
+`![<label>](<demo-file>)` line per file, then upload them as described under **Demo**.
 
 Output the created `PR_URL`.

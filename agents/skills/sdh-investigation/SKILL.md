@@ -22,17 +22,13 @@ You are a **Senior Escalation Engineer** producing an **engineering acceleration
 | Context                                    | Tools                                                                    | Why                                 |
 | ------------------------------------------ | ------------------------------------------------------------------------ | ----------------------------------- |
 | **Artifacts** (downloaded logs, HAR, JSON) | `rg`, `jq`, `grep` in terminal                                           | Files on disk, not in codebase      |
-| **Code** (Kibana source)                   | **CodeGraph** (`codegraph_explore`) to understand when the repo has `.codegraph/`, else the agent's semantic search; **Grep/Read** only to confirm or quote | Avoids `grep`→`read`→`grep` spirals |
-
-These are different tools for different jobs. Don't carry terminal grep habits into code search.
+| **Code** (Kibana source)                   | **CodeGraph** (`codegraph_explore`) to understand; if the repo has no `.codegraph/`, use Grep and Read; **Grep/Read** only to confirm or quote | Avoids `grep`→`read`→`grep` spirals |
 
 ## Constraints
 
 ❌ Never write code, suggest implementations, or workarounds
-❌ Never open PRs or comment on issues
 ✅ One hypothesis at a time — search for evidence, confirm or mark "Plausible", move to the next step
-✅ "Plausible" and "Insufficient" are valid final results — do NOT keep searching to upgrade them. Note what's missing in Next Steps and write the report
-✅ When you identify missing evidence, stop searching and write the report. The report captures what you found, not what you wish you'd found
+✅ "Plausible" and "Insufficient" are valid final results — do NOT keep searching to upgrade them. Note what's missing in Next Steps and write the report. The report captures what you found, not what you wish you'd found
 ✅ Quote evidence with source (file:line, issue URL, PR number)
 ✅ Redact customer PII before writing any file (see [PII Redaction](#pii-redaction))
 
@@ -42,12 +38,12 @@ From the issue URL `https://github.com/{owner}/{repo}/issues/{number}`, extract:
 
 - **REPO** → `{owner}/{repo}` (e.g., `elastic/sdh-kibana`)
 - **ISSUE** → the number (e.g., `6052`)
-- **ARTIFACTS_DIR** → `~/Code/ai-generated/ISSUE/files/`
+- **ARTIFACTS_DIR** → `~/Code/ai-generated/<ISSUE>/files/`
 
 ## Prerequisites
 
 - **`jq`** — Required for HAR and JSON artifact analysis (`brew install jq`)
-- **`rg`** (ripgrep) — Used for searching downloaded artifacts (logs, diagnostics). If unavailable, substitute `grep` directly — flags like `-i`, `-c`, `-A`, `-B` work the same. (`brew install ripgrep`)
+- **`rg`** (ripgrep) — Used for searching downloaded artifacts (logs, diagnostics). (`brew install ripgrep`)
 - **`gh` cli** — Required for fetching GitHub issue details and reading comments directly from the terminal (`brew install gh`)
 
 ---
@@ -67,7 +63,7 @@ Each gate requires a confidence assessment. These are the levels — learn them 
 
 ## Flow
 
-Run the steps in order. A gate may route you forward to Step 5. Finish Step 3's gate before you start Step 4.
+Run the steps in order.
 
 ### Step 0: Setup & Prior Context
 
@@ -82,7 +78,7 @@ Extract:
 - **Version**, **Symptoms**, **Labels** (`pending_on_support` vs `pending_on_dev`)
 - **Questions**: Track unanswered questions from anyone in the thread
 
-Download artifacts from `upload.elastic.co` URLs to `~/Code/ai-generated/ISSUE/files/` — skip files already downloaded. Extract archives.
+Download artifacts from `upload.elastic.co` URLs to `$ARTIFACTS_DIR` — skip files already downloaded. Extract archives.
 
 **Bailout conditions** (stop and explain why):
 
@@ -98,15 +94,7 @@ Proven → Step 5 (your report organizes findings, it doesn't re-discover them).
 
 ### Step 2: Analyze Artifacts
 
-List artifacts with sizes (see [commands.md](./references/commands.md)). **Sniff file format** — some `.log`/`.txt` files are actually JSON (`head -c 1` — if `{` or `[`, use `jq`).
-
-**Start narrow, drill down.** For every artifact:
-
-1. Get a **summary** first (counts, status codes, error types)
-2. Identify the **high-signal items** (failures, errors, anomalies)
-3. Drill into **specific items** only when needed
-
-Do not skip any artifact. See [artifact-analysis.md](./references/artifact-analysis.md) for per-format querying patterns.
+List artifacts with sizes (see [commands.md](./references/commands.md)). Open every artifact at the summary level, and drill down only on high-signal items. [artifact-analysis.md](./references/artifact-analysis.md) owns the format sniff, the size table, and the per-format querying patterns.
 
 ### Step 3: Historical Analysis & Similar Issues
 
@@ -123,7 +111,7 @@ Search angles (try in order, stop as soon as one hits):
 
 **A hit** = any issue or PR whose title or description mentions the same endpoint, error message, or component. When you get a hit, note it and go to the gate. You do not need to verify it solves the problem — that's Step 4.
 
-An empty list is a valid result. Do not rephrase the same query hoping for different results.
+An empty list is a valid result.
 
 **Gate — write this out literally:**
 
@@ -139,8 +127,9 @@ Proven/Strongly supported → Step 5. Otherwise → Step 4.
 2. The same tool to follow up if needed, scoped to the area found above
 3. **Read** to quote specific lines for the report (small ranges only)
 4. **Grep** only to confirm a symbol exists (not to explore)
+5. `gh pr diff` to read the diff of a fix PR found in Step 3
 
-**You're done when you can name the file and function.** You don't need to understand the full call chain, trace every import, or read adjacent utility functions. If you found the handler that produces the error, that's enough.
+**You're done when you can name the file and function.** If you found the handler that produces the error, that's enough.
 
 > Quote `file:lines` for any code referenced in the report.
 
@@ -157,13 +146,12 @@ Proven/Strongly supported → Step 5. Otherwise → Step 4.
 - [ ] Timestamps support the causality
 - [ ] Unproven claims moved to Next Steps as hypotheses
 - [ ] Unanswered questions listed in Next Steps
-- [ ] Customer PII redacted (see [PII Redaction](#pii-redaction))
 
 **Report structure** (full template in [report-template.md](./references/report-template.md)):
 
 Summary → Discussion (timeline) → Artifact Analysis → Code Analysis → Similar Issues → Related PRs → Conclusion (diagnosis, confidence, evidence summary, next steps)
 
-Archive any prior report before saving (see [commands.md](./references/commands.md)). Save to `~/Code/ai-generated/ISSUE/files/sdh_report_ISSUE.md`.
+Archive any prior report before saving (see [commands.md](./references/commands.md)). Save to `$ARTIFACTS_DIR/sdh_report_<ISSUE>.md`.
 
 ---
 

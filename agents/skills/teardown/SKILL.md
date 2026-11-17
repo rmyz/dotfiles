@@ -13,34 +13,34 @@ kills the agent running inside it, so teardown never finishes there.
 
 ## Resolve
 
-Load the `orca-cli` skill and resolve the `ORCA` executable. Capture the worktree
-path and full id from `ORCA worktree show --worktree name:<branch> --json`. Do not use
-`branch:<branch>`: the git branch carries a prefix such as `rmyz/`, so it does not
-match. Use the id as the selector in the next steps.
+Load the `orca-cli` skill. Capture the worktree path and full id from
+`ORCA worktree show --worktree name:kibana-<branch-safe> --json`, where
+`<branch-safe>` is the branch with `/` replaced by `-` (`init-worktree` names every
+worktree this way). Use the id as the selector in the next steps.
 
 ## Relocate
 
 If the current directory is the worktree path or inside it, spawn a session in the
-main clone and stop. Tell the user the teardown continues in the new terminal. Do
-nothing else here.
+main clone and stop. Tell the user the teardown continues in the new terminal.
 
 ```bash
 MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
-~/.agents/skills/spawn-session/scripts/spawn-session.sh "$MAIN" "teardown <branch>" "/teardown <branch>"
+~/.agents/skills/spawn-session/scripts/spawn-session.sh "$MAIN" "teardown <branch>" "Load the teardown skill and follow it for <branch>"
 ```
 
 ## Remove
 
-1. Close every terminal in the worktree; this kills the Kibana and Storybook process
-   trees running in them. Stop when the result is `unverifiable`:
+1. Close every terminal in the worktree; this kills the Elasticsearch, Kibana, and
+   Storybook process trees running in them. If the result is `unverifiable`, stop and
+   report the terminals still open:
 
    ```text
    ORCA terminal close --worktree id:<worktree.id> --all --json
    ```
 
 2. Remove the worktree. It can take over two minutes, so run it as a background
-   command and wait for it. Never end the command with `&` in a shell, which kills
-   the job when the shell exits:
+   command (the Bash tool's `run_in_background`) and wait for it to finish. Never end
+   the command with `&`, which kills the job when the shell exits:
 
    ```text
    ORCA worktree rm --worktree id:<worktree.id> --force --json
@@ -57,8 +57,7 @@ MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
    ```
 
 2. Verify the worktree's Kibana and Elasticsearch ports (`kibana:<port>` and
-   `es:<port>` terminal titles) no longer have a listener. Each worktree owns its
-   Elasticsearch, and its `.es/` data directory lives in the worktree.
+   `es:<port>` terminal titles) no longer have a listener.
 
 3. When `worktree show` reported a `linkedPR`, delete the local PR ref that
    `init-worktree` fetched:
@@ -68,8 +67,7 @@ MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
    git -C "$MAIN" update-ref -d refs/remotes/pr/<linkedPR>
    ```
 
-4. Remove the work artifacts. `<work-id>` is the branch name with `/` replaced
-   by `-`:
+4. Remove the work artifacts (`<work-id>` as defined in `AGENTS.md`):
 
    ```bash
    rm -rf "$HOME/Code/ai-generated/<work-id>"

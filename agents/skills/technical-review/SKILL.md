@@ -5,18 +5,14 @@ description: Technical review of a diff — architecture, bad patterns, consiste
 
 # Technical review
 
-Review the diff. By default that means uncommitted changes plus the commits on this
-branch against `upstream/main` (committed, staged, unstaged, and untracked); if the
-invocation names a ref, branch, or PR, review that instead.
-
-Apply `~/.agents/REVIEW.md` first. Its rules come from real reviewer comments, and
-its "For reviewers" section sets the output rules.
+Review the diff. Apply `~/.agents/REVIEW.md` first. Its rules come from real reviewer
+comments, and its "For reviewers" section sets the default scope and the output
+rules.
 
 Focus on code architecture, bad patterns, consistency with existing conventions and
-components in the surrounding Kibana code, and the Fowler code smells below. Match
-each smell against the diff — name it and quote the hunk — as judgement-call
-heuristics, not hard rules. Skip anything tooling already enforces (ESLint, type
-checks, i18n checks).
+components in the surrounding Kibana code, and the Fowler code smells below. For each
+smell, name it and quote the hunk. Treat the smells as heuristics, not hard rules.
+Skip anything tooling already enforces (ESLint and type checks).
 
 - **Mysterious Name** — a function, variable, or type whose name doesn't reveal what
   it does or holds. → rename it; if no honest name comes, the design's murky.
@@ -45,16 +41,14 @@ checks, i18n checks).
 
 Beyond the smells, flag these slop patterns:
 
-- Defensive code on trusted internal paths: try/catch, existence checks, or
-  fallbacks the surrounding code does not need. → delete; let internal invariants
-  hold.
-- Thin wrappers or identity abstractions that add indirection without buying
-  clarity. → cut them, keep the direct flow.
+- Violations of the Code rules in `AGENTS.md`, such as defensive code on trusted
+  internal paths. → delete or fix as the rule says.
+- A user-facing string not wrapped in `i18n.translate` or `FormattedMessage`. → wrap
+  it.
 - One-off booleans, nullable modes, or flags bolted onto an existing flow. → ask
   for the model change that makes the branch disappear.
 - Feature-specific logic leaking into shared modules or the wrong layer. → move it
   behind the feature's own boundary.
 
 Report each finding with its `file:line`, its tag from the "For reviewers" section of
-`~/.agents/REVIEW.md`, and a one-line suggested fix. Do not apply changes. End with a
-short list of which findings you would act on and which you would drop, and why.
+`~/.agents/REVIEW.md`, and a one-line suggested fix.

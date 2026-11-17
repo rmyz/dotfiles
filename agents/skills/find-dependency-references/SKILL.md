@@ -7,9 +7,9 @@ description: Find all files that import or require a specific dependency, with t
 
 ## Overview
 
-Finds all files in the current Kibana checkout that import or use a given dependency (e.g., `lodash`, `moment`, `enzyme`), extracts which APIs are used, and groups results by team ownership.
+Finds all files in the current Kibana checkout that import or use a given dependency (e.g., `lodash`, `moment`, `enzyme`).
 
-The scan root is the current directory. Run the script from the root of the Kibana checkout or worktree to scan.
+The scan root is the current directory. The worktree needs `kbnb` to have run.
 
 ## Helper script
 
@@ -35,29 +35,9 @@ Output: JSON with:
 - `matchingFiles[]` -- flat list of all matching file paths
 - `analysisTimeMs` -- how long the analysis took
 
-### Examples
-
-```bash
-cd "$(git rev-parse --show-toplevel)" && \
-  NODE_PATH="$PWD/node_modules" \
-  node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.agents/skills/find-dependency-references/find_dependency_references.ts \
-  --dependency enzyme
-```
-
 ## How it works
 
 1. Scans all `.js`, `.jsx`, `.ts`, `.tsx`, `.d.ts` files under the scan root (respecting `.gitignore`)
 2. Detects ES6 imports (`import ... from 'dep'`), CommonJS requires (`require('dep')`), and dynamic imports (`import('dep')`)
-3. Extracts API usage: destructured imports, static method calls, and method calls on assigned variables
-4. Cross-references each matching file with `.github/CODEOWNERS` for team grouping (most-specific rule wins)
 
-## Manual alternative
-
-For a quick check without the full analysis, use the Grep tool:
-
-```
-Pattern: from ['"]<dep>['"]
-Type: ts
-Output mode: files_with_matches
-```
+If the script fails, use Grep with the pattern `from ['"]<dep>['"]`.

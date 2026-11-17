@@ -63,6 +63,8 @@ A test must fail when a real regression ships. Every test costs CI time, and eve
 - Delegate open-ended exploration to a subagent whenever the answer is not a single known file. Work from its summary; do not stream long chains of file reads and searches into the primary session.
 - In skills with an investigation phase, run the investigation through subagents
   and keep only the conclusions in the main session.
+- Use `agent-browser` for web pages and the app under test. Use Orca's embedded
+  browser only when the task needs a browser tab inside an Orca worktree.
 - Use the agent's file read, search, and edit tools instead of `cat`, `head`, `tail`, `find`, `grep`, `sed`, and `echo` redirection. Reserve the shell for real commands: git, yarn, curl, servers, and scripts.
 - If the agent has no file read tool, read files with `rg`, `cat`, or `sed -n` in
   the shell. Never use Python to read or search files.
@@ -99,7 +101,6 @@ PRs, issues, reviews, and Slack messages.
 - Use sentence case for headings. Bold only what the reader must not miss.
 - Use bullets only when they make the text shorter or easier to scan. Do not repeat
   them in a summary.
-- Before sending, reread once and delete every sentence that adds no fact.
 
 ## Kibana
 
@@ -109,8 +110,9 @@ Apply this section only when the working directory is a clone or worktree of
 ### Remotes
 
 - `origin` is the fork (`rmyz/kibana`); `upstream` is `elastic/kibana`.
-- Diff, branch, and rebase against `upstream/main`. Never use `origin/main` — it is
-  thousands of commits stale and is never synced.
+- Diff, branch, and sync against `upstream/main`, unless the user names another
+  branch. Never use `origin/main`: it is thousands of commits stale and is never
+  synced.
 - The clone also carries many other contributors' remotes. Never infer the fork as
   "the remote that is not `origin`".
 
@@ -125,11 +127,11 @@ Apply this section only when the working directory is a clone or worktree of
 
 ### Local services
 
-- Start Elasticsearch with `es --port <port> -E cluster.name=es-<port>` and Kibana with `kbn <port>`. They also
-  pass `--eis` and the license config. Each worktree runs its own Elasticsearch
-  (ports from `9200`, step 1) and Kibana. The primary `main` worktree starts neither.
-  Always start Elasticsearch first, wait until it is healthy, then start Kibana.
-  Point Kibana at its Elasticsearch with `--elasticsearch.hosts=http://localhost:<es-port>`.
+- Each worktree runs its own Elasticsearch and Kibana. The primary `main` worktree
+  starts neither. Start Elasticsearch first, wait until it is healthy, then start
+  Kibana. Ports and launch commands live in
+  `~/.agents/skills/kibana-dev-stack/SKILL.md`: Elasticsearch from `9200` (step 1),
+  Kibana from `5601` (step 2).
 - `kbn <port>` sets `--port=<port>` and `--dev.basePathProxyTarget=<port+1>`, so each
   instance uses two ports: `<port>` and `<port+1>`. Never pass `--no-base-path`.
   Kibana always serves under a 3-letter prefix before `/app/`, for example `/kpd/app`.

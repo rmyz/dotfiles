@@ -20,7 +20,7 @@ agent-browser skills get core             # start here — workflows, common pat
 agent-browser skills get core --full      # include full command reference and templates
 ```
 
-The CLI serves skill content that always matches the installed version, so instructions never go stale. The content in this stub cannot change between releases, which is why it just points at `skills get core`.
+The CLI serves skill content that always matches the installed version, so instructions never go stale.
 
 ## Specialized skills
 

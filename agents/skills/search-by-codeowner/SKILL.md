@@ -9,7 +9,7 @@ description: Search for a term in files owned by a specific GitHub team based on
 
 The `.github/CODEOWNERS` file in the Kibana checkout maps file paths to owning GitHub teams. This skill searches tracked `.js`, `.jsx`, `.ts`, `.tsx`, `.json`, `.md`, `.yml`, and `.yaml` files outside `node_modules`, `build`, and `target` directories whose last matching rule assigns them to the requested team.
 
-The scan root is the current directory. Run the script from the root of the Kibana checkout or worktree to scan.
+The scan root is the current directory. The worktree needs `kbnb` to have run.
 
 ## Helper script
 
@@ -29,16 +29,6 @@ Options:
 
 Output: JSON with `team`, `searchTerm`, `totalScannedFiles`, `totalMatchingFiles`, `matchingFiles[]`, and `analysisTimeMs`.
 
-### Examples
-
-```bash
-cd "$(git rev-parse --show-toplevel)" && \
-  NODE_PATH="$PWD/node_modules" \
-  node --no-experimental-require-module -r @kbn/setup-node-env \
-  ~/.agents/skills/search-by-codeowner/search_by_codeowner.ts \
-  --team @elastic/kibana-core --search "useEffect"
-```
-
 ## How it works
 
 1. Parses `.github/CODEOWNERS` in rule order
@@ -46,10 +36,4 @@ cd "$(git rev-parse --show-toplevel)" && \
 3. Runs `grep -il` on files owned by the target team
 4. Returns relative file paths (relative to the scan root) sorted alphabetically
 
-## Manual alternative
-
-If you prefer using the agent's built-in Grep tool directly:
-
-1. Read `.github/CODEOWNERS` and find the patterns for the target team
-2. Drop paths that a later rule assigns to another team; the last matching rule wins
-3. Use the Grep tool scoped to the remaining paths
+If the script fails, read `.github/CODEOWNERS`, drop paths that a later rule assigns to another team, and use Grep on the remaining paths.

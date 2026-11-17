@@ -1,34 +1,31 @@
 ---
 name: init-worktree
-description: Provision a Kibana worktree with bootstrap, development config, and CodeGraph indexing. Uses the PR's branch when a PR link is given (to test the PR), otherwise branches from upstream/main. Moves the session into the new worktree. No servers are started.
+description: Provision a Kibana worktree with bootstrap, development config, and a CodeGraph sync. Uses the PR's branch when a PR link is given (to test the PR), otherwise branches from upstream/main. Moves the session into the new worktree. No servers are started.
 disable-model-invocation: true
 ---
 
 # Init worktree
 
-Provisions one Kibana worktree and moves the session into it. It never starts
-Elasticsearch, Kibana, or Storybook, and runs no workflow. A caller may pass a tag and
-an instruction for the new session; this skill passes them on without interpreting
-them. A caller that must keep its own session may ask for no handoff.
+Provisions one Kibana worktree and moves the session into it. A caller may pass a tag
+and an instruction for the new session; this skill passes them on without
+interpreting them. A caller that must keep its own session may ask for no handoff.
 
 When the request contains a PR link or number, the worktree uses that PR's head
-branch. Otherwise the worktree branches from `upstream/main`. Branch naming for a new
-branch: `fix/`, `feat/`, `perf/`, or `refactor/` plus a short description.
+branch. Otherwise the worktree branches from `upstream/main`. Name a new branch
+`<type>/<short-description>`, where `<type>` is a commit type from `AGENTS.md`.
 
 Name every worktree folder `kibana-<branch-safe>`, where `<branch-safe>` is the branch
 name with `/` replaced by `-`, for example `kibana-feat-my-change`. Only the folder
 and Orca name carry the `kibana-` prefix. The branch never does. The PR helper app
 discovers sibling worktrees by the folder prefix.
 
-Worktrees live beside the primary Kibana checkout, in its parent directory. Never
-create one inside the checkout. Orca reads its location from the project setting
+Worktrees live beside the primary Kibana checkout, in its parent directory. Orca reads its location from the project setting
 "Worktree Location", which must be that parent directory, with the global "Nest
 Workspaces" setting off. After `worktree create`, stop and report if the returned
 path is not directly under that parent directory.
 
-Before the first Orca command, load the `orca-cli` skill, resolve the `ORCA`
-executable, run `ORCA skills get orca-cli`, and confirm the app with
-`ORCA status --json`.
+Before the first Orca command, load the `orca-cli` skill, complete its setup, and
+confirm the app with `ORCA status --json`.
 
 ## Update the primary worktree
 
@@ -108,16 +105,19 @@ ORCA terminal create --worktree id:<worktree.id> --title bootstrap \
 ```
 
 Anything that needs built packages (Kibana, type checks, tests) must first confirm
-bootstrap succeeded: `ORCA terminal wait --terminal <handle> --for exit --timeout-ms
-2400000 --json`, then `ORCA terminal read` to check the outcome.
+bootstrap succeeded. Find the `bootstrap` terminal in
+`ORCA terminal list --worktree path:<worktree-path> --json`. Block on
+`ORCA terminal wait --terminal <handle> --for exit --timeout-ms 2400000 --json`,
+then run `ORCA terminal read --terminal <handle> --json` to check the exit status.
+If bootstrap failed or no `bootstrap` terminal exists, start `kbnb; exit $?` in a new
+`bootstrap` terminal and wait for it the same way.
 
-## Index with CodeGraph
+## Sync CodeGraph
 
-Reuse the primary worktree's index when it is complete and compatible with the
-installed CodeGraph version. Copy only the SQLite database through `.backup`; never
-copy or link daemon state, sockets, locks, or WAL files. Then sync the snapshot with
-the new worktree. Fall back to a full index when the primary worktree has no usable
-index.
+Skip this section when the primary worktree has no `.codegraph/` directory or its
+index is incomplete or incompatible with the installed CodeGraph version. Otherwise
+copy only the SQLite database through `.backup`; never copy or link daemon state,
+sockets, locks, or WAL files. Then sync the snapshot with the new worktree.
 
 Snapshot the primary index without waiting for a sync. Run the worktree sync in the
 background so `codegraph_explore` becomes available without blocking provisioning.
@@ -137,8 +137,6 @@ then
   sqlite3 "$MAIN/.codegraph/codegraph.db" \
     ".backup \"$WORKTREE/.codegraph/codegraph.db\""
   nohup sh -c 'codegraph sync "$1"' sh "$WORKTREE" >> "$LOG" 2>&1 &
-else
-  nohup sh -c 'codegraph init -y "$1"' sh "$WORKTREE" > "$LOG" 2>&1 &
 fi
 ```
 
@@ -159,8 +157,8 @@ Treat a failed final comparison as a blocker.
 ## Move to the new worktree
 
 Provisioning is complete only when the worktree exists, bootstrap is running in its
-terminal, CodeGraph indexing has started, and the development config verification
-passed.
+terminal, the CodeGraph sync has started (when the primary worktree has an index),
+and the development config verification passed.
 
 When the caller asked for no handoff, skip the spawn and the tab close. Report the
 branch, the absolute worktree path, the worktree id, the bootstrap terminal handle,
@@ -168,17 +166,15 @@ and the PR URL when there is one. Then stop.
 
 Otherwise, the terminal that received the request still belongs to the old Orca card,
 and Orca cannot move a live terminal between worktrees. Continue in a fresh session of the
-same agent in a new terminal tab in the new worktree. The session has no prior
-conversation, so the prompt carries everything it needs. Always start it with
-`spawn-session.sh`; do not build the command yourself:
+same agent in a new terminal tab in the new worktree. Start it with
+`~/.agents/skills/spawn-session/SKILL.md`:
 
 ```bash
 "$HOME/.agents/skills/spawn-session/scripts/spawn-session.sh" "<worktree.path>" "<tag> <branch>" \
   "<tag> <branch>: Worktree: <worktree.path>. Bootstrap: <bootstrap-handle>. PR: <number, when there is one>. Request: <original request verbatim>. <caller instruction, when given>"
 ```
 
-The tag is the caller's, or `[PR]` with a PR and `[NEW]` without. Exit `2` means this
-session runs outside Orca: report the printed command, then stop.
+The tag is the caller's, or `[PR]` with a PR and `[NEW]` without.
 
 After the new terminal starts, close the old terminal's whole tab with
 `ORCA terminal close --terminal <old-handle> --tab --json`. The old handle comes from
@@ -186,5 +182,4 @@ After the new terminal starts, close the old terminal's whole tab with
 Orca chat.
 
 Report the branch, the absolute worktree path, and the PR URL when there is one. End
-this session. The new session starts with `pwd -P`, which must equal
-`<worktree.path>`; it stops if it does not.
+this session.

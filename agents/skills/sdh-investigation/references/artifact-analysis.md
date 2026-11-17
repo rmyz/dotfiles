@@ -2,7 +2,7 @@
 
 Querying patterns for common SDH artifact types.
 
-**Approach:** Start narrow, widen only if needed. Get counts and summaries first, then drill into specific items. Never dump an entire file.
+**Approach:** Start narrow, widen only if needed. Get counts and summaries first, then drill into specific items.
 
 **Before choosing a strategy**, sniff the file content — some `.log` or `.txt` files are actually JSON:
 
@@ -39,7 +39,7 @@ jq '.log.entries | length' file.har
 
 ### Step 2: Failed and slow requests
 
-Focus on anomalies — don't read successful responses:
+Focus on anomalies:
 
 ```bash
 # Failed requests (4xx/5xx) — URLs only, no bodies yet
@@ -115,7 +115,7 @@ jq -r '.log.entries[] | select(.request.url | contains("bsearch")) | .response.c
 
 ## Log Files
 
-Kibana logs, ECK diagnostics, server logs. Use `rg` (ripgrep), fall back to `grep`.
+Kibana logs, ECK diagnostics, server logs. Use `rg` (ripgrep).
 
 ### Step 1: Shape of the data
 
@@ -197,7 +197,7 @@ rg "error" file.ndjson | jq . | head -30
 
 ## YAML Files
 
-YAML is human-readable — use `rg` (or `grep` if unavailable) to search directly, don't convert to JSON.
+YAML is human-readable — use `rg` to search directly, don't convert to JSON.
 
 ### Step 1: Identify the file's purpose
 

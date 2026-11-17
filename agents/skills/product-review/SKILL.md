@@ -5,10 +5,8 @@ description: Product review of a diff — side-effects and bugs (what could brea
 
 # Product review
 
-Review the diff. By default that means uncommitted changes plus the commits on this
-branch against `upstream/main` (committed, staged, unstaged, and untracked); if the
-invocation names a ref, branch, or PR, review that instead. Read the linked issue or
-plan when one is provided; requirement fit is judged against it.
+Review the diff in the default scope from `~/.agents/REVIEW.md`. Read the linked issue
+or plan when one is provided; requirement fit is judged against it.
 
 Cover both angles:
 
@@ -21,10 +19,10 @@ Cover both angles:
      responsive behavior where it applies.
    - **Empty / error states** — what the user sees when there is no data or a request
      fails.
-   - **Copy & accessibility** — clear wording and basic a11y (labels, keyboard,
+   - **Copy & accessibility** — clear wording, every user-facing string wrapped in
+     `i18n.translate` or `FormattedMessage`, and basic a11y (labels, keyboard,
      contrast) where relevant. Copy findings are report-only; UI text changes always
      need explicit user approval.
 
 Report each finding with its `file:line`, its tag from the "For reviewers" section of
-`~/.agents/REVIEW.md`, and a one-line suggested fix. Do not apply changes. End with a
-short list of which findings you would act on and which you would drop, and why.
+`~/.agents/REVIEW.md`, and a one-line suggested fix.

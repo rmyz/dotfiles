@@ -19,7 +19,7 @@ gh issue view ISSUE --repo REPO --json title,state,labels,body,comments \
     state: .state,
     labels: [.labels[].name],
     body: .body,
-    comments: [.comments[] | select(.author.login | test("bot|elasticmachine|kibanamachine") | not) | {author: .author.login, date: .createdAt, body: .body}]
+    comments: [.comments[] | select(.author.login | test("^(elasticmachine|kibanamachine)$|\\[bot\\]$") | not) | {author: .author.login, date: .createdAt, body: .body}]
   }'
 ```
 

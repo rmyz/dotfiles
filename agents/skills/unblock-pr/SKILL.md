@@ -10,14 +10,16 @@ or failing checks. The flow is:
 
 `Comments -> Mergeability -> CI -> Wait`
 
-Never post comments, replies, reviews, reactions, or label changes, never resolve
-threads, and never retry CI jobs or post `run docs-build` without explicit approval.
-Fixing code and pushing approved fixes is allowed. The one comment you post without
-approval is `/ci`, under the `/ci` rule in `AGENTS.md`. Never run `gh pr ready`.
+Never resolve threads, retry CI jobs, or post `run docs-build` without explicit
+approval. Post only replies the user approved. The one comment you post without
+approval is `/ci`, under the `/ci` rule in `AGENTS.md`.
 
 `pr.mjs` below means `node "$MAIN/.agents/skills/pr-babysit/scripts/pr.mjs"`, where
 `MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")` is the
-primary checkout. Use that path, not the copy in the current worktree.
+primary checkout. Use that path, not the copy in the current worktree. Stop if
+`test -f "$MAIN/.agents/skills/pr-babysit/scripts/pr.mjs"` fails. Its commands are
+`signals`, `wait`, `threads`, and `resolve`; `$MAIN/.agents/skills/pr-babysit/SKILL.md`
+describes their output.
 
 ## Step 0: Resolve the PR and the mode
 
@@ -32,7 +34,7 @@ Confirm the local branch is the PR's head branch. Run `git pull --rebase origin
 <branch>` first, because kibanamachine pushes fix-up commits to PR branches.
 
 Run `pr.mjs signals <PR_NUMBER>` for Libra, CI, and `mergeable`. On a draft PR,
-ignore `ci=off`: drafts get CI through `/ci`.
+ignore `ci=off`: drafts get CI through `/ci`. Steps 2 and 3 use this output.
 
 ## Step 1: Comments
 
@@ -42,39 +44,34 @@ and wait for the user's decision before changing code or replying.
 
 After approval:
 
-- Fix the rule, not the line: find every instance of the same mistake in the diff.
+- Fix the rule, not the line: search the diff with `rg` for the same pattern, list the
+  hits, and fix each one.
 - For a new guard test, break the code once to prove the test fails, then restore
   it.
 - Post the approved replies before you push, so reviewers see the reason with the
-  commit.
+  commit: `gh api -X POST "repos/elastic/kibana/pulls/<PR_NUMBER>/comments/<comment-id>/replies" -f body="<reply>"`.
 - Resolve threads only when the user approved it, with `pr.mjs resolve <thread-id>`.
 
 ## Step 2: Mergeability
 
-Check whether the branch merges cleanly into `upstream/main`:
+Read `mergeable` from the Step 0 signals.
 
-```bash
-git fetch upstream main
-git merge-tree "$(git merge-base HEAD upstream/main)" HEAD upstream/main
-```
-
-- Conflicts: merge `upstream/main` and resolve every conflict in favor of the
-  correct final code, not blind `--ours`. Regenerate generated files instead of
-  merging them by hand. If a conflict needs a semantic decision, abort the merge and
-  ask the user. Rerun the affected targeted tests and `node scripts/check.js --scope=local`, then
-  push.
-- Outdated but mergeable: leave it. Do not merge only to refresh the branch.
-- If the `git merge-tree` output is unclear, verify with a local test merge and
-  abort it.
+- `CONFLICTING`: run `git fetch upstream main` and `git merge upstream/main`.
+  Regenerate generated files instead of merging them by hand. When both sides
+  changed the same logic, abort the merge and ask the user. Otherwise keep both
+  changes. Rerun the affected targeted tests and
+  `node scripts/check.js --scope=branch --base-ref upstream/main`, then push.
+- `MERGEABLE`: leave the branch alone, even when it is outdated.
+- `UNKNOWN`: run `pr.mjs signals <PR_NUMBER>` once more.
 
 ## Step 3: CI
 
-Take one snapshot with `pr.mjs wait <PR_NUMBER> --for ci --timeout 0`. For each
+Take one CI snapshot with `pr.mjs wait <PR_NUMBER> --for ci --timeout 0`. For each
 failure, follow `references/ci.md`.
 
 ## Step 4: Push and wait
 
-Push only to the fork: `git push origin HEAD`. On a draft PR, comment `/ci`:
+Push with `git push origin HEAD`. On a draft PR, comment `/ci`:
 
 ```bash
 gh pr comment <PR_NUMBER> --body '/ci'

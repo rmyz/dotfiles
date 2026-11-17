@@ -1,0 +1,4 @@
+start-es.sh
+.dev-stack
+shared Elasticsearch
+handoff skill

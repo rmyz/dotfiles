@@ -11,13 +11,16 @@ if [ -n "$NEW" ]; then
   exit 0
 fi
 
-LAST=$(awk -F'\t' '$3 == "all" { c = $4 } END { print c }' "$DATA/scores.tsv")
 case "$CONFIG" in
   *-dirty) ;;
-  "$LAST") ;;
   *)
-    echo "review config changed: $LAST -> $CONFIG"
-    exit 0
+    for REVIEWER in code cross; do
+      LAST=$(awk -F'\t' -v r="$REVIEWER" '$2 == r && $3 == "all" { c = $4 } END { print c }' "$DATA/scores.tsv")
+      if [ "$CONFIG" != "$LAST" ]; then
+        echo "review config changed for $REVIEWER: $LAST -> $CONFIG"
+        exit 0
+      fi
+    done
     ;;
 esac
 

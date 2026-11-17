@@ -6,9 +6,7 @@ Pick validations that directly prove the prompt’s required **data shape** exis
 
 1. Decide **what must be true** (e.g., “a single trace has \(\ge 60\) unique services”).
 2. Choose **where to query** (APM → `traces-apm*`, logs → `logs-*-*`, infra → `metrics-*`).
-3. Filter to **recent time** and a **scenario marker**:
-   - Prefer `service.environment` (many scenarios set this via `getSynthtraceEnvironment(__filename)`).
-   - Otherwise filter by stable markers you set (service prefix, transaction name prefix, log message prefix, dataset).
+3. Filter to **recent time** and the scenario's `service.environment` marker. Without one, filter by stable markers you set (service prefix, transaction name prefix, log message prefix, dataset).
 
 All examples below are meant to be pasted into **Kibana Dev Tools → Console** and adapted.
 

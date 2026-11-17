@@ -10,28 +10,23 @@ Phase 1 of `ship`. The invariants, stops, and session rules in
 `~/.agents/skills/ship/SKILL.md` apply; read that file first.
 
 In OpenCode, this phase runs as the `ship-plan` agent and delegates routine I/O
-(code inspection, CodeGraph queries, and commands) to the `build` subagent. State
-whether each delegated task is inspection-only or may edit files. Do not modify
-source or configuration files. Only write the Markdown handoff.
+(code inspection, CodeGraph queries, and commands) to the `build` subagent. Write
+only the Markdown handoff.
 
 ## Guard
 
 The working directory must be a Kibana feature worktree: inside a git worktree whose
 current branch is not `main`. If it is not, stop and tell the user to run
-`/init-worktree`. Never provision from this skill.
+`/init-worktree`.
 
 Run ship's "First actions" step 1 from `~/.agents/skills/ship/SKILL.md`. The
 `Worktree` path in the invocation prompt is the payload.
 
-Do not start Elasticsearch, Kibana, or Storybook in this phase.
-
 ## Investigate
 
-Treat any task description, issue link, PR, Slack thread, screenshot, or Figma URL in
-the invocation prompt as complete intake. Read everything provided and do not ask for
-more context. Ask once for task context only when the user invoked `ship` without any
-task input. If no other material exists, state what would have helped and continue
-from the task description.
+The invocation prompt is the full intake: a task description, issue link, PR, Slack
+thread, screenshot, or Figma URL. Read everything it provides. If it has no task
+input, ask once. Otherwise do not ask for more context.
 
 Trace the affected flow end to end before proposing a solution. Prefer
 `codegraph_explore` over grep-and-read loops. Read existing tests and patterns. Name
@@ -85,7 +80,13 @@ Keep it short and readable by the next session. Include the task, the
 the relevant flow, expected file changes, the verification recipe, `Size` and
 `Follow-ups` when the change was split or kept large, Scout config paths and
 compatibility, and any known risks or open questions. Resolve decisions from the
-task context. Stop only when a missing answer blocks implementation.
+task context.
+
+Set the card status:
+
+```text
+ORCA worktree set --worktree path:<worktree-path> --workspace-status in-progress --comment "Plan written" --json
+```
 
 Spawn the `[IMPLEMENT]` session following ship's "Spawning the next phase" procedure,
 with payload branch, worktree path, and plan file path. Then end this session.

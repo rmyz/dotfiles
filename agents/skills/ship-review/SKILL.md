@@ -29,7 +29,7 @@ Fix confirmed failures and rerun affected checks until green. Run the cross-mode
 review first, then behavior QA and the demo on the reviewed code, then the
 mechanical checks, before creating the draft PR. The cross-model review and
 `node scripts/check.js --scope=local` are required for every change set, including
-docs-only changes. Stop only for a blocker.
+docs-only changes.
 
 ### Cross-model review
 
@@ -46,7 +46,7 @@ Verify each finding against the code. Fix confirmed correctness, security, and
 maintainability issues that block a PR and fit the task. Record which findings you
 fixed, which you did not fix, and why. Stop if a finding needs a product decision
 that the task context cannot resolve.
-Do not change UI copy without approval of the exact proposed text.
+Do not change UI copy. Report the proposed text under the findings left open.
 
 When you fixed at least one finding, run a second round on the fixes only. Run the snapshot script
 again and record the SHA as `POST`. Run cross-review with scope
@@ -64,12 +64,10 @@ report a split proposal.
 
 Every acceptance criterion in the plan must pass. QA runs on the code left after the
 cross-model review fixes. Take the numbered criteria from the plan's `Acceptance criteria` section,
-not from memory. Rerun each check in the plan's `Verification` section yourself.
-Do not accept the implement phase's evidence without a rerun. If any criterion
-fails or cannot be verified, fix it before continuing; do not hand unmet criteria to
-QA.
+not from memory. Run each check in the plan's `Verification` section yourself. If
+any criterion fails or cannot be verified, fix it before continuing.
 
-Skip behavior QA when step 4 decided the change set needs no running Kibana. Then
+Skip behavior QA when First actions decided the change set needs no running Kibana. Then
 verify each criterion against the code and the plan's targeted tests, and say so in
 the report. Otherwise run behavior QA through a subagent. Brief it with the numbered
 criteria, the plan file path, the Kibana URL, and
@@ -81,14 +79,14 @@ The subagent returns the path of `verify.json`. Run
 `node ~/.agents/skills/kibana-verify/scripts/validate-verify.mjs <verify.json> --plan <plan-file>`
 yourself. Count QA as done only when it prints `OK` and the verdict is `pass`. On
 `fail`, fix the code and rerun the QA, then capture the demo again. On `blocked`,
-fix the cause and rerun. Stop and report only when the blocker needs a decision.
+fix the cause and rerun.
 
 ### Demo
 
 The evidence files next to `verify.json` in `~/Code/ai-generated/<work-id>/demo/`
-are the demo. Pass the ones that best prove the criteria to `create-pr`. When QA
-was skipped for a non-UI change, screenshot the command or response that proves the
-behavior and save it in the same directory.
+are the demo. Pass one file per acceptance criterion to `create-pr`, at most five,
+in criterion order. When QA was skipped, run each criterion's check in a terminal
+and save its output as `<ac>-output.txt` in the same directory.
 
 ## Run checks
 
@@ -114,27 +112,27 @@ generated change.
 Use the Scout config paths recorded in the plan. If the final diff changes a package
 not covered by the plan, check that package's
 `test/scout*/{ui,api}/playwright.config.ts` too. If that adds a Scout suite after
-step 4 skipped servers, read and follow `~/.agents/skills/kibana-dev-stack/SKILL.md` now.
+First actions skipped servers, read and follow `~/.agents/skills/kibana-dev-stack/SKILL.md` now.
 
 Then run the suite as `~/.agents/skills/kibana-dev-stack/SKILL.md` describes under "Scout".
 
 Fix confirmed failures from any of the three and rerun only the affected check. If a
-fix changes behavior, rerun affected behavior QA. Stop only when a change requires
-a product decision or exceeds the task scope.
+fix changes behavior, rerun affected behavior QA. When all checks are green, run
+`ORCA worktree set --worktree path:<worktree-path> --comment "Validation passed" --json`.
 
 ## Create the draft PR
 
 Walk the full diff against the merge base file by file, including
 untracked files: every hunk must belong to this task. Revert anything unrelated
 (debug prints, formatting churn, leftovers, generated files that should not ship) and
-report what was removed. Do not open a PR containing unrelated changes.
+report what was removed.
 
 Then invoke the `create-pr` skill to perform the commit, upstream sync, push, draft PR
 creation, and `/ci` comment. Pass context from the plan and review session:
 - Issue key and close/address status from the plan file
 - Short manual testing steps, written from the passing checks in `verify.json`, one
   per acceptance criterion. Leave out the checks, evidence paths, and verdict: they
-  stay in the local result file. Do not post a PR comment with QA results.
+  stay in the local result file.
 - The demo file paths under `~/Code/ai-generated/<work-id>/demo/`, so `create-pr`
   attaches them in `## Demo`
 - Risk: breaking changes, migrations, privilege changes, and the `Size` reason from
@@ -143,8 +141,11 @@ creation, and `/ci` comment. Pass context from the plan and review session:
 If `create-pr` halts due to merge conflicts against `upstream/main`, resolve them, rerun
 affected checks or QA, and invoke `create-pr` again.
 
-Confirm the PR body has the demo attached (`user-attachments` links, no local paths).
-If the upload fails, report the demo file paths with the PR URL.
+Set the card status:
+
+```text
+ORCA worktree set --worktree path:<worktree-path> --workspace-status in-review --comment "Draft PR created" --json
+```
 
 Report the PR URL, the review findings fixed, the findings left open and why, the
 check results, the plan's `Follow-ups`, and any remaining considerations. Remind the user about private

@@ -75,7 +75,7 @@ If confidence is "Insufficient": "Insufficient evidence to form hypothesis."
 
 ### Fixed In
 
-(Only if a fix exists. Omit "Next Steps" if this section is present.)
+(Only if a fix exists.)
 
 PR #NUMBER (version X.Y.Z+)
 

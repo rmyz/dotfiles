@@ -97,17 +97,3 @@ export default scenario;
 ## Validation idea (pick a query that matches the prompt)
 
 Validate that at least one `trace.id` in the recent time window has a high distinct `service.name` count. Prefer filtering by `service.environment == ENVIRONMENT` (derived from `getSynthtraceEnvironment(__filename)`).
-
-## Run commands
-
-Finite backfill (default):
-
-```sh
-node scripts/synthtrace dynamic/<scenarioBaseName> --from now-1w --to now --scenarioOpts='{"rpm":1,"numServices":60}'
-```
-
-Manual live run (optional):
-
-```sh
-node scripts/synthtrace dynamic/<scenarioBaseName> --live --from now-1w --to now --scenarioOpts='{"rpm":1,"numServices":60}'
-```

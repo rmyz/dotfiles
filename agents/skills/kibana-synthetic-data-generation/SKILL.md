@@ -10,7 +10,7 @@ Generate synthtrace data for a prompt, without needing to land a scenario in `ma
 ## Constraints
 
 - Dynamic scenarios are **local-only** and must be **git-excluded** via `${KIBANA_ROOT}/.git/info/exclude` (not via committed `.gitignore`).
-- When ingestion may take a while, **do not wait** for the whole run to finish. Start ingestion, confirm it’s healthy via initial logs, then validate the resulting data shape in Elasticsearch.
+- Run synthtrace in a new Orca terminal (`ORCA terminal create`, per `AGENTS.md`). Do not wait for the run to finish: confirm it is healthy with `ORCA terminal read`, then validate the data shape in Elasticsearch. Stop a run with `ORCA terminal close --terminal <handle> --json`.
 
 ## Prerequisites
 
@@ -26,7 +26,6 @@ Extract what the user is trying to *see* in Kibana and translate it into measura
 - **APM**: one trace vs many traces, number of unique `service.name`, dependency fanout, error rate, span depth, long durations, etc.
 - **Logs**: datasets, volume, mapping failures vs clean logs, correlation with traces (`trace.id`), etc.
 - **Infra**: number of hosts/containers/pods, metricset coverage, correlation with services, etc.
-- **Time model**: fixed range (backfill) vs `--live` streaming.
 
 ### 2) Decide: built-in scenario vs dynamic scenario
 
@@ -53,9 +52,8 @@ Compute:
 Then:
 
 1. Create `DYNAMIC_DIR` if missing.
-2. Ensure `EXCLUDE_FILE` contains this ignore rule (exactly or equivalent):
-  `src/platform/packages/shared/kbn-synthtrace/src/scenarios/dynamic/`
-3. If you cannot edit `EXCLUDE_FILE` (permissions/read-only checkout), stop and tell the user to add the ignore rule manually by editing `${KIBANA_ROOT}/.git/info/exclude` and re-running the skill. And print a curated shell command which user should run.
+2. Add the ignore rule to `EXCLUDE_FILE` when it is missing:
+  `grep -qxF 'src/platform/packages/shared/kbn-synthtrace/src/scenarios/dynamic/' "$EXCLUDE_FILE" || echo 'src/platform/packages/shared/kbn-synthtrace/src/scenarios/dynamic/' >> "$EXCLUDE_FILE"`
 
 ### 4) Maintain `dynamic/README.md`
 
@@ -64,7 +62,7 @@ Ensure `${DYNAMIC_DIR}/README.md` exists and is maintained as scenarios are adde
 Rules:
 
 - The README describes **what each dynamic scenario does and how to use it**.
-- The README must **not** mention systematic references (SDH/issue numbers). Put those only in scenario-file comments.
+- The README must **not** mention systematic references (SDH/issue numbers). Mention them only in chat.
 - The README must mention that dynamic scenarios are intended to be created/managed by this skill:
 `https://github.com/elastic/skills/tree/main/skills/kibana-synthetic-data-generation`
 
@@ -78,12 +76,7 @@ Use a **semantic filename** (no SDH/issue numbers), for example:
 
 When creating a new dynamic scenario file:
 
-- Add a **detailed header comment** explaining:
-  - goal / intended Kibana UI behavior
-  - what data types it generates (APM/logs/infra) and key fields it sets
-  - `--scenarioOpts` supported and defaults
-  - how to validate the data shape in ES
-  - systematic references (SDH/issues) if applicable
+- Start the file with the Kibana license header and add no other comments. Put the goal, the data types and key fields, the `--scenarioOpts` with defaults, the run command, and the validation in `dynamic/README.md`.
 - Use `getSynthtraceEnvironment(__filename)` and set `service.environment` (or equivalent) so the run can be isolated for validation.
 - Prefer stable, queryable markers (service name prefixes, transaction name conventions, log message prefixes) to make validation easy.
 
@@ -96,15 +89,13 @@ Run from `${KIBANA_ROOT}`:
 - Dynamic scenario:
 `node scripts/synthtrace dynamic/<scenarioBaseName> ...`
 
-Do not run synthtrace with `--live` automatically. Live mode is unbounded and the user may not get a clean chance to stop it.
-
 By default, ingest a finite backfill for the past week (unless range is specified in the prompt):
 
 - `--from now-1w --to now`
 
-Set `--target/--kibana/--apiKey/--insecure` as required for the environment.
+For the worktree stack, pass `--target=http://elastic:changeme@localhost:<es-port>` and `--kibana=http://elastic:changeme@localhost:<kibana-port><base-path>`. For Cloud or Serverless, add `--apiKey` and, for self-signed certificates, `--insecure`.
 
-Provide the full `--live` command for them to run manually (and remind them they can stop it with `Ctrl+C`). Even if the user explicitly wants to stream live, just show the live command, and do not run with `--live`.
+Never run synthtrace with `--live`: live mode is unbounded. Show the full `--live` command for the user to run, and remind them that `Ctrl+C` stops it.
 
 Leave the ingestion process running while you validate (for finite backfills, this just means validate as soon as you see documents start appearing).
 
@@ -120,14 +111,14 @@ Prefer filtering by a scenario-specific tag such as `service.environment` derive
 
 ### 8) Reiterate if validation spots unintended data shape
 
-- If during validation (step 7), it's found that the ingested data is not in the intended shape and the script needs adjustment/enhancement, stop, kill the process, enhance the script, and re-run and repeat.
+- If during validation (step 7), it's found that the ingested data is not in the intended shape and the script needs adjustment/enhancement, stop the run, enhance the script, and re-run and repeat.
 
 ### 9) Reporting
 
-- Provide user a compact summary of what is being ingested
-- From the step 7 (Validate in Elasticsearch), see what queries worked and what sample docs it returned. Provide user sample commands and sampel output. Provide user only those commands which you were able to run successfully
-- Point user to where in Kibana UI (app or page) user can examnine the prominent data ingested as a result of this scenario run
-- Prefer request which user can run in Kibana Dev Toosl over curl requests. If inevitable, provide curl requests with basic auth or API key included. If user asked for a specific date to ingest data, include date range filter as well in the query/request. 
+- A compact summary of what is ingested.
+- The Dev Tools queries from step 7 that you ran successfully, with real sample output. Use curl with basic auth or an API key only when Dev Tools cannot run the request. Add a date range filter when the user asked for specific dates.
+- Where in the Kibana UI (app or page) the user can see the data.
+
   Example request
   ```
   POST /traces-apm*/_search

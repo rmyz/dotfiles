@@ -21,20 +21,21 @@ commit, and a judge counts how many human comments the review caught.
 - `harvested.txt`: the PRs the loop has already considered.
 
 Never read `holdout` comments to write or change a rule. Score changes on `dev` and
-confirm them on `holdout`. The first four holdout cases fed the first `REVIEW.md`,
-so their scores read high. PRs added after 2026-10-30 are the clean holdout.
+confirm them on `holdout`. The first four holdout cases fed the first `REVIEW.md`, so
+their scores read high. Cases for PRs added after 2026-10-30 are clean.
 
 ## Run
 
-Run it in an Orca terminal. One case takes several minutes.
+Run it in an Orca terminal and wait with `ORCA terminal wait --for exit`. One case
+takes several minutes.
 
 ```bash
 ~/.agents/skills/review-eval/scripts/run.sh <cross|code> [dev|holdout|all] [pr-number]
 ```
 
 - `cross`: the four-model panel through `opencode run`.
-- `code`: Claude's `/code-review high`, which follows `AGENTS.md`, and
-  `AGENTS.md` tells it to read `REVIEW.md`.
+- `code`: Claude's `/code-review`, which reads `REVIEW.md` through `AGENTS.md`. The
+  effort level is set in `run.sh`.
 
 The script checks out each case in a temporary detached worktree of
 `~/Code/kibana`, so the commits must be fetchable from `upstream`.
@@ -60,25 +61,28 @@ changed since the last full run. The loop runs without approval stops and never
 edits `REVIEW.md` or a skill.
 
 1. **Harvest.** Run `scripts/pending.sh` and take the PR numbers it prints. For each
-   PR, find the first review with substantive human comments. Take its `commit_id`.
-   Select the comments made on that commit. Leave out bots, LGTMs, and comments on
-   UX, copy, or PR scope. With two or more comments left, run:
+   PR, list the reviews with `gh api repos/elastic/kibana/pulls/<pr>/reviews --paginate`.
+   Take the `commit_id` of the first review with a human comment that is not an LGTM.
+   Select the comments made on that commit with
+   `gh api repos/elastic/kibana/pulls/<pr>/comments --paginate`. Apply the exclusions
+   from the Data section. With two or more comments left, run:
 
    ```bash
    python3 -I ~/.agents/skills/review-eval/scripts/add-case.py <pr> <commit_id> "<comment-id>=<short theme>" ...
    ```
 
    The script adds the case and the PR to `harvested.txt`. It puts PRs whose number
-   is divisible by 3 in `holdout`. With fewer than two comments, append the PR number to
-   `harvested.txt` only.
+   is divisible by 3 in `holdout`. With fewer than two comments, run
+   `echo <pr> >> ~/Code/ai-generated/files/review-eval/harvested.txt`.
 2. **Score the new cases.** Run `scripts/run.sh code all <pr>` for each new case.
 3. **Rescore after config changes.** When `pending.sh` reported a config change,
    run `scripts/run.sh code all` and then `scripts/run.sh cross all`.
 4. **Propose fixes.** Read each new `dev` case's `score.json`. For each human comment
    the review missed, check `REVIEW.md`. Propose a new rule when no rule covers it.
    When a rule covers it and the reviewer still missed it, propose a lint rule or a
-   skill check instead. Do not read `holdout` comments for this step.
+   skill check instead.
 5. **Report.** Write `~/Code/ai-generated/files/review-eval/reports/<date>.md`. List
    the new cases, the new `scores.tsv` rows compared with the previous rows for the
    same reviewer and split, and the proposals. Set the Orca card comment to one line
-   with the recall change and the number of proposals.
+   with the recall change and the number of proposals:
+   `ORCA worktree set --worktree current --comment "<line>" --json`.

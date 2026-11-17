@@ -16,11 +16,9 @@ curl -s -u elastic:changeme -H 'kbn-xsrf: x' -H 'x-elastic-internal-origin: kiba
 `document.querySelectorAll('[data-test-subj=investigationImpactEntityRow]').length` is at least 1 after opening Summary.
 
 ## Drive
-1. Open the conversation, click Summary (`[...document.querySelectorAll('button')].find(b=>b.innerText.trim()==='Summary').click()` works when the ref click does not).
+1. Open the conversation, click the Summary button.
 2. Click the chevron button inside `investigationImpactEntityRow`.
 3. `investigationImpactEntityEvidence` appears. Measure with getComputedStyle (padding) and getBoundingClientRect (row, circle icon wrapper, evidence text range).
 
 ## Gotchas
-- Header row padding is 12px 16px; the icon circle left equals row left + 16, body text left equals row left + 16.
-- No "reference" text exists anywhere in this view.
 - Rows without `evidence` have no chevron.

@@ -28,10 +28,10 @@ Filter to the comments the user linked. If the user gave only a PR URL with no
 specific links, analyze every unresolved review comment.
 
 For an `elastic/kibana` PR, also read the threads of Libra, Kibana's AI reviewer,
-with `pr.mjs threads <PR_NUMBER>` (defined in `SKILL.md`).
+with `pr.mjs threads <PR_NUMBER>` (`pr.mjs` is defined in `SKILL.md`).
 Read the body of Libra's latest review too, because some findings appear only
-there. When a thread has `followUp: true`, triage only its latest reply, and reply
-at most once more.
+there. When a thread has `followUp: true`, triage only its latest reply, and draft at
+most one reply for it.
 
 For each comment, extract:
 
@@ -103,5 +103,3 @@ user approves them.
 
 - **Comment links from multiple PRs:** process each PR separately.
 - **Deleted or outdated comments:** note them as stale and skip.
-- **Comment threads:** read the full thread before rendering a verdict.
-- **No comment links, just a PR URL:** analyze every unresolved review comment.

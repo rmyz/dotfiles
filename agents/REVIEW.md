@@ -74,6 +74,9 @@ boundary, hides an error, or breaks a stored id. Look for these first.
 
 ## For reviewers
 
+- Default scope: uncommitted changes plus the commits on this branch against
+  `upstream/main` (committed, staged, unstaged, and untracked). A named ref, branch,
+  or PR overrides it.
 - Cite `file:line` for each finding. Do not infer a defect from a name.
 - For each bug, state the input or sequence of events that triggers it.
 - Tag each finding `Important`, `Nit`, or `Pre-existing`. Keep nits few, so they do not bury the important findings.
