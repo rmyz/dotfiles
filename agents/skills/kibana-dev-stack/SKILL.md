@@ -1,6 +1,6 @@
 ---
 name: kibana-dev-stack
-description: Start or reuse the shared Elasticsearch and a worktree-owned Kibana (and Storybook) in Orca terminals, decide whether a change needs a running Kibana, run Scout against the stack, and keep the primary checkout current. Idempotent. Used by ship, review-pr, and kibana-verify.
+description: Start or reuse a worktree-owned Elasticsearch and Kibana (and Storybook) in Orca terminals, decide whether a change needs a running Kibana, run Scout against the stack, and keep the primary checkout current. Idempotent. Used by ship, review-pr, and kibana-verify.
 disable-model-invocation: true
 ---
 
@@ -12,6 +12,8 @@ servers are reused, missing ones are started.
 The scripts in `~/.agents/skills/kibana-dev-stack/scripts/` own detection, ownership checks, the
 port allocation lock, and readiness polling. Each call passes an `ORCA terminal
 create` launch command; the scripts export `$PORT` before running it.
+
+Always start Elasticsearch first and wait until it is healthy. Then start Kibana.
 
 Recompute state first, from the feature worktree:
 
@@ -33,25 +35,28 @@ Start servers only when it does.
 
 ## Elasticsearch
 
-`scripts/start-es.sh` does the whole check-or-start sequence: it accepts an existing
-listener on `9200` only when an authenticated `elastic:changeme` request answers with
-the `X-Elastic-Product: Elasticsearch` header and its process runs from `$MAIN` or
-`$MAIN/.es`; any other process on `9200` is reported as a blocker. Only when the
-port is free does it run the launch command from `$MAIN` and poll until the product
-header appears. The `es` alias expands to `pnpm es snapshot --license trial --eis`;
-running it through `zsh -ic` picks up the alias and the fnm node version exactly like
-a manual terminal.
+Each worktree owns its Elasticsearch. The primary `main` worktree starts nothing.
+Reuse a running Elasticsearch only when it runs from this worktree; use
+`scripts/check-server.sh` with the `es:<port>` terminal title (same exit codes and
+terminal handling as Kibana below). Otherwise `scripts/launch-server.sh` allocates the
+lowest free port from `9200`, stepping by 1, and starts it. The `es` alias expands to
+`pnpm es snapshot --license trial --eis`; running it through `zsh -ic` picks up the
+alias and the fnm node version exactly like a manual terminal.
 
 ```bash
-"$STACK_SCRIPTS/start-es.sh" "$MAIN" \
-  'ORCA terminal create --worktree path:'"$MAIN"' --title es:9200 \
-    --command "zsh -ic '"'"'es --use-cached'"'"'" --json'
+ES_HEALTH='curl -sS -m 5 -u elastic:changeme -D - -o /dev/null "http://localhost:$PORT" | grep -qi "^x-elastic-product: Elasticsearch"'
+ES_PORT=$("$STACK_SCRIPTS/launch-server.sh" 9200 600 "$ES_HEALTH" \
+  'ORCA terminal create --worktree path:'"$WORKTREE"' --title "es:$PORT" \
+    --command "zsh -ic '"'"'es --use-cached --port $PORT -E cluster.name=es-$PORT'"'"'" --json')
 ```
 
-If `path:$MAIN` does not resolve to an Orca-managed worktree, stop and report it
-instead of starting Elasticsearch another way. On timeout the script exits nonzero;
-read the `es:9200` terminal and stop. Never start a second development Elasticsearch
-instance for another worktree.
+When reusing, take `ES_PORT` from the `es:<port>` title in
+`ORCA terminal list --worktree path:$WORKTREE --json`. On timeout the script exits
+nonzero; read the `es:<port>` terminal and stop. The unique
+`cluster.name` keeps nodes from joining one cluster: without it, two local nodes
+discover each other on the transport ports and share indices (verified: two nodes
+reported `number_of_nodes: 2`). Never
+point a worktree's Kibana at another worktree's Elasticsearch.
 
 ## Kibana
 
@@ -65,14 +70,16 @@ unhealthy server, close its terminal with `ORCA terminal close --terminal <handl
 Otherwise `scripts/launch-server.sh` takes the atomic `mkdir` lock at
 `/tmp/kibana-port-allocation.lock`, allocates the lowest unused port pair (`$PORT` and
 `$PORT + 1`), stepping by 2 from `5601`, runs the launch command with `$PORT`
-exported, polls the health command until ready, prints the port, and releases the lock. The `kbn` alias expands to
-`pnpm start --eis`.
+exported, polls the health command until ready, prints the port, and releases the lock.
+The `kbn` alias expands to `pnpm start --eis`. Kibana connects to this worktree's
+Elasticsearch through `--elasticsearch.hosts`; `$ES_PORT` is the port in the
+worktree's `es:<port>` terminal title.
 
 ```bash
 HEALTH='curl -fsSL -o /dev/null -u elastic:changeme "http://localhost:$PORT/api/status"'
 PORT=$("$STACK_SCRIPTS/launch-server.sh" 5601 360 "$HEALTH" \
   'ORCA terminal create --worktree path:'"$WORKTREE"' --title "kibana:$PORT" \
-    --command "zsh -ic '"'"'kbn --port $PORT --dev.basePathProxyTarget=$((PORT + 1))'"'"'" --json' 2)
+    --command "zsh -ic '"'"'kbn --port $PORT --dev.basePathProxyTarget=$((PORT + 1)) --elasticsearch.hosts=http://localhost:'"$ES_PORT"''"'"'" --json' 2)
 ```
 
 The terminal title is the port's system of record; nothing else stores it. Kibana
@@ -101,9 +108,9 @@ PORT=$("$STACK_SCRIPTS/launch-server.sh" 9001 300 "$STORYBOOK_HEALTH" \
 
 ## Scout
 
-Reuse the already-running Kibana and shared Elasticsearch instance only when its
+Reuse the already-running Kibana and Elasticsearch of this worktree only when its
 server settings satisfy the test. Create `.scout/servers/local.json` with the current
-Kibana URL, Elasticsearch `9200`, `elastic`/`changeme` credentials, a trial license,
+Kibana URL, Elasticsearch `<es-port>`, `elastic`/`changeme` credentials, a trial license,
 and the absolute `.ftr/role_users.json` path. Then run only the local stateful classic
 target:
 
@@ -117,7 +124,7 @@ target:
   "license": "trial",
   "hosts": {
     "kibana": "http://localhost:<kibana-port>",
-    "elasticsearch": "http://localhost:9200"
+    "elasticsearch": "http://localhost:<es-port>"
   },
   "auth": { "username": "elastic", "password": "changeme" }
 }
@@ -132,9 +139,8 @@ node scripts/playwright test --config <playwright.config.ts> \
 
 Do not run `node scripts/scout start-server` or `node scripts/scout run-tests`; both
 manage another local stack. If a Scout suite requires a custom server config that the
-development stack does not provide, the PR is blocked. Do not start a second
-Elasticsearch instance or proceed. Resolve the profile conflict or get an explicit
-change to the single-Elasticsearch requirement.
+development stack does not provide, the PR is blocked. Do not start a
+second Elasticsearch instance for the worktree or proceed. Resolve the profile conflict.
 
 ## Keep the primary checkout current
 

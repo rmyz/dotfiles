@@ -15,6 +15,11 @@ When the request contains a PR link or number, the worktree uses that PR's head
 branch. Otherwise the worktree branches from `upstream/main`. Branch naming for a new
 branch: `fix/`, `feat/`, `perf/`, or `refactor/` plus a short description.
 
+Name every worktree folder `kibana-<branch-safe>`, where `<branch-safe>` is the branch
+name with `/` replaced by `-`, for example `kibana-feat-my-change`. Only the folder
+and Orca name carry the `kibana-` prefix. The branch never does. The PR helper app
+discovers sibling worktrees by the folder prefix.
+
 Worktrees live beside the primary Kibana checkout, in its parent directory. Never
 create one inside the checkout. Orca reads its location from the project setting
 "Worktree Location", which must be that parent directory, with the global "Nest
@@ -62,15 +67,16 @@ Without a PR:
 
 ```text
 ORCA repo list --json
-ORCA worktree create --repo id:<kibanaRepoId> --name <branch> \
+ORCA worktree create --repo id:<kibanaRepoId> --name kibana-<branch-safe> --branch <branch> \
   --base-branch upstream/main --no-parent --setup skip --json
 ```
 
-With a PR. `--branch` keeps the PR's own branch name instead of an Orca prefix:
+With a PR. `--branch` sets the exact branch name, so Orca neither prefixes it nor
+derives it from `--name`:
 
 ```text
 ORCA repo list --json
-ORCA worktree create --repo id:<kibanaRepoId> --name <branch> --branch <branch> \
+ORCA worktree create --repo id:<kibanaRepoId> --name kibana-<branch-safe> --branch <branch> \
   --base-branch pr/<number> --pr <number> --no-parent --setup skip --json
 ```
 
@@ -82,15 +88,15 @@ the response. Check the result with:
 ORCA worktree list --repo id:<kibanaRepoId> --json
 ```
 
-Continue when exactly one worktree has the requested `displayName`. Use its `id` and
+Continue when exactly one worktree has the requested `displayName` (`kibana-<branch-safe>`). Use its `id` and
 `path`. Report the original error when there is no match. Stop and ask which worktree
 to use when there is more than one match.
 
 Capture the full `worktree.id` (`<repoId>::<worktreePath>`) and the worktree path
 from the JSON. Read the actual branch with
-`git -C <worktree.path> branch --show-current`. Without a PR, Orca may prefix the
-requested name, such as `rmyz/fix-...`. With a PR, the branch must equal the PR's
-`headRefName`.
+`git -C <worktree.path> branch --show-current`. The branch must equal
+`<branch>`: the PR's `headRefName` with a PR, the requested branch name without one.
+It must not contain `kibana-`.
 
 ## Bootstrap
 

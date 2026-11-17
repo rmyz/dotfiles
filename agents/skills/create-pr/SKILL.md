@@ -84,8 +84,12 @@ Use the label values that `AGENTS.md` defines for `TEAM_LABEL`, `RELEASE_NOTE_LA
   - Follow with concise bullets explaining what changed and why, plus any non-obvious user impact or key implementation note.
 - **Demo**:
   - Placed before `## How to test`.
-  - Include this section only for visual changes or when QA recordings exist. Omit it entirely otherwise.
-  - If multiple demo recordings were captured (e.g. happy path and failure scenario), list a clearly labeled drag-and-drop placeholder for each one.
+  - Include this section whenever QA demo files exist. Omit it entirely otherwise.
+  - Attach every demo file (recording or screenshot). Label each one, for example happy path and failure scenario. Never leave a drag-and-drop placeholder.
+  - Screenshots and videos you can upload (`gh` 2.99.0+): never leave a placeholder. After the PR exists, upload them with `gh pr edit <n> --repo elastic/kibana --body-file <body.md> --attach './file.png#alt text'` (repeat the flag per file). `gh` uploads each file to `user-attachments` and appends `![alt](url)` to the body. Paths resolve relative to the body file's directory, then the cwd.
+  - For a before and after table, use a `Cell | Before | After` table. `gh` rewrites only markdown references (`![alt](./a.png)`), not `<img src="./a.png">`, and markdown images cannot set width. So run `--attach` once, read the URLs back with `gh pr view <n> --json body -q .body`, rebuild the body with `<img src="<url>" width="300">` tags, and apply it with `--body-file` and no `--attach`. Each `--attach` run uploads again, so never repeat it for the same files.
+  - A body reference only matches an attached file when it uses the same text as the flag without the `#alt` part (`![alt](./a.png)` with `--attach ./a.png#alt` fails). When it fails, `gh` appends the uploaded files at the end, so read the URLs from there and remove the appended lines.
+  - Check that the final body contains `user-attachments` and no local paths.
 - **Risk**:
   - Include it only when the change renames or removes a stored id, schema field,
     route, or URL parameter; adds a migration; changes privileges; or exceeds 500
@@ -137,7 +141,7 @@ EOF
 gh pr comment "$PR_URL" --body '/ci'
 ```
 
-Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no visual change or recorded artifact. Insert `## Risk`
+Omit `Closes #<id>` if there is no public issue. Omit `## Demo` if there is no demo file. Insert `## Risk`
 before `## How to test` only when the Risk rules apply.
 
 Output the created `PR_URL`.

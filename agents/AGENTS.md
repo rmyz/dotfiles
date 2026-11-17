@@ -125,8 +125,11 @@ Apply this section only when the working directory is a clone or worktree of
 
 ### Local services
 
-- Start Elasticsearch with `es` and Kibana with `kbn <port>`. They also pass
-  `--eis` and the license config.
+- Start Elasticsearch with `es --port <port> -E cluster.name=es-<port>` and Kibana with `kbn <port>`. They also
+  pass `--eis` and the license config. Each worktree runs its own Elasticsearch
+  (ports from `9200`, step 1) and Kibana. The primary `main` worktree starts neither.
+  Always start Elasticsearch first, wait until it is healthy, then start Kibana.
+  Point Kibana at its Elasticsearch with `--elasticsearch.hosts=http://localhost:<es-port>`.
 - `kbn <port>` sets `--port=<port>` and `--dev.basePathProxyTarget=<port+1>`, so each
   instance uses two ports: `<port>` and `<port+1>`. Never pass `--no-base-path`.
   Kibana always serves under a 3-letter prefix before `/app/`, for example `/kpd/app`.

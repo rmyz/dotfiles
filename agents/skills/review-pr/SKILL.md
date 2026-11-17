@@ -50,9 +50,10 @@ Load the orca-cli skill and resolve the ORCA executable. Wait for bootstrap with
 command.
 
 Read `~/.agents/skills/kibana-dev-stack/SKILL.md` and follow it for Elasticsearch and Kibana;
-skip Storybook. Reuse the shared Elasticsearch on port 9200
-when healthy. Start it from the primary main worktree only when absent. Reuse or
-start a Kibana owned by the PR worktree on the lowest free port pair starting at 5601. Do
+skip Storybook. Reuse or start an
+Elasticsearch owned by the PR worktree on the lowest free port starting at 9200. Reuse or
+start a Kibana owned by the PR worktree on the lowest free port pair starting at 5601,
+connected to that Elasticsearch. Do
 not run ship's other steps, tests, validation, or teardown.
 
 Return the PR branch and commit, worktree path, bootstrap status, Elasticsearch

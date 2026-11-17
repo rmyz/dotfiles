@@ -57,15 +57,17 @@ exists. Set `--workspace-status in-review` when the draft PR is created.
 
 ## Invariants
 
-- Run one shared Elasticsearch instance on port `9200` from the primary `main`
-  worktree. Never start Elasticsearch from a feature worktree.
+- Run one Elasticsearch instance per active worktree. Never start Elasticsearch or
+  Kibana from the primary `main` worktree. Allocate the lowest free port starting at
+  `9200`, then `9201`, `9202`, and so on. Each Kibana connects to its own worktree's
+  Elasticsearch.
 - Run one Kibana instance per active worktree. Allocate the lowest free port pair
   starting at `5601`, then `5603`, `5605`, and so on. Each instance uses its port and
   the next one.
 - Run one Storybook instance per active worktree, only when the plan includes
   Storybook changes. Allocate the lowest free port starting at `9001`, then `9002`,
   `9003`, and so on.
-- Ship ends after creating the draft PR, recording a visual demo when applicable,
+- Ship ends after creating the draft PR, attaching the QA demo to the PR,
   and reporting the outcome. Review requests and worktree teardown are separate
   skills: `request-reviews` and `teardown`.
 

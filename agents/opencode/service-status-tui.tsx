@@ -109,7 +109,8 @@ export const detectServices = async () => {
     const command = commands.get(pid)?.command.toLowerCase() ?? "";
     let name;
 
-    if (port === 9200 && command.includes("elasticsearch")) name = "ES";
+    if (port >= 9200 && port < 9300 && command.includes("elasticsearch"))
+      name = "ES";
     else if (port >= 5601 && port < 5700 && isKibana(pid)) {
       if (kibanaPids.has(commands.get(pid).ppid)) continue;
       name = "Kibana";
@@ -120,7 +121,7 @@ export const detectServices = async () => {
     services.push({
       port,
       name,
-      worktree: name === "ES" ? undefined : await worktreeName(pid),
+      worktree: await worktreeName(pid),
     });
   }
 

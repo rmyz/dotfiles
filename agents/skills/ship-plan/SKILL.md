@@ -37,7 +37,7 @@ Trace the affected flow end to end before proposing a solution. Prefer
 `codegraph_explore` over grep-and-read loops. Read existing tests and patterns. Name
 every expected file change and identify the smallest coherent implementation. Also
 inspect affected Scout configs and state whether their required server settings are
-compatible with the shared development stack. Record their exact config paths, or
+compatible with the worktree's development stack. Record their exact config paths, or
 state that no Scout config applies.
 
 ## Size the change
@@ -50,10 +50,21 @@ reason under `Size` in the plan.
 
 ## Plan the verification
 
-For each acceptance criterion, write the check that proves it and what passing
+Passing every acceptance criterion is the goal of the whole task, so plan the
+verification from the criteria. Write them as a numbered list under
+`## Acceptance criteria`, one observable behavior per item, with ids `AC1`, `AC2`, and
+so on by position. Take them from the issue or task description. When the task has
+none, derive them and mark them as derived. Do not split or merge them later.
+
+Under `## Verification`, give every criterion at least one check and what passing
 looks like: a scoped jest file, a `curl` call with the expected response, or browser
-steps with the expected screen. For UI and API checks, name the feature file in
+steps with the expected screen. A criterion with no check is a plan defect: fix it
+before you write the handoff. A criterion a user can observe in the app needs a
+check that runs in the app (browser steps or a request), not only a jest file. For
+UI and API checks, name the feature file in
 `~/.agents/skills/kibana-verify/features/` for the area, or state that none exists.
+Later phases verify the change with `kibana-verify`, which reports each criterion
+as `pass`, `fail`, or `blocked`.
 For a bug fix, add the reproduction that fails before the fix. Each implementation
 step ends with its cheapest check: one jest file,
 `node scripts/type_check --project <tsconfig.json>`, or one request. Never plan the
@@ -69,8 +80,8 @@ mkdir -p "$HOME/Code/ai-generated/$WORK_ID/plans"
 PLAN_FILE="$HOME/Code/ai-generated/$WORK_ID/plans/ship-plan.md"
 ```
 
-Keep it short and readable by the next session. Include the task and acceptance
-criteria, the linked issue and whether the PR closes or addresses it (or has none),
+Keep it short and readable by the next session. Include the task, the
+`Acceptance criteria` section, the linked issue and whether the PR closes or addresses it (or has none),
 the relevant flow, expected file changes, the verification recipe, `Size` and
 `Follow-ups` when the change was split or kept large, Scout config paths and
 compatibility, and any known risks or open questions. Resolve decisions from the

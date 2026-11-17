@@ -56,10 +56,9 @@ MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
    ls -d <worktree-path> >/dev/null 2>&1 && rm -rf <worktree-path>
    ```
 
-2. Verify the worktree's Kibana port no longer has a listener. Do not stop the shared
-   Elasticsearch instance while another worktree may use it. When Elasticsearch was
-   started from inside the removed worktree (its `.es/` directory lives there),
-   stopping the worktree's processes stops it too, so report that.
+2. Verify the worktree's Kibana and Elasticsearch ports (`kibana:<port>` and
+   `es:<port>` terminal titles) no longer have a listener. Each worktree owns its
+   Elasticsearch, and its `.es/` data directory lives in the worktree.
 
 3. When `worktree show` reported a `linkedPR`, delete the local PR ref that
    `init-worktree` fetched:
@@ -88,3 +87,13 @@ fi
 ```
 
 Skip this step when the work was abandoned.
+
+## Close this terminal
+
+Run this last. It kills the agent, so nothing runs after it. Skip it when the
+teardown ran directly in the user's own terminal (no `/teardown` session spawned by
+the Relocate step).
+
+```bash
+ORCA terminal close --terminal "$ORCA_TERMINAL_HANDLE" --tab --json
+```

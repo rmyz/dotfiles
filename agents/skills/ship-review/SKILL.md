@@ -1,6 +1,6 @@
 ---
 name: ship-review
-description: Ship phase 3. In a fresh session, verify acceptance criteria, apply confirmed cross-model review fixes, run checks, and create a draft PR without approval stops. Record a demo after PR creation when useful. Needs branch, worktree path, and plan file from the implement phase.
+description: Ship phase 3. In a fresh session, verify acceptance criteria, apply confirmed cross-model review fixes, run checks, and create a draft PR without approval stops. Attach a QA demo (recording or screenshot) to the PR. Needs branch, worktree path, and plan file from the implement phase.
 disable-model-invocation: true
 ---
 
@@ -25,31 +25,11 @@ files in the change set. Then:
 
 ## Validate
 
-Fix confirmed failures and rerun affected checks until green. Complete behavior QA
-when it applies, the cross-model review, and the mechanical checks before creating
-the draft PR. The cross-model review and `node scripts/check.js --scope=local` are
-required for every change set, including docs-only changes. Stop only for a blocker.
-
-### Acceptance criteria and QA
-
-Before the reviews, list every acceptance criterion from the issue or task
-description. Verify each one against the implementation. A criterion is done only
-when you can point at the code and the observed behavior that fulfills it. Rerun
-each check in the plan's `Verification` section yourself. Do not accept the implement
-phase's evidence without a rerun. If any criterion fails or cannot be verified, fix
-it before continuing; do not hand unmet criteria to the reviews.
-
-Skip behavior QA when step 4 decided the change set needs no running Kibana, and
-say so in the report. Otherwise, for UI changes, run behavior QA through a
-subagent that uses `agent-browser`.
-Brief it with the acceptance criteria, Kibana URL, credentials, and
-`~/.agents/skills/kibana-verify/SKILL.md` with the feature file the plan names. The
-subagent creates or updates that feature file after the run. Verify the
-happy path, relevant edge cases, and backend effects. The subagent returns a
-screenshot path or a response body for each check. Open the screenshots yourself
-before you count a check as passed. For non-UI changes, use the endpoint or command
-directly. Record what passed and what failed. Do not record a
-demo before creating the PR.
+Fix confirmed failures and rerun affected checks until green. Run the cross-model
+review first, then behavior QA and the demo on the reviewed code, then the
+mechanical checks, before creating the draft PR. The cross-model review and
+`node scripts/check.js --scope=local` are required for every change set, including
+docs-only changes. Stop only for a blocker.
 
 ### Cross-model review
 
@@ -80,9 +60,39 @@ Measure total additions and deletions against the merge base, including untracke
 files. If the change exceeds 500 lines and the plan has no `Size` reason, stop and
 report a split proposal.
 
+### Acceptance criteria and QA
+
+Every acceptance criterion in the plan must pass. QA runs on the code left after the
+cross-model review fixes. Take the numbered criteria from the plan's `Acceptance criteria` section,
+not from memory. Rerun each check in the plan's `Verification` section yourself.
+Do not accept the implement phase's evidence without a rerun. If any criterion
+fails or cannot be verified, fix it before continuing; do not hand unmet criteria to
+QA.
+
+Skip behavior QA when step 4 decided the change set needs no running Kibana. Then
+verify each criterion against the code and the plan's targeted tests, and say so in
+the report. Otherwise run behavior QA through a subagent. Brief it with the numbered
+criteria, the plan file path, the Kibana URL, and
+`~/.agents/skills/kibana-verify/SKILL.md` with the feature file the plan names.
+Tell it to follow that skill, including its plan, result format, and validation.
+Cover the happy path, relevant edge cases, and backend effects.
+
+The subagent returns the path of `verify.json`. Run
+`node ~/.agents/skills/kibana-verify/scripts/validate-verify.mjs <verify.json> --plan <plan-file>`
+yourself. Count QA as done only when it prints `OK` and the verdict is `pass`. On
+`fail`, fix the code and rerun the QA, then capture the demo again. On `blocked`,
+fix the cause and rerun. Stop and report only when the blocker needs a decision.
+
+### Demo
+
+The evidence files next to `verify.json` in `~/Code/ai-generated/<work-id>/demo/`
+are the demo. Pass the ones that best prove the criteria to `create-pr`. When QA
+was skipped for a non-UI change, screenshot the command or response that proves the
+behavior and save it in the same directory.
+
 ## Run checks
 
-Run the check suite after review fixes, before creating the draft PR:
+Run the check suite after the review fixes and QA, before creating the draft PR:
 
 ### Targeted tests
 
@@ -122,19 +132,27 @@ report what was removed. Do not open a PR containing unrelated changes.
 Then invoke the `create-pr` skill to perform the commit, upstream sync, push, draft PR
 creation, and `/ci` comment. Pass context from the plan and review session:
 - Issue key and close/address status from the plan file
-- Short manual testing steps observed during validation
+- Short manual testing steps, written from the passing checks in `verify.json`, one
+  per acceptance criterion. Leave out the checks, evidence paths, and verdict: they
+  stay in the local result file. Do not post a PR comment with QA results.
+- The demo file paths under `~/Code/ai-generated/<work-id>/demo/`, so `create-pr`
+  attaches them in `## Demo`
 - Risk: breaking changes, migrations, privilege changes, and the `Size` reason from
   the plan, when any apply
 
 If `create-pr` halts due to merge conflicts against `upstream/main`, resolve them, rerun
 affected checks or QA, and invoke `create-pr` again.
 
-After the PR exists, record a short demo for visual changes. Use the verified
-happy path and save the video as
-`~/Code/ai-generated/<work-id>/demo/qa.webm`. Give the user its path for manual drag-and-drop. If recording
-fails, report it with the PR URL.
+Confirm the PR body has the demo attached (`user-attachments` links, no local paths).
+If the upload fails, report the demo file paths with the PR URL.
 
 Report the PR URL, the review findings fixed, the findings left open and why, the
 check results, the plan's `Follow-ups`, and any remaining considerations. Remind the user about private
-issue linking or demo upload when applicable.
+issue linking when applicable.
+
+When behavior QA ran, add the QA result to this report only, never to the PR. Give
+the verdict, then a table with one row per criterion: its id, its text, its status,
+and the path of its evidence file. Add the `setup` entries that a reviewer must know
+about, the `notCovered` entries, and the path of `verify.json`. When QA was skipped,
+say so and give the reason.
 
