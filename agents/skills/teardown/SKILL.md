@@ -1,7 +1,6 @@
 ---
 name: teardown
-description: Remove a finished Kibana feature worktree, its servers, its stored state, and its local folder after its PR merges or the work is abandoned. Invoke explicitly with a branch name.
-disable-model-invocation: true
+description: Remove a finished Kibana feature worktree, its servers, its stored state, and its local folder after its PR merges or the work is abandoned. Invoke only when the user asks for it with a branch name, or when a prompt from the Relocate step says to load it.
 ---
 
 # Teardown
@@ -25,7 +24,7 @@ main clone and stop. Tell the user the teardown continues in the new terminal.
 
 ```bash
 MAIN=$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")
-~/.agents/skills/spawn-session/scripts/spawn-session.sh "$MAIN" "teardown <branch>" "Load the teardown skill and follow it for <branch>"
+~/.agents/skills/spawn-session/scripts/spawn-session.sh "$MAIN" "teardown <branch>" "Load the teardown skill and follow it for <branch>. Spawned by Relocate: close this terminal tab as the last step."
 ```
 
 ## Remove
@@ -88,9 +87,9 @@ Skip this step when the work was abandoned.
 
 ## Close this terminal
 
-Run this last. It kills the agent, so nothing runs after it. Skip it when the
-teardown ran directly in the user's own terminal (no `/teardown` session spawned by
-the Relocate step).
+Run this last, after every other step and after the final report to the user. It kills
+the agent, so nothing runs after it. Run it when your prompt says "Spawned by
+Relocate". Skip it when the prompt has no such line.
 
 ```bash
 ORCA terminal close --terminal "$ORCA_TERMINAL_HANDLE" --tab --json
