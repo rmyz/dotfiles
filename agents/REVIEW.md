@@ -72,6 +72,23 @@ boundary, hides an error, or breaks a stored id. Look for these first.
 - Do not nest `await` inside expressions. Assign each awaited value to a named
   constant first.
 
+## Triggers
+
+Each trigger is something a reviewer can see in the diff. When it matches, apply the
+named section.
+
+- The diff adds a helper, hook, constant, or URL builder: Reuse.
+- The diff adds `as`, an optional field, or a union `switch`: Types.
+- The diff adds `catch`, `.catch`, or a `Promise.all`: Errors.
+- The diff imports from or queries another plugin: Plugin boundaries.
+- The diff renames or removes an id, schema field, route, URL parameter, or event, or
+  adds a required schema field: Compatibility.
+- The diff adds a request inside a rendered row or a client-side aggregation:
+  Performance.
+- The diff adds a component, a style, or a user-facing string: UI.
+- The diff adds or changes a route that writes state: Security.
+- The diff adds a nested `await`: Readability.
+
 ## For reviewers
 
 - Default scope: uncommitted changes plus the commits on this branch against
@@ -79,7 +96,14 @@ boundary, hides an error, or breaks a stored id. Look for these first.
   or PR overrides it.
 - Cite `file:line` for each finding. Do not infer a defect from a name.
 - For each bug, state the input or sequence of events that triggers it.
-- Tag each finding `Important`, `Nit`, or `Pre-existing`. Keep nits few, so they do not bury the important findings.
+- Check only the rule sections whose trigger appears in the diff, see "Triggers".
+  Skip the rest.
+- Tag each finding `Important`, `Nit`, or `Pre-existing`. `Important` is a must-fix
+  or should-fix. `Pre-existing` is a defect on lines the diff did not change: report
+  it, but do not hold the author responsible. Keep nits few, so they do not bury the
+  important findings.
+- In a later round, start from the findings of earlier rounds. Check the fixes and
+  the open findings. Do not re-review the whole diff.
 - When a finding is one instance of a pattern, list every instance in the diff.
 - Skip generated files: `**/target/**`, `*.snap`, `oas_docs/**`,
   `.github/CODEOWNERS`, and translation JSON files.
@@ -93,3 +117,9 @@ boundary, hides an error, or breaks a stored id. Look for these first.
 - When a reviewer flags a rule that already exists here, the rule did not hold.
   Propose a lint rule or a check in a skill instead of a second sentence.
 - Delete a rule when a lint rule starts to enforce it.
+- Add a rule only when the same comment appears in at least two PRs and a reviewer
+  can see its trigger in a diff. Add the trigger to "Triggers".
+- A reviewer miss on a small diff is a gap in this file. Add the missing rule, then
+  run `review-eval` on `dev` and `holdout`.
+- A rule that has caught nothing in `review-eval` and in real reviews for a quarter
+  is a candidate for deletion. Prune the file at that review.

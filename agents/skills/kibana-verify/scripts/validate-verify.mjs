@@ -94,6 +94,9 @@ function validate(r) {
       errors.push("verdict is \"pass\" but no passing check went through the running app (via ui|api|es|log); tests alone do not prove behavior");
     }
   }
+  if (r.verdict !== "pass" && VERDICTS.includes(r.verdict) && !text(r.reviewerNote)) {
+    errors.push("`reviewerNote` is required unless the verdict is pass: what a person must look at, and why");
+  }
   for (const key of ["setup", "notCovered"]) {
     if (r[key] !== undefined && !(Array.isArray(r[key]) && r[key].every(text))) errors.push(`\`${key}\` must be an array of non-empty strings`);
   }

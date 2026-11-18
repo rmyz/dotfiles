@@ -75,6 +75,14 @@ Rules for checks:
   `git checkout -- <file>`.
 - For agent or prompt changes, run the real flow once to completion. A seeded or
   mocked conversation does not prove agent behavior.
+- The change under test must not edit the rules that judge it: the feature file's
+  steps and expected results, the plan's criteria, and `validate-verify.mjs`. Read
+  them from the dotfiles repo. Fix a stale feature file only under "After the run",
+  never to turn a failing check green.
+- Retry a failing check at most three times, fixing a cause between rounds. When it
+  still fails, stop and report it as `fail`, or as `blocked` for a stack problem.
+- Never skip a flaky check, add sleeps, or retry until it passes. Find the root
+  cause. When you cannot, record the check as `blocked` and say why in `details`.
 - Never weaken a step or an expected result to make a check pass. When the app does
   not do what the file says, decide which one is wrong:
 
@@ -105,7 +113,8 @@ recording in the same directory and name them in order (`01-...png`).
       "files": [{ "file": "01-name.png", "caption": "What it shows and what to look at" }]
     }
   ],
-  "notCovered": ["What matters but this run did not check."]
+  "notCovered": ["What matters but this run did not check."],
+  "reviewerNote": "Required unless verdict is pass. What a person must look at, and why."
 }
 ```
 
@@ -122,6 +131,8 @@ recording in the same directory and name them in order (`01-...png`).
 - When you cannot tell a change problem from an environment problem, say so in
   `details`.
 - A stack failure is `blocked`, not `fail`. A feature failure is `fail`.
+- For every verdict except `pass`, fill `reviewerNote`: what a person must look at
+  and why, so the reviewer does not rebuild it from the diff.
 
 Validate the file. Pass the plan so the criteria count is checked against it:
 
