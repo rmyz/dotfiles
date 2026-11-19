@@ -41,9 +41,15 @@ For each comment, extract:
 - `user.login` — who wrote it
 - `in_reply_to_id` — thread context; fetch the parent if present
 
-### Step 3 — Gather deeper context (if needed)
+### Step 3 — Gather deeper context
 
-If the diff hunk alone is not enough to judge a comment, read the file around it
+Libra reads the diff, not the whole codebase. Never take a Libra finding at face
+value. For each Libra finding, start a read-only subagent with fresh context. Give it
+only the claim and the file location, not your own reasoning. It checks the claim
+against code outside the diff: callers, types, existing tests, and upstream guards.
+It returns one of: confirmed, contradicted (with file:line), or unverifiable.
+
+For human comments, and when the diff hunk alone is not enough, read the file around it
 and check `git log` / `git blame` for why the code is written that way. Escalate
 only when a comment spans multiple files or touches architecture: read and follow
 `~/.agents/skills/cross-review/SKILL.md` in **PR mode** on the same PR. Do not
@@ -55,6 +61,13 @@ For every comment, decide whether the reviewer is correct or misread the code or
 context, how severe the point is (blocking, nice-to-have, or stylistic), and whether
 the effort is worth the gain. When the suggestion is not ideal, look for a middle
 ground.
+
+Push back when the fix adds code for a case that cannot occur. Accepting every
+finding makes the code over-engineered. Treat a stylistic point as dismissed unless
+a repo rule covers it.
+
+When the user states their own understanding ("I think it works like X"), verify X
+in the code first. If X holds, draft the push-back. If X fails, say so.
 
 ### Step 5 — Present verdicts
 
@@ -72,6 +85,9 @@ One block per comment:
 **Suggested reply:**
 > [draft reply]
 ```
+
+A push-back reply cites the proof as file:line. Fix nothing at this stage. Wait for
+the user to confirm each Accept before any code changes.
 
 ### Verdict guidelines
 

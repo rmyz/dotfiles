@@ -78,7 +78,9 @@ gh pr comment <PR_NUMBER> --body '/ci'
 ```
 
 Then run `pr.mjs wait <PR_NUMBER> --for libra,ci`. When it prints `pending`, run it
-again. When new Libra findings or CI failures arrive, go back to Step 1 or Step 3.
+again. When new Libra findings arrive, go back to Step 1 and triage them. Never fix
+them directly, and never loop until Libra passes. When CI failures arrive, go back to
+Step 3.
 
 Stop after three rounds, or earlier when:
 

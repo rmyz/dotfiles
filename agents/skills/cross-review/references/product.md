@@ -1,8 +1,3 @@
----
-name: product-review
-description: Product review of a diff — side-effects and bugs (what could break) plus whether the change is correct and sensible for the user (requirement fit, UX, empty/error states, copy). Reports findings; never applies changes.
----
-
 # Product review
 
 Review the diff in the default scope from `~/.agents/REVIEW.md`. Read the linked issue

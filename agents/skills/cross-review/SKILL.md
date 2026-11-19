@@ -77,8 +77,8 @@ Every reviewer gets the identical briefing:
   problems are out of scope, except a latent bug the change makes reachable or worse,
   which must be marked as pre-existing.
 - Instructions to read and apply both rubrics:
-  `~/.agents/skills/technical-review/SKILL.md` and
-  `~/.agents/skills/product-review/SKILL.md`.
+  `~/.agents/skills/cross-review/references/technical.md` and
+  `~/.agents/skills/cross-review/references/product.md`.
 - Hunt for bugs before style: races, ordering, wrong stored values, missing empty
   and error paths, and missing ownership checks. Each bug states the input or
   sequence of events that triggers it. A bug without a trigger is a guess, so drop

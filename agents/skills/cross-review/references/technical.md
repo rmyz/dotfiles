@@ -1,8 +1,3 @@
----
-name: technical-review
-description: Technical review of a diff — architecture, bad patterns, consistency with existing Kibana conventions and components, and Fowler code smells. Reports findings; never applies changes.
----
-
 # Technical review
 
 Review the diff. Apply `~/.agents/REVIEW.md` first. Its rules come from real reviewer
