@@ -6,8 +6,9 @@ disable-model-invocation: true
 
 # Review PR
 
-Checks the PR out in a local worktree, then runs `cross-review` on it while the
-test environment starts. It reports findings and copy-ready comments.
+Checks the PR out in a local worktree, moves the session into it, then runs
+`cross-review` on it while the test environment starts. It reports findings and
+copy-ready comments.
 
 ## Input
 
@@ -21,10 +22,16 @@ missing. Reject non-Kibana PRs because the local stack instructions are Kibana-s
 ### 1. Create the worktree
 
 Read `~/.agents/skills/init-worktree/SKILL.md` and follow it for the
-supplied PR URL, with no handoff. It creates the worktree on the PR's branch and starts bootstrap, the dev config copy,
-and CodeGraph indexing.
+supplied PR URL. It creates the worktree on the PR's branch and starts bootstrap, the
+dev config copy, and CodeGraph indexing. Pass the tag `[REVIEW-PR]` and this caller
+instruction: `read ~/.agents/skills/review-pr/SKILL.md and follow it from step 2.
+PR: <PR_URL>.` `init-worktree` then moves the session into the worktree. End this
+session after the handoff.
 
 ### 2. Run review and environment setup together
+
+A session that starts with the `[REVIEW-PR]` tag skips step 1. Run `pwd -P` first. It
+must equal the worktree path in the prompt. Stop if it does not.
 
 Start both at the same time:
 
