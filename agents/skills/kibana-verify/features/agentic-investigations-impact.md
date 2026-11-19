@@ -1,4 +1,4 @@
-# Agentic investigations impact attachment
+# Agentic investigations conversation details
 
 Status: draft
 
@@ -18,7 +18,7 @@ curl -s -u elastic:changeme -H 'kbn-xsrf: x' -H 'x-elastic-internal-origin: kiba
 ## Drive
 1. Open the conversation, click the Summary button.
 2. Click the chevron button inside `investigationImpactEntityRow`.
-3. `investigationImpactEntityEvidence` appears. Measure with getComputedStyle (padding) and getBoundingClientRect (row, circle icon wrapper, evidence text range).
+3. `investigationImpactEntityEvidence` appears. For a layout check, read the element with getComputedStyle and getBoundingClientRect.
 
 ## Gotchas
 - Rows without `evidence` have no chevron.

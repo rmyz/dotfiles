@@ -171,12 +171,20 @@ expected result.
 Traps a previous run hit, each with its fix.
 ```
 
+A feature file is a generic guide to one part of the product: how to reach it, seed
+it, and drive it. It never describes how to test one issue, PR, or change. Name the
+file for the area, never for the change. Write steps for the area's behavior, such as
+"create a trigger and read its workflow yaml", not "check that fix #123 works". Put
+no issue numbers, journey ids, or one-off repro data in a feature file. A recipe
+that serves only one change stays in that change's plan file.
+
 A file stays `draft` until a run drives every step end to end. Then set
 `verified <date>`.
 
 ## After the run
 
-- No file existed for the area: write one from the steps that worked.
+- No file existed for the area: write one from the steps that worked, kept generic as
+  "Feature files" describes.
 - A step failed for a reason outside the change, such as a slow load, a missing
   role, or missing data: add it to `Gotchas`.
 - Report every changed feature file, because it lives in the dotfiles repo.

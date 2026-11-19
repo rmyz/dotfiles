@@ -16,9 +16,7 @@ v2 alert with a rule: index a doc into an index, `POST /api/alerting/v2/rules` (
 Rule-less v2 alert: workflow with a `manual` trigger and step `alerting.create_alert` (`source`, `fingerprint`, `alert_status: active`), run via `POST /api/workflows/workflow/<id>/run`.
 
 Real significant event (source `elastic.significant_events`, data.event_id/title): `POST /api/agent_builder/tools/_execute` (no elastic-api-version header) body `{"tool_id":"platform.sig_events.event_create","tool_params":{title,symptom_hypothesis,summary,confidence (0..1),slugs:[<nightshift source slug from GET /internal/nightshift/sources>],status:"active",severity}}`. It writes the `.rule-events` alert doc and fires the alert automation within seconds. `alerting.create_alert` cannot be used: source must not start with "elastic".
-Oversize data: index an alert doc straight into `.rule-events` (`data` is `flattened`; needs `op_type=create`), then `POST /internal/nightshift/investigations` body `{"subject":{"type":"alert","ids":[<alert.id>]}}`. A direct doc does not fire the automation.
 Read investigations: `GET /internal/investigations/investigations?per_page=20` (header `elastic-api-version: 1`; subjects and snapshot included). First round message: ES `.chat-conversations-000001/_doc/<investigation id>` `conversation_rounds[0].input.message`. UI: `/app/agent_builder/agents/nightshift.investigation/conversations/<id>?openConversationDetails=true&sidebarCollapsed=true` (title and subject rows in the right panel).
-Re-runnable driver: `~/Code/ai-generated/files/sigevent_drive.sh [prefix] [event|big|both]`.
 
 ## Doctor
 `GET /api/workflows/workflow/<automation name>` returns yaml with triggers `alerting.v1.alertStatusChanged` and `alerting.alertStatusChanged`.
@@ -40,8 +38,26 @@ Re-runnable driver: `~/Code/ai-generated/files/sigevent_drive.sh [prefix] [event
 - ES calls in zsh: keep curl auth in an array (`ES=(-u elastic:changeme -H '...')`, `"${ES[@]}"`). An unquoted string variable is not word-split and gives a 401 with user " elastic".
 - UI: automation detail flyout URL is `/app/nightshift/automations/<id>`, create flyout is `/app/nightshift/automations/new`. The create flyout shows the daily limit field only after "Add trigger" then "Alert triggered".
 
-## Run counts endpoint
-`POST /internal/nightshift/automations/run_counts` body `{"ids":[1..100 ids],"startedAfter":"now-7d"?,"startedBefore":"<ISO>"?}` returns `{"counts":{"<id>":{"succeeded","running","failed","skipped"}}}`. Unknown ids and ids without runs give zeros. Empty ids or 101 ids give 400; no auth gives 401.
+## Seeding and reading runs
+Per-automation run totals: `POST /internal/nightshift/automations/run_counts` body `{"ids":[...],"startedAfter"?,"startedBefore"?}` returns `{"counts":{"<id>":{"succeeded","running","failed","skipped"}}}`.
 Seed runs: create an automation (an unmatched `ruleNamePattern` keeps it idle) and read `workflowId` from the create response (a lingering workflow makes it `<name>-1`). `_bulk?refresh=true` into `.workflows-executions` with `{id,spaceId:"default",workflowId,status,startedAt,createdAt,finishedAt,triggeredBy:"manual",scopeStack:[],stepExecutionIds:[]}`. For each skipped run add a doc into `.workflows-step-executions` with `{id,spaceId,workflowId,workflowRunId,stepId:"trigger_investigation_alert_v2",startedAt,output:{skip_reason:"daily_limit"}}`.
 Check: `succeeded`, `running` and `failed` equal `_count` on `.workflows-executions` filtered by `workflowId`, status (`terms`) and `range` on startedAt. `output` is unmapped, so ES queries on `output.skip_reason` return 0: count `skipped` in a script over step `_source` filtered by trigger stepIds. `GET .../<id>/runs?size=100` returns 100 runs per page (`?searchAfter=[ts,"id"]` pages on), so use run_counts for exact totals.
 Gotchas: `DELETE /internal/nightshift/automations/<id>` returns 500 "Cannot delete workflow with running executions" while seeded `running` docs exist. Delete the seeded docs with `_delete_by_query` on workflowId in both indices first. The UI list defaults to "Last 48 hours", so seed startedAt within 48h. "Today's usage" reads the hidden `nightshift-automation-budget` saved object, and writing it needs a temp role with `allow_restricted_indices:true`. The flyout "Runs" stat is succeeded+running+failed (skipped excluded).
+
+## Trigger editor (UI)
+Open `/app/nightshift/automations/new` (detail: `/automations/<id>`), then "Add trigger" and "Alert triggered". The alert trigger carries `alertSources` (trimmed, 1 to 500 items) and `alertSourceMode` (`include`|`exclude`); known keys: `classic`, `internal`, `elastic.significant_events`. Without sources, the workflow has both `alerting.v1.alertStatusChanged` and `alerting.alertStatusChanged`. With sources, it has only the v2 trigger, and `include` adds `AND event.source:"<key>"` to the condition. Read the workflow with `GET /api/workflows/workflow/<workflowId>`. An API create with `alertSources: [" "]` returns 400 `too_small`.
+Selectors: `automationAlertSources` (pill), `automationAlertSourceMode` (buttons `include`, `exclude`), `automationAlertSourcesInput` (combo box). Save, reload, and open Edit to confirm the saved values round-trip.
+Gotchas:
+- `fill` and `type` work in the combo box. Whitespace plus Enter adds nothing. Free text plus Enter adds a pill.
+- Flyout content is outside the main snapshot. Use `snapshot -i -s ".euiFlyout"`.
+- The page loads slowly after `open`. Wait 5 s.
+- The combo box list auto-opens and covers the mode buttons. Toggle it with `[data-test-subj=automationAlertSourcesInput] [data-test-subj=comboBoxToggleListButton]`. The Tags combo has the same test subject, so scope the selector.
+- Mode buttons: `[data-test-subj=automationAlertSourceMode] [data-test-subj=exclude]`.
+- Delete test automations with `DELETE /internal/nightshift/automations/<id>`.
+
+## Permissions and service accounts
+Stateful setup without SAML: `node -r @kbn/setup-node-env x-pack/solutions/observability/plugins/nightshift_investigations/scripts/create_service_account_roles.ts`; dev.yml `xpack.security.serviceAccounts.enabled: true`, `xpack.encryptedSavedObjects.encryptionKey` (32+ chars), `server.publicBaseUrl: http://localhost:5601/<base>`; `POST /internal/security/service_account` body `{"name":"nightshift_agent","roles":["nightshift_agent"]}` (same for `nightshift_automations`) BEFORE `_enable`.
+Users: `POST localhost:9200/_security/user/<name>` with roles; Kibana roles via `PUT /api/security/role/<role>` with `feature.nightshift: ["read"|"all"]`. `manage_security` is the ES cluster privilege that gates create/edit/delete. Run needs `workflowsManagement`.
+Login for agent-browser: fill `input[name=username]`/`input[name=password]`, press Enter, wait 5s.
+Schedule trigger body: `{"kind":"schedule","schedulePreset":"hourly"}` plus `execution.promptTemplate`.
+Gotchas: creating service accounts after `_enable` gives "bound to an earlier service account": `_disable`, `_enable`, recreate automations. Scheduled run `executedBy` is the creator; the identity is only in workflow yaml `settings.run_as` and `.chat-conversations.user_id`.
